@@ -1,0 +1,183 @@
+import express from "express";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import pool from "../db-config.js";
+import { generateAuthToken, generateRefreshToken } from "../util/util.js";
+import { verifyToken } from "./verifyToken.js";
+
+const router = express.Router();
+
+router.post("/user_reg", async (req, res) => {
+  try {
+    await pool.query("BEGIN");
+
+    const { firstName, lastName, email, password, degree, year, studentid } =
+      req.body;
+
+    const userCheck = await pool.query(
+      "Select username FROM auth_users WHERE email = $1",
+      [email],
+    );
+
+    if (userCheck.rows.length) {
+      return res
+        .status(400)
+        .json({ message: "User with specified email already exists" });
+    }
+
+    const username = email.split("@")[0];
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const auth_user = await pool.query(
+      "INSERT INTO auth_users (username, email, password_hash) VALUES ($1, $2, $3) RETURNING *",
+      [username, email, hashedPassword],
+    );
+    const registered_user = auth_user.rows[0].id;
+
+    await pool.query(
+      `INSERT INTO profile_users ("userId","firstName","lastName", email, degree, year, "studentId", role) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+      [
+        registered_user,
+        firstName,
+        lastName,
+        email,
+        degree,
+        year,
+        studentid,
+        "student",
+      ],
+    );
+    await pool.query("COMMIT");
+
+    res.status(201);
+  } catch (error) {
+    await pool.query("ROLLBACK");
+    console.error(error.message);
+    res.status(500).send("Server Error:register");
+  }
+});
+
+router.post("/user_login", async (req, res) => {
+  try {
+    const { login, password } = req.body;
+    const checkUserQuery = "SELECT * FROM auth_users WHERE username = $1";
+    const { rows } = await pool.query(checkUserQuery, [login]);
+    const user = rows[0];
+
+    if (!user)
+      return res.status(400).json({ message: "Invalid Username/Email" });
+
+    const passwordMatch = await bcrypt.compare(password, user.password_hash);
+
+    if (!passwordMatch)
+      return res.status(400).json({ message: "Incorrect Password" });
+
+    const userProfile = await pool.query(
+      `SELECT * FROM profile_users WHERE "userId" = $1`,
+      [user.id],
+    );
+
+    const refreshToken = generateRefreshToken(user.id);
+    await pool.query(
+      `UPDATE auth_users 
+     SET refresh_token = $1, 
+         refresh_token_expires = NOW() + INTERVAL '30 days'
+     WHERE id = $2`,
+      [refreshToken, user.id],
+    );
+
+    res.json({
+      user: userProfile.rows[0],
+      authToken: generateAuthToken(user.id),
+      refreshToken,
+    });
+  } catch (error) {
+    console.error(error.message, error);
+    res.status(500).send("Server Error: Login");
+  }
+});
+
+router.post("/refresh", async (req, res) => {
+  try {
+    const { refreshToken } = req.body;
+
+    if (!refreshToken) {
+      return res.status(401).json({ message: "Refresh token required" });
+    }
+
+    const decoded = jwt.verify(
+      refreshToken,
+      process.env.JWT_REFRESH_SECRET_KEY,
+    );
+
+    if (!decoded) {
+      return res.status(401).json({ message: "Invalid refresh token" });
+    }
+    const { userId } = decoded;
+
+    const userQuery = await pool.query(
+      "SELECT * FROM auth_users WHERE id = $1 AND refresh_token = $2",
+      [userId, refreshToken],
+    );
+
+    if (userQuery.rows.length === 0) {
+      return res.status(401).json({ message: "Refresh token not valid" });
+    }
+
+    const newAuthToken = generateRefreshToken(userId);
+    const newRefreshToken = generateRefreshToken(userId);
+
+    await pool.query("UPDATE auth_users SET refresh_token = $1 WHERE id = $2", [
+      newRefreshToken,
+      decoded.userId,
+    ]);
+
+    const userProfile = await pool.query(
+      `SELECT * FROM profile_users WHERE "userId" = $1`,
+      [userId],
+    );
+
+    res.json({
+      authToken: newAuthToken,
+      refreshToken: newRefreshToken,
+      user: userProfile.rows[0],
+    });
+  } catch (error) {
+    console.error("Refresh error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.post("/user_logout", verifyToken, async (req, res) => {
+  try {
+    const { refreshToken } = req.body;
+    const { userId } = req.user;
+    if (!refreshToken) {
+      return res.status(400).json({ message: "Refresh token required" });
+    }
+
+    const a = await pool.query(
+      `UPDATE auth_users 
+       SET refresh_token = NULL,
+           refresh_token_expires = NULL
+       WHERE id = $1 AND refresh_token = $2
+       RETURNING id`,
+      [userId, refreshToken],
+    );
+    console.log(refreshToken);
+    console.log(userId);
+
+    console.log("logiout", a);
+
+    res.json({
+      success: true,
+      message: "Logged out successfully",
+    });
+  } catch (error) {
+    console.error("Logout error:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Server error during logout" });
+  }
+});
+
+export default router;
