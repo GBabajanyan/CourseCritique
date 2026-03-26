@@ -23,13 +23,13 @@ app.use(
 );
 
 app.use("/auth", authRoutes);
-app.use("/feedback", feedbackRoutes);
+app.use("/feedback", feedbackRoutes, verifyToken);
 
 app.get("/", (req, res) => {
   res.sendStatus(200);
 });
 
-app.get("/course", verifyToken,async (req, res) => {
+app.get("/course", verifyToken, async (req, res) => {
   try {
     await pool.query(`SELECT * FROM course`, (err, result) => {
       if (err) {

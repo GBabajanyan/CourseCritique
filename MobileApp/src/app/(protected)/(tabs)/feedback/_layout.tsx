@@ -38,7 +38,7 @@ const _layout = () => {
           height: 44,
           borderRadius: 20,
           backgroundColor: "white",
-          padding:4,
+          padding: 4,
           position: "absolute",
           top: 4,
           left: 0,
@@ -46,10 +46,9 @@ const _layout = () => {
           zIndex: 1,
           elevation: 1,
         },
-        tabBarBackground: () => <BlurView 
-          intensity={80}
-          tint='systemChromeMaterial'
-        />,
+        tabBarBackground: () => (
+          <BlurView intensity={80} tint="systemChromeMaterial" />
+        ),
         tabBarActiveBackgroundColor: "rgba(70, 55, 189, 0.1)",
         tabBarAllowFontScaling: true,
         animation: "shift",

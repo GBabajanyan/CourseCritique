@@ -1,5 +1,5 @@
 import React from "react";
-import FeedbackForm from "./[course]";
+import FeedbackForm from ".";
 
 const _layout = () => {
   return <FeedbackForm />;

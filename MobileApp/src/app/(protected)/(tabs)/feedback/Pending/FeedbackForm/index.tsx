@@ -1,3 +1,4 @@
+import { useStore } from "@/src/store/StoreProvider";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -35,8 +36,10 @@ interface FormData {
 
 const FeedbackForm: React.FC = () => {
   const router = useRouter();
-  const course = useLocalSearchParams<FeedbackFormScreenProps>();
+  // const course = useLocalSearchParams<FeedbackFormScreenProps>();
   const insets = useSafeAreaInsets();
+  const { feedbackStore } = useStore();
+  const { selectedCourse: course } = feedbackStore;
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [currentStep, setCurrentStep] = useState<number>(1);
   const totalSteps = 4;

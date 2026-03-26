@@ -123,12 +123,12 @@ router.post("/refresh", async (req, res) => {
       return res.status(401).json({ message: "Refresh token not valid" });
     }
 
-    const newAuthToken = generateRefreshToken(userId);
+    const newAuthToken = generateAuthToken(userId);
     const newRefreshToken = generateRefreshToken(userId);
 
     await pool.query("UPDATE auth_users SET refresh_token = $1 WHERE id = $2", [
       newRefreshToken,
-      decoded.userId,
+      userId,
     ]);
 
     const userProfile = await pool.query(
@@ -155,7 +155,7 @@ router.post("/user_logout", verifyToken, async (req, res) => {
       return res.status(400).json({ message: "Refresh token required" });
     }
 
-    const a = await pool.query(
+    const removeTokens = await pool.query(
       `UPDATE auth_users 
        SET refresh_token = NULL,
            refresh_token_expires = NULL
@@ -163,17 +163,17 @@ router.post("/user_logout", verifyToken, async (req, res) => {
        RETURNING id`,
       [userId, refreshToken],
     );
-    console.log(refreshToken);
-    console.log(userId);
 
-    console.log("logiout", a);
+    if (!removeTokens.rowCount) {
+      return res.status(400).json({ message: "Refresh token not deleted" });
+    }
 
     res.json({
       success: true,
       message: "Logged out successfully",
     });
   } catch (error) {
-    console.error("Logout error:", error);
+    console.error("LOGOUT ERROR:", error);
     res
       .status(500)
       .json({ success: false, message: "Server error during logout" });

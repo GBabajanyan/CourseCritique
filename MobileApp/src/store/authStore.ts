@@ -1,19 +1,20 @@
-import axios from "axios";
 import * as SecureStore from "expo-secure-store";
 import { makeAutoObservable, runInAction } from "mobx";
 import { User } from "./userStore";
 import * as LocalAuthentication from "expo-local-authentication";
 import { Alert } from "react-native";
 import { RootStore } from ".";
+import { BiometricLoginType } from "../types/User";
 
 class AuthStore {
   rootStore: RootStore;
+
   isAuthenticated: boolean = false;
   currentUser: User | null = null;
   isLoading: boolean = false;
+
   isBiometricAvailable: boolean = false;
-  biometricType: string | null = null;
-  refreshToken: string | null = null;
+  biometricType: BiometricLoginType = "none";
 
   constructor(rootStore: RootStore) {
     this.rootStore = rootStore;
@@ -21,7 +22,6 @@ class AuthStore {
     this.initializeAuth();
   }
 
-  // Initialize auth on app start
   async initializeAuth() {
     this.toggleIsLoading();
     try {
@@ -39,69 +39,71 @@ class AuthStore {
   setIsBiometricAvailable = (value: boolean) =>
     (this.isBiometricAvailable = value);
 
+  checkBiometricsEnabled = async () =>
+    (await SecureStore.getItemAsync("biometricsEnabled")) === "true";
+
   checkAuthStatus = async () => {
     try {
-      const refreshToken = await SecureStore.getItemAsync("refreshToken");
-      if (refreshToken) {
-        await this.doRefreshToken(refreshToken);
-      }
+      const token =
+        await this.rootStore.apiClient.instance.defaults.headers.common[
+          "Authorization"
+        ];
+
+      runInAction(() => {
+        this.isAuthenticated = !!token;
+      });
     } catch (error) {
-      console.error("Check credentials error:", error);
+      console.error("Init error:", error);
     }
   };
 
   doRefreshToken = async (refreshToken: string) => {
     try {
-      const response = await axios.post(`http://localhost:8000/auth/refresh`, {
-        refreshToken,
-      });
+      const response = await this.rootStore.apiClient.instance.post(
+        `http://localhost:8000/auth/refresh`,
+        {
+          refreshToken,
+        },
+      );
 
       const { authToken, refreshToken: newRefreshToken, user } = response.data;
-      await this.handleSuccessfulAuth(authToken, newRefreshToken, user);
+      await this.rootStore.apiClient.setAuthTokens(authToken, newRefreshToken);
+      return user;
     } catch (error: any) {
-      await this.logout();
+      console.error("AuthStore doRefreshToken error", error);
+      await this.rootStore.apiClient.logout();
     }
-  };
-
-  handleSuccessfulAuth = async (
-    authToken: string,
-    refreshToken: string,
-    user: User,
-  ) => {
-    axios.defaults.headers.common["Authorization"] = `Bearer ${authToken}`;
-    await SecureStore.setItemAsync("refreshToken", refreshToken);
-    runInAction(() => {
-      this.currentUser = user;
-      this.isAuthenticated = true;
-    });
   };
 
   checkBiometricSupport = async () => {
     try {
-      const biometricsEnabled =
-        await SecureStore.getItemAsync("biometricsEnabled");
-      const compatible =
+      const refreshToken = await SecureStore.getItemAsync("refreshToken");
+      const isBiometricsEnabled =
+        (await SecureStore.getItemAsync("biometricsEnabled")) === "true";
+
+      const isCompatible =
         (await LocalAuthentication.hasHardwareAsync()) &&
-        biometricsEnabled === "true";
-      this.setIsBiometricAvailable(compatible);
+        isBiometricsEnabled &&
+        !!refreshToken;
+      this.setIsBiometricAvailable(isCompatible);
 
       if (this.isBiometricAvailable) {
-        const types =
+        const authTypes =
           await LocalAuthentication.supportedAuthenticationTypesAsync();
         if (
-          types.includes(
+          authTypes.includes(
             LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION,
           )
         ) {
           this.biometricType = "Face ID";
         } else if (
-          types.includes(LocalAuthentication.AuthenticationType.FINGERPRINT)
+          authTypes.includes(LocalAuthentication.AuthenticationType.FINGERPRINT)
         ) {
           this.biometricType = "Touch ID";
         }
       }
     } catch (error) {
-      console.error("Biometric check error:", error);
+      console.error("AuthStore Biometric check error:", error);
     }
   };
 
@@ -112,7 +114,6 @@ class AuthStore {
       });
       if (result.success) {
         await SecureStore.setItemAsync("biometricsEnabled", "true");
-        await this.checkAuthStatus();
       }
     } catch (error) {
       console.error("Enable biometrics error:", error);
@@ -122,7 +123,6 @@ class AuthStore {
   disableBiometrics = async () => {
     try {
       await SecureStore.deleteItemAsync("biometricsEnabled");
-      await this.checkAuthStatus();
     } catch (error) {
       console.error("Disable biometrics error:", error);
     }
@@ -131,10 +131,10 @@ class AuthStore {
   login = async (
     login: string,
     password: string,
-  ): Promise<{ success: boolean; userProfile: User | null }> => {
+  ): Promise<{ success: boolean }> => {
     this.toggleIsLoading();
     try {
-      const response = await axios.post(
+      const response = await this.rootStore.apiClient.instance.post(
         `http://localhost:8000/auth/user_login`,
         {
           login,
@@ -142,13 +142,17 @@ class AuthStore {
         },
       );
       const { authToken, refreshToken, user } = response.data;
+      await this.rootStore.apiClient.setAuthTokens(authToken, refreshToken);
 
-      await this.handleSuccessfulAuth(authToken, refreshToken, user);
       this.rootStore.userStore.setUser(user);
-      return { success: true, userProfile: user };
+      runInAction(() => {
+        this.currentUser = user;
+        this.isAuthenticated = true;
+      });
+      return { success: true };
     } catch (error: any) {
-      console.log(error.message, "Login error");
-      return { success: false, userProfile: null };
+      console.log("Login error: ", error.message);
+      return { success: false };
     } finally {
       this.toggleIsLoading();
     }
@@ -172,6 +176,7 @@ class AuthStore {
       }
 
       const refreshToken = await SecureStore.getItemAsync("refreshToken");
+
       if (!refreshToken) {
         Alert.alert("Error", "Please login with password first");
         throw new Error(
@@ -179,7 +184,12 @@ class AuthStore {
         );
       }
 
-      await this.doRefreshToken(refreshToken);
+      const { user } = await this.doRefreshToken(refreshToken);
+      this.rootStore.userStore.setUser(user);
+      runInAction(() => {
+        this.currentUser = user;
+      });
+      this.checkAuthStatus();
     } catch (error: any) {
       console.log("Biometric login error:", error?.message);
     } finally {
@@ -190,25 +200,20 @@ class AuthStore {
   logout = async () => {
     this.toggleIsLoading();
     try {
-      const refreshToken = await SecureStore.getItemAsync("refreshToken");
-      await axios.post(`http://localhost:8000/auth/user_logout`, {
-        refreshToken,
-      });
-      await this.cleanupLocalAuth();
-    } catch (error) {
+      await this.rootStore.apiClient.logout();
+      await this.checkBiometricSupport();
+    } catch (error: any) {
+      Alert.alert("Logout Error occured. Please try to log out again later");
       console.error("Logout API error:", error);
     } finally {
       this.toggleIsLoading();
     }
   };
 
-  private cleanupLocalAuth = async () => {
-    delete axios.defaults.headers.common["Authorization"];
-    await SecureStore.deleteItemAsync("refreshToken");
-    await SecureStore.deleteItemAsync("biometricsEnabled");
+  handleUnauthorized = (): void => {
     runInAction(() => {
-      this.currentUser = null;
       this.isAuthenticated = false;
+      this.currentUser = null;
     });
   };
 }

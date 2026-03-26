@@ -15,7 +15,7 @@ const refreshTokenCookieOptions = {
 };
 
 export const generateAuthToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET_KEY, { expiresIn: "10s" });
+  return jwt.sign({ id }, process.env.JWT_SECRET_KEY, { expiresIn: "15m" });
 };
 
 export const generateRefreshToken = (userId) => {

@@ -8,11 +8,11 @@ import {
   // completedFeedbacks,
   // Course,
   // FeedbackPhase,
-  pendingFeedbackCourses,
+  // pendingFeedbackCourses,
 } from "@/src/mock";
+import { useStore } from "@/src/store/StoreProvider";
 import { Course } from "@/src/types/Course";
 import { FeedbackPhase } from "@/src/types/Feedback";
-import axios from "axios";
 import { useRouter } from "expo-router";
 import React, { JSX, useState } from "react";
 import {
@@ -30,18 +30,21 @@ const PendingFeedback: React.FC = () => {
   const router = useRouter();
   const [isCourseDetailsModalOpen, setIsCourseDetailsModalOpen] =
     useState(false);
-  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  // const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const { bottom } = useSafeAreaInsets();
+  const { feedbackStore } = useStore();
+  const { pendingCourses, setSelectedCourse } = feedbackStore;
+
   const bottomPadding = bottom + 20;
 
   const openCourseDetailsModal = (course: Course) => {
-    setSelectedCourse(course);
+    // setSelectedCourse(course);
     setIsCourseDetailsModalOpen(true);
   };
 
   const closeCourseDetailsModal = () => {
     setIsCourseDetailsModalOpen(false);
-    setSelectedCourse(null);
+    // setSelectedCourse(null);
   };
   const getPhaseDisplayName = (phase: FeedbackPhase): string =>
     phaseNames[phase];
@@ -49,7 +52,6 @@ const PendingFeedback: React.FC = () => {
   const getPhaseColor = (phase: FeedbackPhase): string => {
     return phaseColors[phase];
   };
-
   const renderPendingCourseItem = (course: Course): JSX.Element => (
     <TouchableOpacity
       key={course.id}
@@ -86,15 +88,9 @@ const PendingFeedback: React.FC = () => {
 
       <TouchableOpacity
         style={styles.feedbackButton}
-        onPress={async () => {
-          // router.push({
-          //   pathname: "/feedback/Pending/FeedbackForm/[course]",
-          //   params: {
-          //     course,
-          //   },
-          // });
-          const a = await axios.get("http://localhost:8000/course");
-          console.log(a.data);
+        onPress={() => {
+          setSelectedCourse(course);
+          router.push("/feedback/Pending/FeedbackForm");
         }}
       >
         <Text style={styles.feedbackButtonText}>Give Feedback</Text>
@@ -113,22 +109,22 @@ const PendingFeedback: React.FC = () => {
       <CourseDetailsModal
         visible={isCourseDetailsModalOpen}
         closeModal={closeCourseDetailsModal}
-        courseDetails={selectedCourse}
+        courseDetails={null}
       />
       <View>
         <Text style={styles.currentSemesterTitle}>
           {currentSemester} Semester {currentYear} - Open Feedbacks
         </Text>
         <Text style={styles.currentSemesterSubtitle}>
-          {pendingFeedbackCourses.length} feedbacks to complete
+          {pendingCourses.length} feedbacks to complete
         </Text>
       </View>
 
       <View style={styles.courseItemContainer}>
-        {pendingFeedbackCourses.map(renderPendingCourseItem)}
+        {pendingCourses.map(renderPendingCourseItem)}
       </View>
 
-      {pendingFeedbackCourses.length === 0 && (
+      {pendingCourses.length === 0 && (
         <View style={styles.emptyState}>
           <Text style={styles.emptyStateEmoji}>🎉</Text>
           <Text style={styles.emptyStateText}>No pending feedbacks!</Text>

@@ -30,7 +30,7 @@ const getHeaderParams = (pathname: string) => {
         title: "Search Feedback",
         subtitle: `${currentSemester} Semester ${currentYear}`,
       };
-    case "/feedback/FeedbackForm/[course]":
+    case "/feedback/Pending/FeedbackForm":
       return {
         title: "Give Feedback",
         subtitle: `${currentCourseCode} | ${currentCourseName}`,
@@ -55,12 +55,14 @@ const CustomHeader = () => {
   const goBack = () => {
     if (router.canGoBack()) router.back();
   };
-  
+
   return (
     <SafeAreaView style={styles.header} edges={["top"]}>
       {backButton && (
         <Pressable style={styles.goBackButton} onPress={goBack}>
-          <Text style={styles.goBackText}>{`< ${parentRouteName || "Back"}`}</Text>
+          <Text
+            style={styles.goBackText}
+          >{`< ${parentRouteName || "Back"}`}</Text>
         </Pressable>
       )}
       <View style={styles.titleContainer}>

@@ -15,6 +15,8 @@ type SemesterType = "Fall" | "Spring" | "Summer";
 
 type YearType = number;
 
+type BiometricLoginType = "Face ID" | "Touch ID" | "none";
+
 type UserBadgeType = {
   id: string;
   name: string;
@@ -31,4 +33,4 @@ type EventType = {
   date: Date;
 };
 
-export { EventType, UserBadgeType, userDataType };
+export { EventType, BiometricLoginType, UserBadgeType, userDataType };
