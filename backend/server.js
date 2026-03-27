@@ -4,6 +4,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import authRoutes from "./routes/auth.js";
 import feedbackRoutes from "./routes/feedback.js";
+import course from "./routes/course.js";
 import cookieParser from "cookie-parser";
 import { verifyToken } from "./routes/verifyToken.js";
 
@@ -24,24 +25,10 @@ app.use(
 
 app.use("/auth", authRoutes);
 app.use("/feedback", feedbackRoutes, verifyToken);
+app.use("/course", course);
 
 app.get("/", (req, res) => {
   res.sendStatus(200);
-});
-
-app.get("/course", verifyToken, async (req, res) => {
-  try {
-    await pool.query(`SELECT * FROM course`, (err, result) => {
-      if (err) {
-        res.send({ err });
-      } else {
-        res.send(result.rows);
-      }
-    });
-  } catch (err) {
-    res.sendStatus(500);
-    console.log(err);
-  }
 });
 
 app.listen(PORT, () => console.log("listening to PORT " + PORT));

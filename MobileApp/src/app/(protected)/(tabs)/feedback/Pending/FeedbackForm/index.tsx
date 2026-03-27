@@ -12,6 +12,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import * as Progress from "react-native-progress";
 
 type FeedbackFormScreenProps = {
   course: string;
@@ -358,30 +359,26 @@ const FeedbackForm: React.FC = () => {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" />
-      {/* Progress Bar */}
       <View style={styles.progressContainer}>
-        <View style={styles.progressBar}>
-          <View
-            style={[
-              styles.progressFill,
-              { width: `${(currentStep / totalSteps) * 100}%` },
-            ]}
-          />
-        </View>
+        <Progress.Bar
+          progress={currentStep / totalSteps}
+          width={null}
+          height={8}
+          style={{ marginBottom: 8 }}
+        />
+
         <Text style={styles.progressText}>
           Step {currentStep} of {totalSteps} • {getStepTitle()}
         </Text>
       </View>
 
-      {/* Form Content */}
       <ScrollView
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
       >
-        {renderCurrentStep()}
+        {/* {renderCurrentStep()} */}
       </ScrollView>
 
-      {/* Navigation Footer */}
       <View style={styles.footer}>
         <TouchableOpacity style={styles.secondaryButton} onPress={handleBack}>
           <Text style={styles.secondaryButtonText}>
@@ -396,9 +393,9 @@ const FeedbackForm: React.FC = () => {
               styles.primaryButtonDisabled,
           ]}
           onPress={handleNext}
-          disabled={
-            isSubmitting || (currentStep === 1 && formData.rating === 0)
-          }
+          // disabled={
+          //   isSubmitting || (currentStep === 1 && formData.rating === 0)
+          // }
         >
           {isSubmitting ? (
             <Text style={styles.primaryButtonText}>Submitting...</Text>
@@ -417,6 +414,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
+    paddingTop: 20,
+    paddingHorizontal: 20,
   },
   header: {
     flexDirection: "row",
@@ -455,18 +454,6 @@ const styles = StyleSheet.create({
   progressContainer: {
     padding: 20,
     backgroundColor: "#f8f9fa",
-  },
-  progressBar: {
-    height: 6,
-    backgroundColor: "#e0e0e0",
-    borderRadius: 3,
-    marginBottom: 8,
-    overflow: "hidden",
-  },
-  progressFill: {
-    height: "100%",
-    backgroundColor: "#007AFF",
-    borderRadius: 3,
   },
   progressText: {
     fontSize: 12,

@@ -1,15 +1,8 @@
-import { makeAutoObservable } from "mobx";
+import { makeAutoObservable, runInAction } from "mobx";
 import { RootStore } from ".";
-
-export interface Course {
-  id: string;
-  courseCode: string;
-  courseName: string;
-  section: string;
-  instructor: string;
-  deadline: string;
-  feedbackPhase: string;
-}
+import ApiClient from "../api/client";
+import { AxiosInstance } from "axios";
+import { Course } from "../types/Course";
 
 export interface Feedback {
   id: string;
@@ -31,43 +24,58 @@ export interface Feedback {
 }
 
 class FeedbackStore {
+  rootStore: RootStore;
+  api: AxiosInstance;
+
   pendingCourses: Course[] = [];
+  selectedCourse: Course | null = null;
   completedFeedbacks: Feedback[] = [];
   isLoading: boolean = false;
 
   constructor(rootStore: RootStore) {
-    makeAutoObservable(this);
+    this.rootStore = rootStore;
+    this.api = rootStore.apiClient.instance;
+
+    makeAutoObservable(this, {}, { autoBind: true });
   }
 
-  // Load pending courses (feedbacks to fill)
+  setSelectedCourse = (course: Course) => {
+    this.selectedCourse = course;
+  };
+
   loadPendingCourses = async (): Promise<void> => {
     this.isLoading = true;
 
     try {
-      // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
+      const a = await this.rootStore.apiClient.instance.get(
+        `http://localhost:8000/course/all`,
+      );
 
-      // Mock data - in real app, this would come from API
-      this.pendingCourses = [
-        {
-          id: "1",
-          courseCode: "CS101",
-          courseName: "Introduction to Computer Science",
-          section: "A",
-          instructor: "Dr. Smith",
-          deadline: "2024-12-31",
-          feedbackPhase: "finals",
-        },
-        {
-          id: "2",
-          courseCode: "MATH201",
-          courseName: "Calculus II",
-          section: "D",
-          instructor: "Prof. Johnson",
-          deadline: "2024-12-28",
-          feedbackPhase: "finals",
-        },
-      ];
+      console.log(a.data);
+
+      runInAction(() => {
+        this.pendingCourses = [
+          {
+            id: "1",
+            courseCode: "CS101",
+            courseName: "Introduction to Computer Science",
+            section: "A",
+            instructor: "Dr. Smith",
+            deadline: "2024-12-31",
+            feedbackPhase: "finals",
+          },
+          {
+            id: "2",
+            courseCode: "MATH201",
+            courseName: "Calculus II",
+            section: "D",
+            instructor: "Prof. Johnson",
+            deadline: "2024-12-28",
+            feedbackPhase: "finals",
+          },
+        ];
+      });
     } catch (error) {
       console.error("Load pending courses error:", error);
     } finally {
@@ -147,9 +155,11 @@ class FeedbackStore {
       this.completedFeedbacks.unshift(newFeedback);
 
       // Remove from pending courses
-      this.pendingCourses = this.pendingCourses.filter(
-        (c) => c.id !== course.id,
-      );
+      runInAction(() => {
+        this.pendingCourses = this.pendingCourses.filter(
+          (c) => c.id !== course.id,
+        );
+      });
 
       return true;
     } catch (error) {

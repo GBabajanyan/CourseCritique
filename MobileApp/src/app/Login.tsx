@@ -25,12 +25,9 @@ const LoginScreen = observer(() => {
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  // const [biometricLoginIcon, setBiometricLoginIcon] = useState<
-  //   "fingerprint" | "face-recognition" | ""
-  // >("");
-
   const insets = useSafeAreaInsets();
   const { authStore } = useStore();
+
   const {
     isLoading,
     isBiometricAvailable,
@@ -43,6 +40,7 @@ const LoginScreen = observer(() => {
 
   const biometricLoginIcon =
     biometricType === "Face ID" ? "face-recognition" : "fingerprint";
+  const biometricIconColor = isLoading ? "grey" : "black";
 
   useEffect(() => {
     const autoBiometricLogin = async () => {
@@ -117,7 +115,7 @@ const LoginScreen = observer(() => {
           contentContainerStyle={styles.scrollContainer}
           showsVerticalScrollIndicator={false}
         >
-          <View style={styles.header}>
+          <View style={styles.heading}>
             <View style={styles.logoContainer}>
               <Image
                 source={require("../../assets/images/teddy.png")}
@@ -193,7 +191,11 @@ const LoginScreen = observer(() => {
                   style={styles.biometricsButton}
                   disabled={isLoading}
                 >
-                  <MaterialCommunityIcons name={biometricLoginIcon} size={36} />
+                  <MaterialCommunityIcons
+                    name={biometricLoginIcon}
+                    size={36}
+                    color={biometricIconColor}
+                  />
                 </TouchableOpacity>
               )}
             </View>
@@ -214,12 +216,11 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     flexGrow: 1,
-
     justifyContent: "center",
     paddingHorizontal: 30,
     paddingVertical: 20,
   },
-  header: {
+  heading: {
     alignItems: "center",
     marginBottom: 40,
   },

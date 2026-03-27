@@ -14,7 +14,8 @@ import { useStore } from "@/src/store/StoreProvider";
 import { Course } from "@/src/types/Course";
 import { FeedbackPhase } from "@/src/types/Feedback";
 import { useRouter } from "expo-router";
-import React, { JSX, useState } from "react";
+import { observer } from "mobx-react";
+import React, { JSX, useEffect, useState } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -26,16 +27,22 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const { NAVY, WHITE } = Colors;
 
-const PendingFeedback: React.FC = () => {
+const PendingFeedback: React.FC = observer(() => {
   const router = useRouter();
   const [isCourseDetailsModalOpen, setIsCourseDetailsModalOpen] =
     useState(false);
   // const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const { bottom } = useSafeAreaInsets();
   const { feedbackStore } = useStore();
-  const { pendingCourses, setSelectedCourse } = feedbackStore;
+  const { pendingCourses, setSelectedCourse, loadPendingCourses } =
+    feedbackStore;
 
   const bottomPadding = bottom + 20;
+
+  useEffect(() => {
+    const loadCourses = async () => loadPendingCourses();
+    loadCourses();
+  }, []);
 
   const openCourseDetailsModal = (course: Course) => {
     // setSelectedCourse(course);
@@ -123,7 +130,12 @@ const PendingFeedback: React.FC = () => {
       <View style={styles.courseItemContainer}>
         {pendingCourses.map(renderPendingCourseItem)}
       </View>
-
+      <TouchableOpacity
+        onPress={loadPendingCourses}
+        style={styles.feedbackButton}
+      >
+        <Text style={styles.feedbackButtonText}>load pending feeds</Text>
+      </TouchableOpacity>
       {pendingCourses.length === 0 && (
         <View style={styles.emptyState}>
           <Text style={styles.emptyStateEmoji}>🎉</Text>
@@ -135,7 +147,7 @@ const PendingFeedback: React.FC = () => {
       )}
     </ScrollView>
   );
-};
+});
 
 const styles = StyleSheet.create({
   scrollView: {
