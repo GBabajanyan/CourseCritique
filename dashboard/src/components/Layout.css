@@ -1,0 +1,31 @@
+/* Ant Design overrides */
+.ant-menu-dark.ant-menu-inline .ant-menu-item {
+  margin: 8px 0;
+}
+
+.ant-menu-dark.ant-menu-inline .ant-menu-item-selected {
+  background-color: #EEBC03 !important;
+  color: #003A5D !important;
+}
+
+.ant-menu-dark.ant-menu-inline .ant-menu-item-selected .ant-menu-item-icon {
+  color: #003A5D !important;
+}
+
+.ant-menu-dark .ant-menu-item:hover {
+  background-color: rgba(238, 188, 3, 0.2) !important;
+}
+
+/* Scrollbar for sidebar */
+.ant-layout-sider::-webkit-scrollbar {
+  width: 4px;
+}
+
+.ant-layout-sider::-webkit-scrollbar-track {
+  background: #00233b;
+}
+
+.ant-layout-sider::-webkit-scrollbar-thumb {
+  background: #EEBC03;
+  border-radius: 4px;
+}
