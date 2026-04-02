@@ -1,8 +1,11 @@
 import { BlurView } from "expo-blur";
-import { Tabs } from "expo-router";
+import { Tabs, usePathname } from "expo-router";
 import React from "react";
 import { TouchableOpacity } from "react-native";
 const _layout = () => {
+  const activeTab = usePathname();
+  const isFeedbackPage = activeTab.includes("Feedback");
+
   return (
     <Tabs
       screenOptions={{
@@ -45,6 +48,7 @@ const _layout = () => {
           transform: [{ translateX: "5%" }],
           zIndex: 1,
           elevation: 1,
+          display: isFeedbackPage ? "none" : "flex",
         },
         tabBarBackground: () => (
           <BlurView intensity={80} tint="systemChromeMaterial" />
@@ -52,7 +56,7 @@ const _layout = () => {
         tabBarActiveBackgroundColor: "rgba(70, 55, 189, 0.1)",
         tabBarAllowFontScaling: true,
         animation: "shift",
-        sceneStyle: { paddingTop: 40 },
+        sceneStyle: { paddingTop: isFeedbackPage ? 0 : 40 },
       }}
       initialRouteName="Pending"
     >

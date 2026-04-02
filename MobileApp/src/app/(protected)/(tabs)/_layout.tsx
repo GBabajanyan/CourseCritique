@@ -3,10 +3,10 @@ import { NativeTabs } from "expo-router/unstable-native-tabs";
 import React from "react";
 const BottomTabsNavigator = () => {
   const activeTab = usePathname();
-  const hideBottomTabBar = activeTab.includes("Feedback");
+  const isFeedbackPage = activeTab.includes("Feedback");
 
   return (
-    <NativeTabs hidden={hideBottomTabBar}>
+    <NativeTabs hidden={isFeedbackPage}>
       <NativeTabs.Trigger name="(home)">
         <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf="house" md="home" />

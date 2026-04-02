@@ -23,12 +23,33 @@ export interface Feedback {
   wouldRecommend: boolean;
 }
 
+interface FeedbackRatings {
+  course_pace: number;
+  course_load: number;
+  course_materials: number;
+  assignment_instructions: number;
+  grading_rubrics: number;
+  substantial_learning: number;
+  class_management: number;
+  student_participation: number;
+  in_class_queries: number;
+  concern_learning: number;
+  availability: number;
+  feedback_on_assignments: number;
+  class_organization: number;
+  inspires_motivation: number;
+  take_another_course: number;
+  open_feedback: string;
+}
+
 class FeedbackStore {
   rootStore: RootStore;
   api: AxiosInstance;
 
   pendingCourses: Course[] = [];
   selectedCourse: Course | null = null;
+  currentFeedBack: Feedback | null;
+  ratings: FeedbackRatings | null = null;
   completedFeedbacks: Feedback[] = [];
   isLoading: boolean = false;
 
@@ -39,8 +60,28 @@ class FeedbackStore {
     makeAutoObservable(this, {}, { autoBind: true });
   }
 
-  setSelectedCourse = (course: Course) => {
-    this.selectedCourse = course;
+  setSelectedCourse = (course: Course | null) => {
+    runInAction(() => {
+      this.selectedCourse = course;
+      this.ratings = {
+        course_pace: 0,
+        course_load: 0,
+        course_materials: 0,
+        assignment_instructions: 0,
+        grading_rubrics: 0,
+        substantial_learning: 0,
+        class_management: 0,
+        student_participation: 0,
+        in_class_queries: 0,
+        concern_learning: 0,
+        availability: 0,
+        feedback_on_assignments: 0,
+        class_organization: 0,
+        inspires_motivation: 0,
+        take_another_course: 0,
+        open_feedback: "",
+      };
+    });
   };
 
   loadPendingCourses = async (): Promise<void> => {
@@ -49,10 +90,10 @@ class FeedbackStore {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       const a = await this.rootStore.apiClient.instance.get(
-        `http://localhost:8000/course/all`,
+        `http://localhost:8000/feedback/pending`,
       );
 
-      console.log(a.data);
+      console.log("TODO: BIND DB DATA WITH FRONT");
 
       runInAction(() => {
         this.pendingCourses = [

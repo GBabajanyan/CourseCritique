@@ -1,13 +1,12 @@
-import { Stack, useNavigation, usePathname, useRouter } from "expo-router";
+import { Stack } from "expo-router";
 import { observer } from "mobx-react";
-import React, { useEffect } from "react";
+import React from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StoreProvider, useStore } from "../store/StoreProvider";
 
 const RootLayout = observer(() => {
   const { authStore } = useStore();
   const { isAuthenticated } = authStore;
-  const router = useNavigation();
 
   return (
     <StoreProvider>

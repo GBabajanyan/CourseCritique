@@ -34,6 +34,7 @@ const getHeaderParams = (pathname: string) => {
       return {
         title: "Give Feedback",
         subtitle: `${currentCourseCode} | ${currentCourseName}`,
+        backButton: true,
       };
     case "/profile/allBadges":
       return {

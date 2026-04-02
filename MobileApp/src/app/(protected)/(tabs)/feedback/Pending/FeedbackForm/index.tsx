@@ -1,6 +1,12 @@
 import { useStore } from "@/src/store/StoreProvider";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useState } from "react";
+import {
+  Redirect,
+  useFocusEffect,
+  useLocalSearchParams,
+  useNavigation,
+  useRouter,
+} from "expo-router";
+import React, { useEffect, useState } from "react";
 import {
   Alert,
   ScrollView,
@@ -13,58 +19,36 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Progress from "react-native-progress";
-
-type FeedbackFormScreenProps = {
-  course: string;
-  id: string;
-  courseCode: string;
-  courseName: string;
-  section: string;
-  instructor: string;
-  feedbackPhase: string;
-};
-
-interface FormData {
-  rating: number;
-  understanding: number;
-  engagement: number;
-  organization: number;
-  comments: string;
-  strengths: string;
-  improvements: string;
-  wouldRecommend: boolean | null;
-}
+import { FeedbackRatingsObject } from "@/src/types/Feedback";
+import { FORM_CONFIG } from "@/src/constants/feedbackForm";
+import StepRenderer from "@/src/components/feedbackForm/StepRenderer";
 
 const FeedbackForm: React.FC = () => {
   const router = useRouter();
   // const course = useLocalSearchParams<FeedbackFormScreenProps>();
   const insets = useSafeAreaInsets();
   const { feedbackStore } = useStore();
-  const { selectedCourse: course } = feedbackStore;
+  const { selectedCourse: course, setSelectedCourse } = feedbackStore;
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [currentStep, setCurrentStep] = useState<number>(1);
-  const totalSteps = 4;
+  const [formData, setFormData] = useState<FeedbackRatingsObject>(
+    {} as FeedbackRatingsObject,
+  );
+  // useEffect(() => {
+  // if (!course) router.back();
+  // }, []);
 
-  const [formData, setFormData] = useState<FormData>({
-    rating: 0,
-    understanding: 0,
-    engagement: 0,
-    organization: 0,
-    comments: "",
-    strengths: "",
-    improvements: "",
-    wouldRecommend: null,
-  });
+  // useFocusEffect(() => {
+  //   console.log("x",router.);
+  //   if (!course) router.navigate("/(protected)/(tabs)/feedback/Pending");
+  // });
 
-  const updateFormData = (field: keyof FormData, value: any) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
+  const totalSteps = FORM_CONFIG.length;
 
-  const handleStarRating = (
-    field: "rating" | "understanding" | "engagement" | "organization",
-    value: number,
-  ) => {
-    updateFormData(field, value);
+  const currentStepConfig = FORM_CONFIG[currentStep - 1];
+
+  const updateFormData = (key: keyof FeedbackRatingsObject, value: any) => {
+    setFormData((prev) => ({ ...prev, [key]: value }));
   };
 
   const handleNext = () => {
@@ -86,15 +70,15 @@ const FeedbackForm: React.FC = () => {
   const handleSubmit = async () => {
     setIsSubmitting(true);
 
-    // Validate required fields
-    if (formData.rating === 0 || formData.wouldRecommend === null) {
-      Alert.alert(
-        "Incomplete Form",
-        "Please provide an overall rating and recommendation.",
-      );
-      setIsSubmitting(false);
-      return;
-    }
+    // // Validate required fields
+    // if (formData.rating === 0 || formData.wouldRecommend === null) {
+    //   Alert.alert(
+    //     "Incomplete Form",
+    //     "Please provide an overall rating and recommendation.",
+    //   );
+    //   setIsSubmitting(false);
+    //   return;
+    // }
 
     try {
       // Simulate API call
@@ -102,12 +86,15 @@ const FeedbackForm: React.FC = () => {
 
       Alert.alert(
         "Feedback Submitted!",
-        `Thank you for your feedback on ${course.courseCode}.`,
+        `Thank you for your feedback on ${course?.courseCode}.`,
         [
           {
             text: "OK",
-            onPress: () =>
-              router.navigate("/(protected)/(tabs)/feedback/Completed"),
+            onPress: () => {
+              setSelectedCourse(null);
+              router.dismiss();
+              router.replace("/(protected)/(tabs)/feedback/Completed");
+            },
           },
         ],
       );
@@ -119,246 +106,10 @@ const FeedbackForm: React.FC = () => {
     }
   };
 
-  const renderStars = (
-    field: "rating" | "understanding" | "engagement" | "organization",
-    value: number,
-  ) => {
-    return (
-      <View style={styles.starsContainer}>
-        {[1, 2, 3, 4, 5].map((star) => (
-          <TouchableOpacity
-            key={star}
-            onPress={() => handleStarRating(field, star)}
-            style={styles.starButton}
-          >
-            <Text style={styles.star}>{star <= value ? "⭐" : "☆"}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-    );
-  };
-
-  const renderStep1 = () => (
-    <View style={styles.stepContainer}>
-      <Text style={styles.stepTitle}>Overall Experience</Text>
-      <Text style={styles.stepDescription}>
-        How would you rate your overall experience with this course?
-      </Text>
-
-      <View style={styles.ratingSection}>
-        {renderStars("rating", formData.rating)}
-        <Text style={styles.ratingText}>
-          {formData.rating === 0
-            ? "Select rating"
-            : `${formData.rating}/5 stars`}
-        </Text>
-      </View>
-
-      <View style={styles.quickRatings}>
-        <Text style={styles.quickRatingsTitle}>Rate Specific Areas:</Text>
-
-        <View style={styles.quickRatingItem}>
-          <Text style={styles.quickRatingLabel}>Content Understanding</Text>
-          {renderStars("understanding", formData.understanding)}
-        </View>
-
-        <View style={styles.quickRatingItem}>
-          <Text style={styles.quickRatingLabel}>Class Engagement</Text>
-          {renderStars("engagement", formData.engagement)}
-        </View>
-
-        <View style={styles.quickRatingItem}>
-          <Text style={styles.quickRatingLabel}>Course Organization</Text>
-          {renderStars("organization", formData.organization)}
-        </View>
-      </View>
-    </View>
-  );
-
-  const renderStep2 = () => (
-    <View style={styles.stepContainer}>
-      <Text style={styles.stepTitle}>Detailed Feedback</Text>
-      <Text style={styles.stepDescription}>
-        Please share your thoughts in more detail
-      </Text>
-
-      <View style={styles.textInputSection}>
-        <Text style={styles.inputLabel}>
-          What did you enjoy most about this course?
-        </Text>
-        <TextInput
-          style={[styles.textInput, styles.textArea]}
-          placeholder="Share what worked well..."
-          placeholderTextColor="#999"
-          value={formData.strengths}
-          onChangeText={(text) => updateFormData("strengths", text)}
-          multiline
-          numberOfLines={4}
-        />
-
-        <Text style={styles.inputLabel}>Any suggestions for improvement?</Text>
-        <TextInput
-          style={[styles.textInput, styles.textArea]}
-          placeholder="What could be better..."
-          placeholderTextColor="#999"
-          value={formData.improvements}
-          onChangeText={(text) => updateFormData("improvements", text)}
-          multiline
-          numberOfLines={4}
-        />
-
-        <Text style={styles.inputLabel}>Additional comments</Text>
-        <TextInput
-          style={[styles.textInput, styles.textArea]}
-          placeholder="Any other feedback..."
-          placeholderTextColor="#999"
-          value={formData.comments}
-          onChangeText={(text) => updateFormData("comments", text)}
-          multiline
-          numberOfLines={3}
-        />
-      </View>
-    </View>
-  );
-
-  const renderStep3 = () => (
-    <View style={styles.stepContainer}>
-      <Text style={styles.stepTitle}>Final Thoughts</Text>
-      <Text style={styles.stepDescription}>
-        Would you recommend this course to other students?
-      </Text>
-
-      <View style={styles.recommendationSection}>
-        <TouchableOpacity
-          style={[
-            styles.recommendButton,
-            formData.wouldRecommend === true && styles.recommendButtonSelected,
-          ]}
-          onPress={() => updateFormData("wouldRecommend", true)}
-        >
-          <Text style={styles.recommendIcon}>👍</Text>
-          <Text style={styles.recommendText}>Yes, I would recommend</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[
-            styles.recommendButton,
-            formData.wouldRecommend === false && styles.recommendButtonSelected,
-          ]}
-          onPress={() => updateFormData("wouldRecommend", false)}
-        >
-          <Text style={styles.recommendIcon}>👎</Text>
-          <Text style={styles.recommendText}>
-            No, I wouldn&apos;t recommend
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.summarySection}>
-        <Text style={styles.summaryTitle}>Feedback Summary</Text>
-        <View style={styles.summaryItem}>
-          <Text style={styles.summaryLabel}>Overall Rating:</Text>
-          <Text style={styles.summaryValue}>
-            {formData.rating > 0 ? `${formData.rating}/5` : "Not rated"}
-          </Text>
-        </View>
-        <View style={styles.summaryItem}>
-          <Text style={styles.summaryLabel}>Recommendation:</Text>
-          <Text style={styles.summaryValue}>
-            {formData.wouldRecommend === true
-              ? "Yes"
-              : formData.wouldRecommend === false
-                ? "No"
-                : "Not answered"}
-          </Text>
-        </View>
-      </View>
-    </View>
-  );
-
-  const renderStep4 = () => (
-    <View style={styles.stepContainer}>
-      <Text style={styles.stepTitle}>Review & Submit</Text>
-      <Text style={styles.stepDescription}>
-        Please review your feedback before submitting
-      </Text>
-
-      <View style={styles.reviewCard}>
-        <Text style={styles.reviewCourse}>
-          {course.courseCode}: {course.courseName}
-        </Text>
-        <Text style={styles.reviewSection}>Section {course.section}</Text>
-        <Text style={styles.reviewInstructor}>
-          Instructor: {course.instructor}
-        </Text>
-        <Text style={styles.reviewPhase}>{course.feedbackPhase} Feedback</Text>
-
-        <View style={styles.reviewDivider} />
-
-        <View style={styles.reviewItem}>
-          <Text style={styles.reviewLabel}>Overall Rating:</Text>
-          <Text style={styles.reviewValue}>{formData.rating}/5</Text>
-        </View>
-
-        {formData.strengths ? (
-          <View style={styles.reviewItem}>
-            <Text style={styles.reviewLabel}>Strengths:</Text>
-            <Text style={styles.reviewValue}>{formData.strengths}</Text>
-          </View>
-        ) : null}
-
-        {formData.improvements ? (
-          <View style={styles.reviewItem}>
-            <Text style={styles.reviewLabel}>Improvements:</Text>
-            <Text style={styles.reviewValue}>{formData.improvements}</Text>
-          </View>
-        ) : null}
-
-        <View style={styles.reviewItem}>
-          <Text style={styles.reviewLabel}>Recommend:</Text>
-          <Text style={styles.reviewValue}>
-            {formData.wouldRecommend === true ? "Yes" : "No"}
-          </Text>
-        </View>
-      </View>
-
-      <View style={styles.submitNote}>
-        <Text style={styles.submitNoteText}>
-          Your feedback will be anonymized and used to improve the course for
-          future students.
-        </Text>
-      </View>
-    </View>
-  );
-
-  const renderCurrentStep = () => {
-    switch (currentStep) {
-      case 1:
-        return renderStep1();
-      case 2:
-        return renderStep2();
-      case 3:
-        return renderStep3();
-      case 4:
-        return renderStep4();
-      default:
-        return renderStep1();
-    }
-  };
-
-  const getStepTitle = () => {
-    const titles = {
-      1: "Rate Your Experience",
-      2: "Share Your Thoughts",
-      3: "Final Thoughts",
-      4: "Review & Submit",
-    };
-    return titles[currentStep as keyof typeof titles];
-  };
+  const getStepTitle = () => currentStepConfig.title;
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" />
       <View style={styles.progressContainer}>
         <Progress.Bar
           progress={currentStep / totalSteps}
@@ -371,16 +122,19 @@ const FeedbackForm: React.FC = () => {
           Step {currentStep} of {totalSteps} • {getStepTitle()}
         </Text>
       </View>
-
       <ScrollView
         style={styles.scrollView}
+        contentContainerStyle={{ paddingBottom: 120 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* {renderCurrentStep()} */}
+        <StepRenderer
+          step={currentStepConfig}
+          data={formData}
+          update={updateFormData}
+        />
       </ScrollView>
-
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.secondaryButton} onPress={handleBack}>
+        <TouchableOpacity style={styles.btn} onPress={handleBack}>
           <Text style={styles.secondaryButtonText}>
             {currentStep === 1 ? "Cancel" : "Back"}
           </Text>
@@ -388,14 +142,11 @@ const FeedbackForm: React.FC = () => {
 
         <TouchableOpacity
           style={[
-            styles.primaryButton,
-            (isSubmitting || (currentStep === 1 && formData.rating === 0)) &&
-              styles.primaryButtonDisabled,
+            styles.btn,
+            isSubmitting ? styles.primaryButtonDisabled : styles.primaryButton,
           ]}
           onPress={handleNext}
-          // disabled={
-          //   isSubmitting || (currentStep === 1 && formData.rating === 0)
-          // }
+          disabled={isSubmitting}
         >
           {isSubmitting ? (
             <Text style={styles.primaryButtonText}>Submitting...</Text>
@@ -414,42 +165,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    paddingTop: 20,
-    paddingHorizontal: 20,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
-  },
-  backButton: {
-    padding: 5,
-  },
-  backButtonText: {
-    fontSize: 24,
-    color: "#007AFF",
-    fontWeight: "bold",
-  },
-  headerCenter: {
-    flex: 1,
-    alignItems: "center",
-  },
-  courseCode: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#333",
-  },
-  courseName: {
-    fontSize: 14,
-    color: "#666",
-    textAlign: "center",
-  },
-  headerRight: {
-    width: 30,
   },
   progressContainer: {
     padding: 20,
@@ -462,9 +177,17 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-  },
-  stepContainer: {
     padding: 20,
+  },
+  courseCode: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  courseName: {
+    fontSize: 14,
+    color: "#666",
+    textAlign: "center",
   },
   stepTitle: {
     fontSize: 24,
@@ -649,24 +372,36 @@ const styles = StyleSheet.create({
   footer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    padding: 20,
-    borderTopWidth: 1,
-    borderTopColor: "#e0e0e0",
-    backgroundColor: "#fff",
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+    // position: "absolute",
+    left: 0,
+    // backgroundColor: "red",
+    width: "100%",
+    gap: 24,
   },
-  secondaryButton: {
+  btn: {
     flex: 1,
     padding: 16,
     borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
-    marginRight: 10,
-    alignItems: "center",
+    // borderWidth: 1,
+    // borderColor: "#e0e0e0",
+    backgroundColor: "#fff",
+  },
+  secondaryButton: {
+    // flex: 1,
+    // padding: 16,
+    // borderRadius: 8,
+    // borderWidth: 1,
+    // borderColor: "#e0e0e0",
+    // backgroundColor: "#fff",
+    // marginRight: 10,
+    // alignItems: "center",
   },
   secondaryButtonText: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#666",
+    color: "#4d4c4c",
   },
   primaryButton: {
     flex: 2,

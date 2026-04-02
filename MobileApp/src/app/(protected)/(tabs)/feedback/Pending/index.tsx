@@ -13,7 +13,7 @@ import {
 import { useStore } from "@/src/store/StoreProvider";
 import { Course } from "@/src/types/Course";
 import { FeedbackPhase } from "@/src/types/Feedback";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { observer } from "mobx-react";
 import React, { JSX, useEffect, useState } from "react";
 import {
@@ -43,6 +43,8 @@ const PendingFeedback: React.FC = observer(() => {
     const loadCourses = async () => loadPendingCourses();
     loadCourses();
   }, []);
+
+ 
 
   const openCourseDetailsModal = (course: Course) => {
     // setSelectedCourse(course);
