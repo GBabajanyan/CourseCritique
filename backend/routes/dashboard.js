@@ -3,42 +3,41 @@ import pool from "../db-config.js";
 import { verifyToken } from "./verifyToken.js";
 const router = express.Router();
 
-// GET /admin/stats - Overall dashboard statistics
+// GET /dashboard/stats - Overall dashboard statistics
 router.get("/stats", verifyToken, async (req, res) => {
   try {
     // Total courses
     const coursesResult = await pool.query("SELECT COUNT(*) FROM course");
 
-    // Total students (from auth_users)
-    const studentsResult = await pool.query("SELECT COUNT(*) FROM auth_users");
+    // Total students (from profile_users)
+    const studentsResult = await pool.query("SELECT COUNT(*) FROM profile_users");
 
     // Total feedbacks submitted
     const feedbacksResult = await pool.query(
-      `SELECT COUNT(*) FROM feedback WHERE status = 'submitted'`,
+      `SELECT COUNT(*) FROM feedback WHERE status = 'submitted'`
     );
 
     // Average rating across all feedbacks
     const avgRatingResult = await pool.query(
-      `SELECT AVG((response->'ratings'->>'course_pace')::int) as avg_rating 
+      `SELECT AVG((response->'ratings'->>'course_pace')::float) as avg_rating 
        FROM feedback 
-       WHERE status = 'submitted' AND response->'ratings'->>'course_pace' IS NOT NULL`,
+       WHERE status = 'submitted' AND response->'ratings'->>'course_pace' IS NOT NULL`
     );
 
-    // Completion rate (percentage of submitted feedbacks vs total expected)
-    const totalExpectedResult = await pool.query(
-      `SELECT COUNT(*) FROM feedback WHERE status = 'pending'`,
-    );
+    // Completion rate
     const totalSubmitted = feedbacksResult.rows[0].count;
+    const totalExpectedResult = await pool.query(
+      `SELECT COUNT(*) FROM feedback WHERE status = 'pending'`
+    );
     const totalPending = totalExpectedResult.rows[0].count;
-    const completionRate =
-      totalSubmitted + totalPending > 0
-        ? Math.round((totalSubmitted / (totalSubmitted + totalPending)) * 100)
-        : 0;
+    const completionRate = totalSubmitted + totalPending > 0
+      ? Math.round((totalSubmitted / (totalSubmitted + totalPending)) * 100)
+      : 0;
 
     // Active users (logged in within last 30 days)
     const activeUsersResult = await pool.query(
       `SELECT COUNT(*) FROM auth_users 
-       WHERE last_login > NOW() - INTERVAL '30 days'`,
+       WHERE last_login > NOW() - INTERVAL '30 days'`
     );
 
     res.json({
@@ -65,7 +64,7 @@ router.get("/courses/stats", verifyToken, async (req, res) => {
         c.course_name,
         c.instructor,
         c.department,
-        COUNT(DISTINCT e.user_id) as total_students,
+        COUNT(DISTINCT e.profile_id) as total_students,
         COUNT(DISTINCT CASE WHEN f.status = 'submitted' THEN f.id END) as feedback_count,
         CASE 
           WHEN AVG(CASE 
@@ -81,16 +80,16 @@ router.get("/courses/stats", verifyToken, async (req, res) => {
           )
         END as avg_rating,
         CASE 
-          WHEN COUNT(DISTINCT e.user_id) = 0 THEN 0
+          WHEN COUNT(DISTINCT e.profile_id) = 0 THEN 0
           ELSE ROUND(
             (COUNT(DISTINCT CASE WHEN f.status = 'submitted' THEN f.id END)::numeric / 
-            COUNT(DISTINCT e.user_id)::numeric) * 100, 
+            COUNT(DISTINCT e.profile_id)::numeric) * 100, 
             1
           )
         END as completion_rate
       FROM course c
       LEFT JOIN enrollment e ON c.id = e.course_id
-      LEFT JOIN feedback f ON c.id = f.course_id AND e.user_id = f.user_id
+      LEFT JOIN feedback f ON c.id = f.course_id AND e.profile_id = f.profile_id
       GROUP BY c.id, c.course_code, c.course_name, c.instructor, c.department
       ORDER BY c.course_code ASC
     `);
@@ -107,22 +106,19 @@ router.get("/students", verifyToken, async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT 
-        u.id,
-        u.username,
-        u.email,
+        pu."studentId",
+        pu.email,
         pu.name,
         pu.year,
         pu.degree as department,
         COUNT(DISTINCT CASE WHEN f.status = 'submitted' THEN f.id END) as feedbacks_given,
         COUNT(DISTINCT ub.badge_id) as badges_earned,
-        u.created_at as join_date
-      FROM auth_users u
-      LEFT JOIN profile_users pu ON u.id = pu."userId"
-      LEFT JOIN feedback f ON u.id = f.user_id AND f.status = 'submitted'
-      LEFT JOIN user_badge ub ON u.id = ub.user_id AND ub.is_completed = true
-      WHERE u.is_active = true
-      GROUP BY u.id, u.username, u.email, pu.name, pu.year, pu.degree, u.created_at
-      ORDER BY u.created_at DESC
+        pu.created_at as join_date
+      FROM profile_users pu
+      LEFT JOIN feedback f ON pu."studentId" = f.profile_id AND f.status = 'submitted'
+      LEFT JOIN user_badge ub ON pu."studentId" = ub.profile_id AND ub.is_completed = true
+      GROUP BY pu."studentId", pu.email, pu.name, pu.year, pu.degree, pu.created_at
+      ORDER BY pu.created_at DESC
     `);
 
     res.json(result.rows);
@@ -184,7 +180,7 @@ router.get("/feedbacks/anonymous", verifyToken, async (req, res) => {
   }
 });
 
-// GET /admin/feedbacks/by-course/:courseId - Feedback for specific course (anonymous)
+// GET /dashboard/feedbacks/by-course/:courseId
 router.get("/feedbacks/by-course/:courseId", verifyToken, async (req, res) => {
   try {
     const { courseId } = req.params;
@@ -202,27 +198,25 @@ router.get("/feedbacks/by-course/:courseId", verifyToken, async (req, res) => {
         AND f.status = 'submitted'
       ORDER BY f.submitted_at DESC
     `,
-      [courseId],
+      [courseId]
     );
 
-    // Calculate averages for the course
     const feedbacks = result.rows;
     const ratings = feedbacks.flatMap((f) => {
       const r = f.ratings;
       return r ? Object.values(r).map((v) => parseInt(v)) : [];
     });
 
-    const avgRating =
-      ratings.length > 0
-        ? ratings.reduce((a, b) => a + b, 0) / ratings.length
-        : 0;
+    const avgRating = ratings.length > 0
+      ? ratings.reduce((a, b) => a + b, 0) / ratings.length
+      : 0;
 
     res.json({
       total_feedbacks: feedbacks.length,
       average_rating: avgRating.toFixed(1),
       feedbacks: feedbacks.map((f) => ({
         ...f,
-        ratings: undefined, // Don't expose individual ratings structure
+        ratings: undefined,
         comments: f.comments,
       })),
     });
@@ -232,7 +226,7 @@ router.get("/feedbacks/by-course/:courseId", verifyToken, async (req, res) => {
   }
 });
 
-// GET /admin/feedback-trends - Time series data for charts
+// GET /dashboard/feedback-trends
 router.get("/feedback-trends", verifyToken, async (req, res) => {
   try {
     const { period = "month" } = req.query;
@@ -240,16 +234,16 @@ router.get("/feedback-trends", verifyToken, async (req, res) => {
     let interval;
     switch (period) {
       case "week":
-        interval = "1 day";
+        interval = "day";
         break;
       case "month":
-        interval = "1 week";
+        interval = "week";
         break;
       case "year":
-        interval = "1 month";
+        interval = "month";
         break;
       default:
-        interval = "1 week";
+        interval = "week";
     }
 
     const result = await pool.query(
@@ -257,13 +251,13 @@ router.get("/feedback-trends", verifyToken, async (req, res) => {
       SELECT 
         DATE_TRUNC($1, submitted_at) as date,
         COUNT(*) as count,
-        ROUND(AVG((response->'ratings'->>'course_pace')::int), 1) as avg_rating
+        ROUND(AVG((response->'ratings'->>'course_pace')::numeric), 1) as avg_rating
       FROM feedback
       WHERE status = 'submitted'
       GROUP BY DATE_TRUNC($1, submitted_at)
       ORDER BY date ASC
     `,
-      [period === "week" ? "day" : period === "month" ? "week" : "month"],
+      [interval]
     );
 
     res.json(result.rows);
@@ -273,7 +267,7 @@ router.get("/feedback-trends", verifyToken, async (req, res) => {
   }
 });
 
-// GET /admin/departments - List all departments
+// GET /dashboard/departments
 router.get("/departments", verifyToken, async (req, res) => {
   try {
     const result = await pool.query(`

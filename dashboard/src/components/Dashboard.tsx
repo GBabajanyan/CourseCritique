@@ -1,5 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import { Card, Row, Col, Table, Tag, Progress, Tabs, Statistic, Select, DatePicker } from 'antd';
+import React, { useEffect, useState } from "react";
+import {
+  Card,
+  Row,
+  Col,
+  Table,
+  Tag,
+  Progress,
+  Tabs,
+  Statistic,
+  Select,
+  DatePicker,
+} from "antd";
 import {
   BookOutlined,
   UserOutlined,
@@ -9,9 +20,9 @@ import {
   RiseOutlined,
   TeamOutlined,
   FileTextOutlined,
-} from '@ant-design/icons';
-import api from '../api/client';
-import './Dashboard.css';
+} from "@ant-design/icons";
+import api from "../api/client";
+import "./Dashboard.css";
 
 const { Option } = Select;
 const { RangePicker } = DatePicker;
@@ -73,7 +84,7 @@ const Dashboard: React.FC = () => {
   const [courseStats, setCourseStats] = useState<CourseStats[]>([]);
   const [students, setStudents] = useState<StudentProfile[]>([]);
   const [feedbacks, setFeedbacks] = useState<AnonymousFeedback[]>([]);
-  const [selectedDepartment, setSelectedDepartment] = useState('all');
+  const [selectedDepartment, setSelectedDepartment] = useState("all");
   const [dateRange, setDateRange] = useState<[any, any] | null>(null);
 
   useEffect(() => {
@@ -84,19 +95,20 @@ const Dashboard: React.FC = () => {
     setLoading(true);
     try {
       // Fetch all data in parallel
-      const [statsRes, coursesRes, studentsRes, feedbacksRes] = await Promise.all([
-        api.get('/dashboard/stats'),
-        api.get('/dashboard/courses/stats'),
-        api.get('/dashboard/students'),
-        api.get('/dashboard/feedbacks/anonymous')
-      ]);
-
+      const [statsRes, coursesRes, studentsRes, feedbacksRes] =
+        await Promise.all([
+          api.get("/dashboard/stats"),
+          api.get("/dashboard/courses/stats"),
+          api.get("/dashboard/students"),
+          api.get("/dashboard/feedbacks/anonymous"),
+        ]);
+      console.log("Dashboard stats response:", statsRes.data);
       setStats(statsRes.data);
       setCourseStats(coursesRes.data);
       setStudents(studentsRes.data);
       setFeedbacks(feedbacksRes.data);
     } catch (error) {
-      console.error('Error fetching dashboard data:', error);
+      console.error("Error fetching dashboard data:", error);
     } finally {
       setLoading(false);
     }
@@ -105,56 +117,47 @@ const Dashboard: React.FC = () => {
   // Course table columns
   const courseColumns = [
     {
-      title: 'Course Code',
-      dataIndex: 'course_code',
-      key: 'course_code',
+      title: "Course Code",
+      dataIndex: "course_code",
+      key: "course_code",
       render: (text: string) => <Tag color="blue">{text}</Tag>,
     },
     {
-      title: 'Course Name',
-      dataIndex: 'course_name',
-      key: 'course_name',
+      title: "Course Name",
+      dataIndex: "course_name",
+      key: "course_name",
     },
     {
-      title: 'Instructor',
-      dataIndex: 'instructor',
-      key: 'instructor',
+      title: "Instructor",
+      dataIndex: "instructor",
+      key: "instructor",
     },
     {
-      title: 'Department',
-      dataIndex: 'department',
-      key: 'department',
+      title: "Department",
+      dataIndex: "department",
+      key: "department",
       // filters: [...new Set(courseStats.map(c => c.department))].map(d => ({ text: d, value: d })),
-      onFilter: (value: any, record: CourseStats) => record.department === value,
+      onFilter: (value: any, record: CourseStats) =>
+        record.department === value,
     },
     {
-      title: 'Students',
-      dataIndex: 'total_students',
-      key: 'total_students',
-      sorter: (a: CourseStats, b: CourseStats) => a.total_students - b.total_students,
+      title: "Students",
+      dataIndex: "total_students",
+      key: "total_students",
+      sorter: (a: CourseStats, b: CourseStats) =>
+        a.total_students - b.total_students,
     },
     {
-      title: 'Feedbacks',
-      dataIndex: 'feedback_count',
-      key: 'feedback_count',
-      sorter: (a: CourseStats, b: CourseStats) => a.feedback_count - b.feedback_count,
+      title: "Feedbacks",
+      dataIndex: "feedback_count",
+      key: "feedback_count",
+      sorter: (a: CourseStats, b: CourseStats) =>
+        a.feedback_count - b.feedback_count,
     },
     {
-      title: 'Avg Rating',
-      dataIndex: 'avg_rating',
-      key: 'avg_rating',
-      render: (rating: number) => (
-        <span>
-          {rating ? `${rating.toFixed(1)}` : '—'} 
-          {rating && <StarOutlined style={{ color: '#fbbf24', marginLeft: 4 }} />}
-        </span>
-      ),
-      sorter: (a: CourseStats, b: CourseStats) => (a.avg_rating || 0) - (b.avg_rating || 0),
-    },
-    {
-      title: 'Completion',
-      dataIndex: 'completion_rate',
-      key: 'completion_rate',
+      title: "Completion",
+      dataIndex: "completion_rate",
+      key: "completion_rate",
       render: (rate: number) => (
         <Progress percent={rate} size="small" strokeColor="#3b82f6" />
       ),
@@ -164,116 +167,113 @@ const Dashboard: React.FC = () => {
   // Student table columns
   const studentColumns = [
     {
-      title: 'Name',
-      dataIndex: 'name',
-      key: 'name',
+      title: "Name",
+      dataIndex: "name",
+      key: "name",
       render: (text: string, record: StudentProfile) => (
-        <span>
-          {text || record.username}
-        </span>
+        <span>{text || record.username}</span>
       ),
     },
     {
-      title: 'Username',
-      dataIndex: 'username',
-      key: 'username',
+      title: "Username",
+      dataIndex: "username",
+      key: "username",
     },
     {
-      title: 'Email',
-      dataIndex: 'email',
-      key: 'email',
+      title: "Email",
+      dataIndex: "email",
+      key: "email",
     },
     {
-      title: 'Year',
-      dataIndex: 'year',
-      key: 'year',
+      title: "Year",
+      dataIndex: "year",
+      key: "year",
       filters: [
-        { text: 'Freshman', value: 'Freshman' },
-        { text: 'Sophomore', value: 'Sophomore' },
-        { text: 'Junior', value: 'Junior' },
-        { text: 'Senior', value: 'Senior' },
+        { text: "Freshman", value: "Freshman" },
+        { text: "Sophomore", value: "Sophomore" },
+        { text: "Junior", value: "Junior" },
+        { text: "Senior", value: "Senior" },
       ],
       onFilter: (value: any, record: StudentProfile) => record.year === value,
     },
     {
-      title: 'Department',
-      dataIndex: 'department',
-      key: 'department',
+      title: "Department",
+      dataIndex: "department",
+      key: "department",
     },
     {
-      title: 'Feedbacks',
-      dataIndex: 'feedbacks_given',
-      key: 'feedbacks_given',
-      sorter: (a: StudentProfile, b: StudentProfile) => a.feedbacks_given - b.feedbacks_given,
+      title: "Feedbacks",
+      dataIndex: "feedbacks_given",
+      key: "feedbacks_given",
+      sorter: (a: StudentProfile, b: StudentProfile) =>
+        a.feedbacks_given - b.feedbacks_given,
     },
     {
-      title: 'Badges',
-      dataIndex: 'badges_earned',
-      key: 'badges_earned',
+      title: "Badges",
+      dataIndex: "badges_earned",
+      key: "badges_earned",
       render: (count: number) => (
         <span>
-          <TrophyOutlined style={{ color: '#fbbf24', marginRight: 4 }} />
+          <TrophyOutlined style={{ color: "#fbbf24", marginRight: 4 }} />
           {count}
         </span>
       ),
     },
     {
-      title: 'Joined',
-      dataIndex: 'join_date',
-      key: 'join_date',
+      title: "Joined",
+      dataIndex: "join_date",
+      key: "join_date",
     },
   ];
 
   // Anonymous Feedback columns
   const feedbackColumns = [
     {
-      title: 'Course',
-      dataIndex: 'course_code',
-      key: 'course_code',
+      title: "Course",
+      dataIndex: "course_code",
+      key: "course_code",
       render: (code: string, record: AnonymousFeedback) => (
         <div>
           <Tag color="blue">{code}</Tag>
-          <div style={{ fontSize: 12, color: '#666' }}>{record.course_name}</div>
+          <div style={{ fontSize: 12, color: "#666" }}>
+            {record.course_name}
+          </div>
         </div>
       ),
     },
     {
-      title: 'Phase',
-      dataIndex: 'feedback_phase',
-      key: 'feedback_phase',
+      title: "Phase",
+      dataIndex: "feedback_phase",
+      key: "feedback_phase",
       render: (phase: string) => {
         const colors: Record<string, string> = {
-          week1: 'orange',
-          week3: 'gold',
-          midterm: 'blue',
-          week12: 'green',
-          finals: 'red',
+          week1: "orange",
+          week3: "gold",
+          midterm: "blue",
+          week12: "green",
+          finals: "red",
         };
-        return <Tag color={colors[phase] || 'default'}>{phase}</Tag>;
+        return <Tag color={colors[phase] || "default"}>{phase}</Tag>;
       },
     },
     {
-      title: 'Rating',
-      dataIndex: 'rating',
-      key: 'rating',
-      render: (rating: number) => (
-        <span>
-          {rating}/5 ⭐
-        </span>
-      ),
+      title: "Rating",
+      dataIndex: "rating",
+      key: "rating",
+      render: (rating: number) => <span>{rating}/5 ⭐</span>,
     },
     {
-      title: 'Comments',
-      dataIndex: 'comments',
-      key: 'comments',
+      title: "Comments",
+      dataIndex: "comments",
+      key: "comments",
       ellipsis: true,
-      render: (text: string) => text || '—',
+      render: (text: string) => text || "—",
     },
     {
-      title: 'Submitted',
-      dataIndex: 'submitted_at',
-      key: 'submitted_at',
-      sorter: (a: AnonymousFeedback, b: AnonymousFeedback) => 
+      title: "Submitted",
+      dataIndex: "submitted_at",
+      key: "submitted_at",
+      sorter: (a: AnonymousFeedback, b: AnonymousFeedback) =>
         new Date(a.submitted_at).getTime() - new Date(b.submitted_at).getTime(),
     },
   ];
@@ -281,7 +281,7 @@ const Dashboard: React.FC = () => {
   return (
     <div className="admin-dashboard">
       <h1 className="dashboard-title">Admin Dashboard</h1>
-      
+
       {/* Stats Cards */}
       <Row gutter={[16, 16]} className="stats-row">
         <Col xs={24} sm={12} lg={6}>
@@ -290,7 +290,7 @@ const Dashboard: React.FC = () => {
               title="Total Courses"
               value={stats.totalCourses}
               prefix={<BookOutlined />}
-              valueStyle={{ color: '#3b82f6' }}
+              valueStyle={{ color: "#3b82f6" }}
             />
           </Card>
         </Col>
@@ -300,7 +300,7 @@ const Dashboard: React.FC = () => {
               title="Total Students"
               value={stats.totalStudents}
               prefix={<TeamOutlined />}
-              valueStyle={{ color: '#10b981' }}
+              valueStyle={{ color: "#10b981" }}
             />
           </Card>
         </Col>
@@ -310,7 +310,7 @@ const Dashboard: React.FC = () => {
               title="Total Feedbacks"
               value={stats.totalFeedbacks}
               prefix={<MessageOutlined />}
-              valueStyle={{ color: '#f59e0b' }}
+              valueStyle={{ color: "#f59e0b" }}
             />
           </Card>
         </Col>
@@ -321,7 +321,7 @@ const Dashboard: React.FC = () => {
               value={stats.avgRating}
               precision={1}
               prefix={<StarOutlined />}
-              valueStyle={{ color: '#ef4444' }}
+              valueStyle={{ color: "#ef4444" }}
             />
           </Card>
         </Col>
@@ -330,18 +330,21 @@ const Dashboard: React.FC = () => {
       {/* Tabs for different views */}
       <Tabs defaultActiveKey="courses" className="dashboard-tabs">
         <TabPane tab="Courses" key="courses" icon={<BookOutlined />}>
-          <Card title="Course Statistics" extra={
-            <Select 
-              defaultValue="all" 
-              style={{ width: 150 }}
-              onChange={setSelectedDepartment}
-            >
-              <Option value="all">All Departments</Option>
-              <Option value="CS">Computer Science</Option>
-              <Option value="MATH">Mathematics</Option>
-              <Option value="PHY">Physics</Option>
-            </Select>
-          }>
+          <Card
+            title="Course Statistics"
+            extra={
+              <Select
+                defaultValue="all"
+                style={{ width: 150 }}
+                onChange={setSelectedDepartment}
+              >
+                <Option value="all">All Departments</Option>
+                <Option value="CS">Computer Science</Option>
+                <Option value="MATH">Mathematics</Option>
+                <Option value="PHY">Physics</Option>
+              </Select>
+            }
+          >
             <Table
               columns={courseColumns}
               dataSource={courseStats}
@@ -366,10 +369,19 @@ const Dashboard: React.FC = () => {
           </Card>
         </TabPane>
 
-        <TabPane tab="Anonymous Feedback" key="feedback" icon={<FileTextOutlined />}>
-          <Card title="Recent Feedback" extra={
-            <RangePicker onChange={(dates) => setDateRange(dates as [any, any])} />
-          }>
+        <TabPane
+          tab="Anonymous Feedback"
+          key="feedback"
+          icon={<FileTextOutlined />}
+        >
+          <Card
+            title="Recent Feedback"
+            extra={
+              <RangePicker
+                onChange={(dates) => setDateRange(dates as [any, any])}
+              />
+            }
+          >
             <Table
               columns={feedbackColumns}
               dataSource={feedbacks}
@@ -385,21 +397,42 @@ const Dashboard: React.FC = () => {
           <Row gutter={[16, 16]}>
             <Col span={24}>
               <Card title="Feedback Trends">
-                <div style={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div
+                  style={{
+                    height: 300,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
                   <p>Chart placeholder - Feedback trends over time</p>
                 </div>
               </Card>
             </Col>
             <Col span={12}>
               <Card title="Course Completion Rates">
-                <div style={{ height: 250, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div
+                  style={{
+                    height: 250,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
                   <p>Chart placeholder - Top courses by completion</p>
                 </div>
               </Card>
             </Col>
             <Col span={12}>
               <Card title="Rating Distribution">
-                <div style={{ height: 250, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div
+                  style={{
+                    height: 250,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
                   <p>Chart placeholder - Rating distribution</p>
                 </div>
               </Card>

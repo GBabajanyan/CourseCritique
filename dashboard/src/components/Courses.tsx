@@ -109,15 +109,6 @@ const Courses: React.FC = () => {
           </span>
           <span className="stat-badge-label">With Feedbacks</span>
         </div>
-        <div className="stat-badge">
-          <span className="stat-badge-value">
-            {Math.round(
-              courses.reduce((acc, c) => acc + (c.avg_rating || 0), 0) /
-                courses.length || 0,
-            )}
-          </span>
-          <span className="stat-badge-label">Avg Rating</span>
-        </div>
       </div>
 
       {/* Table */}
@@ -132,7 +123,6 @@ const Courses: React.FC = () => {
               <th>Credits</th>
               <th>Students</th>
               <th>Feedbacks</th>
-              <th>Avg Rating</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -152,10 +142,6 @@ const Courses: React.FC = () => {
                   <span className="pending-count">
                     ({course.pending_feedbacks || 0} pending)
                   </span>
-                </td>
-                <td className="text-center">
-                  <span className="rating">{course.avg_rating || "—"}</span>
-                  {course.avg_rating && <span className="star">⭐</span>}
                 </td>
                 <td>
                   <button
