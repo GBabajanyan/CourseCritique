@@ -54,6 +54,7 @@ router.get("/completed", verifyToken, async (req, res) => {
     console.log(err);
   }
 });
+
 router.get("/", verifyToken, async (req, res) => {
   try {
     const result = await pool.query(
@@ -79,5 +80,23 @@ router.get("/", verifyToken, async (req, res) => {
   }
 });
 
+router.post("/submit", verifyToken, async (req, res) => {
+  const { courseId, ratings } = req.body;
+  const { userId } = req.user;
+
+  try {
+    // Update feedback with ratings and mark as completed
+    await pool.query(
+      `UPDATE feedback
+       SET ratings = $1, status = 'completed', submitted_at = NOW()
+       WHERE course_id = $2 AND user_id = $3`,
+      [ratings, courseId, userId],
+    );
+    res.sendStatus(200);
+  } catch (err) {
+    res.sendStatus(500);
+    console.log(err);
+  }
+});
 
 export default router;

@@ -1,12 +1,12 @@
 import React from "react";
 import { View } from "react-native";
-import { FeedbackRatingsObject } from "@/src/types/Feedback";
 import QuestionBlock from "./QuestionBlock";
+import { FeedbackRatings } from "@/src/store/feedbackStore";
 
 interface StepRendererProps {
   step: any;
-  data: FeedbackRatingsObject;
-  update: (key: keyof FeedbackRatingsObject, value: any) => void;
+  data: FeedbackRatings | null;
+  update: (key: keyof FeedbackRatings, value: any) => void;
 }
 
 const StepRenderer: React.FC<StepRendererProps> = ({ step, data, update }) => {
@@ -18,7 +18,7 @@ const StepRenderer: React.FC<StepRendererProps> = ({ step, data, update }) => {
             key={q.key}
             label={q.label}
             type={q.type}
-            value={data[q.key]}
+            value={data?.[q.key]}
             onChange={(v) => update(q.key, v)}
           />
         ))}

@@ -19,35 +19,33 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Progress from "react-native-progress";
-import { FeedbackRatingsObject } from "@/src/types/Feedback";
 import { FORM_CONFIG } from "@/src/constants/feedbackForm";
 import StepRenderer from "@/src/components/feedbackForm/StepRenderer";
+import { FeedbackRatings } from "@/src/store/feedbackStore";
+import { set } from "mobx";
 
 const FeedbackForm: React.FC = () => {
   const router = useRouter();
   // const course = useLocalSearchParams<FeedbackFormScreenProps>();
   const insets = useSafeAreaInsets();
   const { feedbackStore } = useStore();
-  const { selectedCourse: course, setSelectedCourse } = feedbackStore;
+  const {
+    selectedCourse: course,
+    ratings,
+    setSelectedCourse,
+    submitFeedback,
+  } = feedbackStore;
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [currentStep, setCurrentStep] = useState<number>(1);
-  const [formData, setFormData] = useState<FeedbackRatingsObject>(
-    {} as FeedbackRatingsObject,
+  const [formData, setFormData] = useState<FeedbackRatings>(
+    {} as FeedbackRatings,
   );
-  // useEffect(() => {
-  // if (!course) router.back();
-  // }, []);
-
-  // useFocusEffect(() => {
-  //   console.log("x",router.);
-  //   if (!course) router.navigate("/(protected)/(tabs)/feedback/Pending");
-  // });
 
   const totalSteps = FORM_CONFIG.length;
 
   const currentStepConfig = FORM_CONFIG[currentStep - 1];
 
-  const updateFormData = (key: keyof FeedbackRatingsObject, value: any) => {
+  const updateFormData = (key: keyof FeedbackRatings, value: any) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
   };
 
@@ -70,20 +68,21 @@ const FeedbackForm: React.FC = () => {
   const handleSubmit = async () => {
     setIsSubmitting(true);
 
-    // // Validate required fields
-    // if (formData.rating === 0 || formData.wouldRecommend === null) {
-    //   Alert.alert(
-    //     "Incomplete Form",
-    //     "Please provide an overall rating and recommendation.",
-    //   );
-    //   setIsSubmitting(false);
-    //   return;
+    // Validate all required fields are filled
+    // for (const key of Object.keys(ratings)) {
+    //   if (
+    //     formData[key as keyof FeedbackRatings] === undefined &&
+    //     key !== "open_feedback"
+    //   ) {
+    //     Alert.alert("Incomplete Form", "Please fill all the ratings.");
+    //     setIsSubmitting(false);
+    //     return;
+    //   }
     // }
 
     try {
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
+      await submitFeedback(formData);
       Alert.alert(
         "Feedback Submitted!",
         `Thank you for your feedback on ${course?.courseCode}.`,
@@ -374,8 +373,9 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 24,
     paddingVertical: 10,
-    // position: "absolute",
+    position: "absolute",
     left: 0,
+    bottom: 24,
     // backgroundColor: "red",
     width: "100%",
     gap: 24,

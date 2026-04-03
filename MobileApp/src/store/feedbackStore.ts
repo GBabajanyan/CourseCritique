@@ -1,8 +1,9 @@
 import { makeAutoObservable, runInAction } from "mobx";
 import { RootStore } from ".";
-import ApiClient from "../api/client";
 import { AxiosInstance } from "axios";
 import { Course } from "../types/Course";
+import { Rating3, Rating5, Thumb } from "../types/Feedback";
+import { completedFeedbacks } from "../mock";
 
 export interface Feedback {
   id: string;
@@ -23,24 +24,29 @@ export interface Feedback {
   wouldRecommend: boolean;
 }
 
-interface FeedbackRatings {
-  course_pace: number;
-  course_load: number;
-  course_materials: number;
-  assignment_instructions: number;
-  grading_rubrics: number;
-  substantial_learning: number;
-  class_management: number;
-  student_participation: number;
-  in_class_queries: number;
-  concern_learning: number;
-  availability: number;
-  feedback_on_assignments: number;
-  class_organization: number;
-  inspires_motivation: number;
-  take_another_course: number;
-  open_feedback: string;
-}
+export type FeedbackRatings = {
+  course_pace: Rating5;
+  course_load: Rating5;
+  class_organization: Rating5;
+
+  course_materials: Rating5;
+  assignment_instructions: Rating5;
+  grading_rubrics: Rating5;
+
+  class_management: Rating5;
+  student_participation: Rating5;
+  in_class_queries: Rating5;
+  concern_learning: Rating5;
+
+  availability: Rating3;
+  feedback_on_assignments: Rating3;
+  inspires_motivation: Rating3;
+
+  substantial_learning: Thumb;
+  take_another_course: Thumb;
+
+  open_feedback: string | undefined;
+};
 
 class FeedbackStore {
   rootStore: RootStore;
@@ -50,7 +56,7 @@ class FeedbackStore {
   selectedCourse: Course | null = null;
   currentFeedBack: Feedback | null;
   ratings: FeedbackRatings | null = null;
-  completedFeedbacks: Feedback[] = [];
+  completedFeedbacks: (typeof completedFeedbacks)[] = [];
   isLoading: boolean = false;
 
   constructor(rootStore: RootStore) {
@@ -64,22 +70,22 @@ class FeedbackStore {
     runInAction(() => {
       this.selectedCourse = course;
       this.ratings = {
-        course_pace: 0,
-        course_load: 0,
-        course_materials: 0,
-        assignment_instructions: 0,
-        grading_rubrics: 0,
-        substantial_learning: 0,
-        class_management: 0,
-        student_participation: 0,
-        in_class_queries: 0,
-        concern_learning: 0,
-        availability: 0,
-        feedback_on_assignments: 0,
-        class_organization: 0,
-        inspires_motivation: 0,
-        take_another_course: 0,
-        open_feedback: "",
+        course_pace: undefined,
+        course_load: undefined,
+        class_organization: undefined,
+        course_materials: undefined,
+        assignment_instructions: undefined,
+        grading_rubrics: undefined,
+        class_management: undefined,
+        student_participation: undefined,
+        in_class_queries: undefined,
+        concern_learning: undefined,
+        availability: undefined,
+        feedback_on_assignments: undefined,
+        inspires_motivation: undefined,
+        substantial_learning: undefined,
+        take_another_course: undefined,
+        open_feedback: undefined,
       };
     });
   };
@@ -88,12 +94,10 @@ class FeedbackStore {
     this.isLoading = true;
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      const a = await this.rootStore.apiClient.instance.get(
+      const { data } = await this.rootStore.apiClient.instance.get(
         `http://localhost:8000/feedback/pending`,
       );
-
-      console.log("TODO: BIND DB DATA WITH FRONT");
+      console.log(data);
 
       runInAction(() => {
         this.pendingCourses = [
@@ -130,29 +134,13 @@ class FeedbackStore {
 
     try {
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const { data } = await this.rootStore.apiClient.instance.get(
+        `http://localhost:8000/feedback/pending`,
+      );
+      console.log(data);
 
       // Mock data
-      this.completedFeedbacks = [
-        {
-          id: "101",
-          courseId: "1",
-          courseCode: "ENG101",
-          courseName: "English Composition",
-          section: "B",
-          instructor: "Prof. Davis",
-          submittedDate: "2024-11-15",
-          feedbackPhase: "week3",
-          rating: 4,
-          understanding: 4,
-          engagement: 3,
-          organization: 5,
-          comments: "Great course with engaging content.",
-          strengths: "Knowledgeable instructor",
-          improvements: "More practical examples",
-          wouldRecommend: true,
-        },
-      ];
+      this.completedFeedbacks = [...completedFeedbacks];
     } catch (error) {
       console.error("Load completed feedbacks error:", error);
     } finally {
@@ -161,45 +149,14 @@ class FeedbackStore {
   };
 
   // Submit new feedback
-  submitFeedback = async (
-    course: Course,
-    feedbackData: Omit<
-      Feedback,
-      | "id"
-      | "courseId"
-      | "courseCode"
-      | "courseName"
-      | "section"
-      | "instructor"
-      | "submittedDate"
-    >,
-  ): Promise<boolean> => {
+  submitFeedback = async (feedbackData: FeedbackRatings): Promise<boolean> => {
     this.isLoading = true;
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      // Create new feedback
-      const newFeedback: Feedback = {
-        id: Date.now().toString(),
-        courseId: course.id,
-        courseCode: course.courseCode,
-        courseName: course.courseName,
-        section: course.section,
-        instructor: course.instructor,
-        submittedDate: new Date().toISOString().split("T")[0],
-        ...feedbackData,
-      };
-
-      // Add to completed feedbacks
-      this.completedFeedbacks.unshift(newFeedback);
-
-      // Remove from pending courses
-      runInAction(() => {
-        this.pendingCourses = this.pendingCourses.filter(
-          (c) => c.id !== course.id,
-        );
+      const feedbackJson = JSON.stringify(feedbackData);
+      await this.rootStore.apiClient.instance.post(`http://localhost:8000/feedback/submit`, {
+        ratings: feedbackJson,
+        courseId: this.selectedCourse?.id,
       });
 
       return true;

@@ -1,3 +1,4 @@
+import React, { JSX, useCallback, useEffect, useState } from "react";
 import CourseDetailsModal from "@/src/components/CourseDetailsModal/CourseDetailsModal";
 import { phaseColors, phaseNames } from "@/src/constants";
 import { Colors } from "@/src/constants/colors";
@@ -13,9 +14,8 @@ import {
 import { useStore } from "@/src/store/StoreProvider";
 import { Course } from "@/src/types/Course";
 import { FeedbackPhase } from "@/src/types/Feedback";
-import { useFocusEffect, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { observer } from "mobx-react";
-import React, { JSX, useEffect, useState } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -24,6 +24,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useFocusEffect } from "@react-navigation/native";
 
 const { NAVY, WHITE } = Colors;
 
@@ -39,12 +40,11 @@ const PendingFeedback: React.FC = observer(() => {
 
   const bottomPadding = bottom + 20;
 
-  useEffect(() => {
-    const loadCourses = async () => loadPendingCourses();
-    loadCourses();
-  }, []);
-
- 
+  useFocusEffect(
+    React.useCallback(() => {
+      loadPendingCourses();
+    }, []),
+  );
 
   const openCourseDetailsModal = (course: Course) => {
     // setSelectedCourse(course);
