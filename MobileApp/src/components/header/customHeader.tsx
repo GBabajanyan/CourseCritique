@@ -40,6 +40,26 @@ const getHeaderParams = (pathname: string) => {
         title: "All Badges",
         backButton: true,
       };
+    case "/profile/settings":
+      return {
+        title: "Settings",
+        backButton: true,
+      };
+    case "/profile/settings/Edit":
+      return {
+        title: "Edit Profile",
+        backButton: true,
+      };
+    case "/profile/settings/About":
+      return {
+        title: "About",
+        backButton: true,
+      };
+    case "/profile/settings/Help":
+      return {
+        title: "Help Center",
+        backButton: true,
+      };
     default:
       return { title: "Course Critique", subtitle: "" };
   }

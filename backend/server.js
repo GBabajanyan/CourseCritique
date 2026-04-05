@@ -7,6 +7,7 @@ import course from "./routes/course.js";
 import dashboard from "./routes/dashboard.js";
 import cookieParser from "cookie-parser";
 import { verifyToken } from "./routes/verifyToken.js";
+import pool from "./db-config.js";
 
 dotenv.config();
 
@@ -31,6 +32,29 @@ app.use("/auth", authRoutes);
 app.use("/feedback", feedbackRoutes, verifyToken);
 app.use("/course", course);
 app.use("/dashboard", dashboard);
+
+app.get("/profile/me", verifyToken, async (req, res) => {
+  try {
+
+    const { rows: profileRows } = await pool.query(
+      `SELECT * FROM profile_users WHERE "userId" = $1`,
+      [req.user.userId],
+    );
+
+    let userProfile;
+    if (profileRows.length) {
+      const profile = profileRows[0];
+      userProfile = {
+        ...profile,
+        created_at: undefined,
+        join_date: profile.created_at,
+      };
+    }
+    res.json({ user: userProfile });
+  } catch (error) {
+    res.status(500).send("Server Error: Fetch Profile");
+  }
+});
 
 app.get("/", (req, res) => {
   res.sendStatus(200);

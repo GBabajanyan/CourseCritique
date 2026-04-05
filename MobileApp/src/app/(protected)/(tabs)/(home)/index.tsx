@@ -13,9 +13,9 @@ const HomeScreen: React.FC = observer(() => {
   const today = new Date().toISOString().split("T")[0];
   const [dateSelected, setDateSelected] = useState(today);
   const { bottom } = useSafeAreaInsets();
-  const { userStore, authStore } = useStore();
-  const { isAuthenticated, isBiometricAvailable, enableBiometrics } = authStore;
-  const { getUserData } = userStore;
+  const { ProfileStore } = useStore();
+  // const { getUserData } = ProfileStore;
+
   const markedDates: MarkedDates = {
     [dateSelected]: {
       selected: true,
@@ -73,6 +73,7 @@ const HomeScreen: React.FC = observer(() => {
       </View>
     );
   };
+  
   return (
     <View style={styles.container}>
       <View style={styles.CalendarContainer}>

@@ -3,11 +3,12 @@ import { makeAutoObservable } from "mobx";
 import { RootStore } from ".";
 
 export interface User {
-  id: string;
-  refreshToken: string;
+  userId: string;
   name: string;
+  firstName: string;
+  lastName: string;
   email: string;
-  avatar: string;
+  avatar?: string;
   role: string;
   degree: string;
   year: string;
@@ -15,30 +16,32 @@ export interface User {
   joinDate: string;
   feedbacksGiven?: number;
   feedbacksToFill?: number;
-  currentSemester?: string;
 }
 
-class UserStore {
-  user: User | null = null;
+class ProfileStore {
+  rootStore: RootStore;
+
+  userProfile: User | null = null;
   isLoading: boolean = false;
 
   constructor(rootStore: RootStore) {
-    makeAutoObservable(this);
+    this.rootStore = rootStore;
+    makeAutoObservable(this, {}, { autoBind: true });
   }
 
-  getUserData = async (): Promise<User | null> => {
+  getProfileData = async (): Promise<void> => {
     this.isLoading = true;
 
     try {
-      const { user: userData } = await axios.get(
-        "http://localhost:8000/auth/user_data",
+      const { user: userData } = await this.rootStore.apiClient.instance.get(
+        "http://localhost:8000/profile/me",
       );
-      
+
       if (userData) {
-        this.user = { ...this.user, ...userData };
+        this.userProfile = { ...this.userProfile, ...userData };
       }
     } catch (error) {
-      console.error("Get user data error:", error);
+      console.error("Get user data error:", error.response?.data || error.message);
     } finally {
       this.isLoading = false;
     }
@@ -54,7 +57,7 @@ class UserStore {
       // );
       const userData: User | null = null;
       if (userData) {
-        this.user = { ...this.user, ...userData };
+        this.userProfile = { ...this.userProfile, ...userData };
       }
       return true;
     } catch (error) {
@@ -65,23 +68,27 @@ class UserStore {
     }
   };
 
+  getUser = () => {
+    return this.userProfile;
+  };
+
   // Set user data (called after login)
   setUser = (user: User | null) => {
-    this.user = user;
+    this.userProfile = user;
   };
 
   // Clear user data (on logout)
   clearUser = () => {
-    this.user = null;
+    this.userProfile = null;
   };
 
   // Update feedback counts
   updateFeedbackStats = (given: number, toFill: number) => {
-    if (this.user) {
-      this.user.feedbacksGiven = given;
-      this.user.feedbacksToFill = toFill;
+    if (this.userProfile) {
+      this.userProfile.feedbacksGiven = given;
+      this.userProfile.feedbacksToFill = toFill;
     }
   };
 }
 
-export default UserStore;
+export default ProfileStore;

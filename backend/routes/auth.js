@@ -71,10 +71,20 @@ router.post("/user_login", async (req, res) => {
     if (!passwordMatch)
       return res.status(400).json({ message: "Incorrect Password" });
 
-    const userProfile = await pool.query(
+    const { rows: profileRows } = await pool.query(
       `SELECT * FROM profile_users WHERE "userId" = $1`,
       [user.id],
     );
+
+    let userProfile;
+    if (profileRows.length) {
+      const profile = profileRows[0];
+      userProfile = {
+        ...profile,
+        created_at: undefined,
+        join_date: profile.created_at,
+      };
+    }
 
     const refreshToken = generateRefreshToken(user.id);
     await pool.query(
@@ -86,7 +96,7 @@ router.post("/user_login", async (req, res) => {
     );
 
     res.json({
-      user: userProfile.rows[0],
+      user: userProfile,
       authToken: generateAuthToken(user.id),
       refreshToken,
     });
@@ -131,15 +141,25 @@ router.post("/refresh", async (req, res) => {
       userId,
     ]);
 
-    const userProfile = await pool.query(
+    const { rows: profileRows } = await pool.query(
       `SELECT * FROM profile_users WHERE "userId" = $1`,
       [userId],
     );
 
+    let userProfile;
+    if (profileRows.length) {
+      const profile = profileRows[0];
+      userProfile = {
+        ...profile,
+        created_at: undefined,
+        join_date: profile.created_at,
+      };
+    }
+
     res.json({
       authToken: newAuthToken,
       refreshToken: newRefreshToken,
-      user: userProfile.rows[0],
+      userProfile,
     });
   } catch (error) {
     console.error("Refresh error:", error);
@@ -147,13 +167,21 @@ router.post("/refresh", async (req, res) => {
   }
 });
 
-router.post("/user_logout", verifyToken, async (req, res) => {
+router.post("/user_logout", async (req, res) => {
   try {
     const { refreshToken } = req.body;
-    const { userId } = req.user;
     if (!refreshToken) {
       return res.status(400).json({ message: "Refresh token required" });
     }
+    const decoded = jwt.verify(
+      refreshToken,
+      process.env.JWT_REFRESH_SECRET_KEY,
+    );
+
+    if (!decoded) {
+      return res.status(401).json({ message: "Invalid refresh token" });
+    }
+    const { userId } = decoded;
 
     const removeTokens = await pool.query(
       `UPDATE auth_users 

@@ -1,6 +1,6 @@
 import * as SecureStore from "expo-secure-store";
 import { makeAutoObservable, runInAction } from "mobx";
-import { User } from "./userStore";
+import { User } from "./profileStore";
 import * as LocalAuthentication from "expo-local-authentication";
 import { Alert } from "react-native";
 import { RootStore } from ".";
@@ -39,9 +39,6 @@ class AuthStore {
   setIsBiometricAvailable = (value: boolean) =>
     (this.isBiometricAvailable = value);
 
-  checkBiometricsEnabled = async () =>
-    (await SecureStore.getItemAsync("biometricsEnabled")) === "true";
-
   checkAuthStatus = async () => {
     try {
       const token =
@@ -66,9 +63,14 @@ class AuthStore {
         },
       );
 
-      const { authToken, refreshToken: newRefreshToken, user } = response.data;
+      const {
+        authToken,
+        refreshToken: newRefreshToken,
+        userProfile,
+      } = response.data;
+
       await this.rootStore.apiClient.setAuthTokens(authToken, newRefreshToken);
-      return user;
+      return { userProfile };
     } catch (error: any) {
       console.error("AuthStore doRefreshToken error", error);
       await this.rootStore.apiClient.logout();
@@ -80,7 +82,6 @@ class AuthStore {
       const refreshToken = await SecureStore.getItemAsync("refreshToken");
       const isBiometricsEnabled =
         (await SecureStore.getItemAsync("biometricsEnabled")) === "true";
-
       const isCompatible =
         (await LocalAuthentication.hasHardwareAsync()) &&
         isBiometricsEnabled &&
@@ -107,27 +108,6 @@ class AuthStore {
     }
   };
 
-  enableBiometrics = async () => {
-    try {
-      const result = await LocalAuthentication.authenticateAsync({
-        promptMessage: "Enable biometric login",
-      });
-      if (result.success) {
-        await SecureStore.setItemAsync("biometricsEnabled", "true");
-      }
-    } catch (error) {
-      console.error("Enable biometrics error:", error);
-    }
-  };
-
-  disableBiometrics = async () => {
-    try {
-      await SecureStore.deleteItemAsync("biometricsEnabled");
-    } catch (error) {
-      console.error("Disable biometrics error:", error);
-    }
-  };
-
   login = async (
     login: string,
     password: string,
@@ -144,7 +124,7 @@ class AuthStore {
       const { authToken, refreshToken, user } = response.data;
       await this.rootStore.apiClient.setAuthTokens(authToken, refreshToken);
 
-      this.rootStore.userStore.setUser(user);
+      this.rootStore.ProfileStore.setUser(user);
       runInAction(() => {
         this.currentUser = user;
         this.isAuthenticated = true;
@@ -184,10 +164,11 @@ class AuthStore {
         );
       }
 
-      const { user } = await this.doRefreshToken(refreshToken);
-      this.rootStore.userStore.setUser(user);
+      const { userProfile } = await this.doRefreshToken(refreshToken);
+
+      this.rootStore.ProfileStore.setUser(userProfile);
       runInAction(() => {
-        this.currentUser = user;
+        this.currentUser = userProfile;
       });
       this.checkAuthStatus();
     } catch (error: any) {
@@ -201,6 +182,7 @@ class AuthStore {
     this.toggleIsLoading();
     try {
       await this.rootStore.apiClient.logout();
+      await this.rootStore.SettingStore.setBiometricsEnabled(false);
       await this.checkBiometricSupport();
     } catch (error: any) {
       Alert.alert("Logout Error occured. Please try to log out again later");

@@ -14,6 +14,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import * as SecureStore from "expo-secure-store";
 
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useStore } from "../store/StoreProvider";
@@ -26,15 +27,13 @@ const LoginScreen = observer(() => {
   const [password, setPassword] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const insets = useSafeAreaInsets();
-  const { authStore } = useStore();
-
+  const { authStore, SettingStore } = useStore();
+  const { biometricsEnabled, toggleBiometrics } = SettingStore;
   const {
     isLoading,
     isBiometricAvailable,
     biometricType,
     login,
-    enableBiometrics,
-    checkBiometricsEnabled,
     biometricLogin,
   } = authStore;
 
@@ -44,6 +43,8 @@ const LoginScreen = observer(() => {
 
   useEffect(() => {
     const autoBiometricLogin = async () => {
+      const refreshToken = await SecureStore.getItemAsync("refreshToken");
+      console.log("refreshT", refreshToken);
       if (isBiometricAvailable) {
         await handleBiometricLogin();
       }
@@ -68,15 +69,14 @@ const LoginScreen = observer(() => {
       Alert.alert("Error", "Please fill in all fields");
       return;
     }
-    if (!username.includes("_")) {
-      Alert.alert("Error", "Please fill a valid username");
-      return;
-    }
+    // if (!username.includes("_")) {
+    //   Alert.alert("Error", "Please fill a valid username");
+    //   return;
+    // }
 
     const { success } = await login(username, password);
     if (success) {
-      const isBiometricsEnabled = await checkBiometricsEnabled();
-      if (!isBiometricsEnabled) {
+      if (!biometricsEnabled) {
         Alert.alert(
           "Login Successful",
           "Do you want to enable biometric login?",
@@ -90,7 +90,7 @@ const LoginScreen = observer(() => {
               text: "Yes",
               onPress: async () => {
                 try {
-                  await enableBiometrics();
+                  await toggleBiometrics();
                 } catch (error) {
                   console.error("Enable biometrics error:", error);
                   Alert.alert("Error", "Failed to enable biometric login");

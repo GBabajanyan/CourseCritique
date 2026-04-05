@@ -139,6 +139,7 @@ class ApiClient {
 
   private responseOnRejectInterceptor = async (error: AxiosError) => {
     const originalRequest = error.config as CustomAxiosRequestConfig;
+    console.log("meow");
 
     if (
       !originalRequest ||

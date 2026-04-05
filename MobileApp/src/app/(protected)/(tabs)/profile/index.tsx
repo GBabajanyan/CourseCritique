@@ -5,9 +5,10 @@ import { Colors } from "@/src/constants/colors";
 import { userData } from "@/src/mock";
 import { Badge, BADGES } from "@/src/mock/badges";
 import { useStore } from "@/src/store/StoreProvider";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
+  Alert,
   Image,
   ScrollView,
   StyleSheet,
@@ -19,13 +20,31 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 const { NAVY, SAFFRON } = Colors;
 
 const ProfileScreen: React.FC = () => {
-  const { authStore } = useStore();
   const router = useRouter();
-  const { logout, disableBiometrics } = authStore;
+  const { authStore, ProfileStore } = useStore();
+  const { logout } = authStore;
+  const { userProfile, getProfileData } = ProfileStore;
+  const {
+    name,
+    email,
+    avatar,
+    role,
+    year,
+    degree,
+    studentId,
+    feedbacksGiven,
+    feedbacksToFill,
+  } = userProfile;
   const [badgeSelected, setBadgeSelected] = useState<Badge | null>(null);
   const [isBadgeDetailsModalOpen, setIsBadgeDetailsModalOpen] = useState(false);
   const { bottom } = useSafeAreaInsets();
   const bottomPadding = bottom + 20;
+
+  useFocusEffect(
+    React.useCallback(() => {
+      getProfileData();
+    }, []),
+  );
 
   const openBadgeDetailsModal = (badge: Badge) => {
     setBadgeSelected(badge);
@@ -36,11 +55,29 @@ const ProfileScreen: React.FC = () => {
     setIsBadgeDetailsModalOpen(false);
     setBadgeSelected(null);
   };
+
   const earnedBadges = BADGES.filter((badge, i) => i < 3);
   const lockedBadges = BADGES.filter((badge, i) => i >= 3 && i < 6);
 
   const handleBadgesPress = () => {
     router.navigate("/(protected)/(tabs)/profile/allBadges");
+  };
+
+  const handleSettingsPress = () => {
+    router.navigate("/(protected)/(tabs)/profile/settings");
+  };
+
+  const handleLogout = () => {
+    Alert.alert("Logout", "Are you sure you want to logout?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Logout",
+        style: "destructive",
+        onPress: async () => {
+          await logout();
+        },
+      },
+    ]);
   };
 
   const getYearColor = (year: string) => {
@@ -71,26 +108,26 @@ const ProfileScreen: React.FC = () => {
       <View style={styles.profileCard}>
         {/* Avatar and Basic Info */}
         <View style={styles.avatarSection}>
-          <Image src={userData.avatar} style={styles.avatarContainer} />
+          <Image src={avatar} style={styles.avatarContainer} />
           <View style={styles.basicInfo}>
-            <Text style={styles.name}>{userData.name}</Text>
-            <Text style={styles.role}>{userData.role}</Text>
+            <Text style={styles.name}>{name}</Text>
+            <Text style={styles.role}>{role}</Text>
             <View
               style={[
                 styles.yearBadge,
                 { backgroundColor: getYearColor(userData.year) },
               ]}
             >
-              <Text style={styles.yearText}>{userData.year}</Text>
+              <Text style={styles.yearText}>{year}</Text>
             </View>
           </View>
         </View>
 
         {/* Detailed Info */}
         <View style={styles.detailsSection}>
-          <InfoRow icon="🎓" label="Degree" value={userData.degree} />
-          <InfoRow icon="📧" label="Email" value={userData.email} />
-          <InfoRow icon="🆔" label="Student ID" value={userData.studentId} />
+          <InfoRow icon="🎓" label="Degree" value={degree} />
+          <InfoRow icon="📧" label="Email" value={email} />
+          <InfoRow icon="🆔" label="Student ID" value={studentId} />
         </View>
 
         {/* Stats Section */}
@@ -166,20 +203,17 @@ const ProfileScreen: React.FC = () => {
       {/* Actions Section */}
       <View style={styles.actionsCard}>
         <TouchableOpacity style={styles.actionButton}>
-          <Text style={styles.actionButtonText}>Edit Profile</Text>
+          <Text style={styles.actionButtonText}>Edit Avatar</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButton}>
+        <TouchableOpacity
+          onPress={handleSettingsPress}
+          style={styles.actionButton}
+        >
           <Text style={styles.actionButtonText}>Settings</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={styles.actionButton}
-          onPress={disableBiometrics}
-        >
-          <Text style={styles.actionButtonText}>Disable Biometric Auth</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
           style={[styles.actionButton, styles.logoutButton]}
-          onPress={logout}
+          onPress={handleLogout}
         >
           <Text style={[styles.actionButtonText, styles.logoutButtonText]}>
             Log Out
@@ -234,11 +268,13 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#1a1a1a",
     marginBottom: 4,
+    textTransform: "capitalize",
   },
   role: {
     fontSize: 16,
     color: "#666",
     marginBottom: 8,
+    textTransform: "capitalize",
   },
   yearBadge: {
     alignSelf: "flex-start",

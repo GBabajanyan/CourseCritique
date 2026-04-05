@@ -175,11 +175,6 @@ const Dashboard: React.FC = () => {
       ),
     },
     {
-      title: "Username",
-      dataIndex: "username",
-      key: "username",
-    },
-    {
       title: "Email",
       dataIndex: "email",
       key: "email",
