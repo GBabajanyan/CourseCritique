@@ -15,7 +15,7 @@ import SettingItem from "@/src/components/SettingItem/SettingItem";
 
 const SettingsScreen = observer(() => {
   const router = useRouter();
-  const { SettingStore, authStore } = useStore();
+  const { settingsStore, authStore } = useStore();
   const { isBiometricAvailable, biometricType } = authStore;
   const {
     biometricsEnabled: isBiometricsEnabled,
@@ -26,7 +26,7 @@ const SettingsScreen = observer(() => {
     setDarkMode,
     setPushNotifications,
     setEmailReminders,
-  } = SettingStore;
+  } = settingsStore;
 
   const handleEditProfilePress = (section: "personal" | "academic") => {
     router.navigate({

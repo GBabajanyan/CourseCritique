@@ -1,10 +1,9 @@
 import * as SecureStore from "expo-secure-store";
 import { makeAutoObservable, runInAction } from "mobx";
-import { User } from "./profileStore";
 import * as LocalAuthentication from "expo-local-authentication";
 import { Alert } from "react-native";
 import { RootStore } from ".";
-import { BiometricLoginType } from "../types/User";
+import { BiometricLoginType, User } from "../types/User";
 
 class AuthStore {
   rootStore: RootStore;
@@ -72,7 +71,10 @@ class AuthStore {
       await this.rootStore.apiClient.setAuthTokens(authToken, newRefreshToken);
       return { userProfile };
     } catch (error: any) {
-      console.error("AuthStore doRefreshToken error", error.response?.data || error.message);
+      console.error(
+        "AuthStore doRefreshToken error",
+        error.response?.data || error.message,
+      );
       await this.rootStore.apiClient.logout();
     }
   };
@@ -124,7 +126,7 @@ class AuthStore {
       const { authToken, refreshToken, user } = response.data;
       await this.rootStore.apiClient.setAuthTokens(authToken, refreshToken);
 
-      this.rootStore.ProfileStore.setUser(user);
+      this.rootStore.profileStore.setUser(user);
       runInAction(() => {
         this.currentUser = user;
         this.isAuthenticated = true;
@@ -166,7 +168,7 @@ class AuthStore {
 
       const { userProfile } = await this.doRefreshToken(refreshToken);
 
-      this.rootStore.ProfileStore.setUser(userProfile);
+      this.rootStore.profileStore.setUser(userProfile);
       runInAction(() => {
         this.currentUser = userProfile;
       });
@@ -182,7 +184,7 @@ class AuthStore {
     this.toggleIsLoading();
     try {
       await this.rootStore.apiClient.logout();
-      await this.rootStore.SettingStore.setBiometricsEnabled(false);
+      await this.rootStore.settingsStore.setBiometricsEnabled(false);
       await this.checkBiometricSupport();
     } catch (error: any) {
       Alert.alert("Logout Error occured. Please try to log out again later");

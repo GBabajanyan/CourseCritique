@@ -16,9 +16,9 @@ import { useStore } from "@/src/store/StoreProvider";
 import { useLocalSearchParams } from "expo-router";
 
 const EditProfileScreen = observer(({ navigation }: any) => {
-  const { ProfileStore } = useStore();
+  const { profileStore } = useStore();
   const { section } = useLocalSearchParams();
-  const { userProfile } = ProfileStore;
+  const { userProfile } = profileStore;
   const scrollRef = useRef<ScrollView>(null);
   const [targetY, setTargetY] = useState(0);
   const [formData, setFormData] = useState({

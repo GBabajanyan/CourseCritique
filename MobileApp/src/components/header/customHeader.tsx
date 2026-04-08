@@ -1,96 +1,19 @@
-import {
-  currentSemester,
-  currentYear,
-} from "@/src/mock";
-import { useStore } from "@/src/store/StoreProvider";
-import { Course } from "@/src/types/Course";
-import { usePathname, useRouter, useSegments } from "expo-router";
+import { useActiveTabParams } from "@/src/hooks/useActiveTabParams";
+import { useRouter } from "expo-router";
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const getHeaderParams = (pathname: string, selectedCourse?: Course) => {
-  switch (pathname) {
-    case "/":
-      return { title: "Course Critique", subtitle: "" };
-    case "/profile":
-      return { title: "Profile", subtitle: "" };
-    case "/feedback/Pending":
-      return {
-        title: "Give Feedback",
-        subtitle: `${currentSemester} Semester ${currentYear}`,
-      };
-    case "/feedback/Completed":
-      return {
-        title: "Completed Feedbacks",
-        subtitle: `${currentSemester} Semester ${currentYear}`,
-      };
-    case "/feedback/Search":
-      return {
-        title: "Search Feedback",
-        subtitle: `${currentSemester} Semester ${currentYear}`,
-      };
-    case "/feedback/Pending/FeedbackForm":
-      if (!selectedCourse)
-        return {
-          title: "Give Feedback",
-        };
-
-      const { courseName, courseCode } = selectedCourse;
-      return {
-        title: "Give Feedback",
-        subtitle: `${courseCode} | ${courseName}`,
-      };
-    case "/profile/allBadges":
-      return {
-        title: "All Badges",
-        backButton: true,
-      };
-    case "/profile/settings":
-      return {
-        title: "Settings",
-        backButton: true,
-      };
-    case "/profile/settings/Edit":
-      return {
-        title: "Edit Profile",
-        backButton: true,
-      };
-    case "/profile/settings/About":
-      return {
-        title: "About",
-        backButton: true,
-      };
-    case "/profile/settings/Help":
-      return {
-        title: "Help Center",
-        backButton: true,
-      };
-    default:
-      return { title: "Course Critique", subtitle: "" };
-  }
-};
 const CustomHeader = () => {
   const router = useRouter();
-  const activeTab = usePathname();
-  const segments = useSegments();
-  const parentRouteName = segments[segments.length - 2];
-
-  const { feedbackStore } = useStore();
-  const { selectedCourse } = feedbackStore;
-
-  const { title, subtitle, backButton } = getHeaderParams(
-    activeTab,
-    selectedCourse,
-  );
-
+  const { title, subtitle, parentRouteName } = useActiveTabParams();
   const goBack = () => {
     if (router.canGoBack()) router.back();
   };
 
   return (
     <SafeAreaView style={styles.header} edges={["top"]}>
-      {backButton && (
+      {parentRouteName && (
         <Pressable style={styles.goBackButton} onPress={goBack}>
           <Text
             style={styles.goBackText}

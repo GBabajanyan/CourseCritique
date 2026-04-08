@@ -5,7 +5,7 @@ import {
   CompletedFeedbackListConfigItem,
 } from "../types/Feedback";
 
-const configureSemesterByMonthNumber = (n: number) => {
+export const semesterByMonthNumber = (n: number) => {
   if (n <= 5) return "Spring";
   if (n <= 9) return "Summer";
   return "Fall";
@@ -20,7 +20,7 @@ export const generateConfigArrayFromCompletedFeedbacks = (
   const grouped = data.reduce((acc, compFeedObjRaw) => {
     const date = new Date(compFeedObjRaw.submittedDate);
     const year = date.getFullYear();
-    const semester = configureSemesterByMonthNumber(date.getMonth());
+    const semester = semesterByMonthNumber(date.getMonth());
 
     if (!acc[year]) acc[year] = {};
     if (!acc[year][semester]) acc[year][semester] = [];

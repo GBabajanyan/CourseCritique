@@ -2,6 +2,8 @@
 import { makeAutoObservable } from "mobx";
 import * as SecureStore from "expo-secure-store";
 import * as LocalAuthentication from "expo-local-authentication";
+import { SemesterType } from "../types/User";
+import { semesterByMonthNumber } from "../util/course";
 
 class SettingsStore {
   darkMode: boolean = false;
@@ -9,17 +11,26 @@ class SettingsStore {
   emailReminders: boolean = true;
   biometricsEnabled: boolean = false;
 
+  currentYear: number;
+  currentSemester: SemesterType;
+
   constructor() {
     makeAutoObservable(this, {}, { autoBind: true });
+    const now = new Date();
+    this.currentYear = now.getFullYear();
+    this.currentSemester = semesterByMonthNumber(now.getMonth());
     this.loadSettings();
   }
 
   async loadSettings() {
     // Load from SecureStore (non-sensitive)
     const darkMode = await SecureStore.getItemAsync("darkMode_pref");
-    const pushNotifications =
-      await SecureStore.getItemAsync("pushNotifications_pref");
-    const emailReminders = await SecureStore.getItemAsync("emailReminders_pref");
+    const pushNotifications = await SecureStore.getItemAsync(
+      "pushNotifications_pref",
+    );
+    const emailReminders = await SecureStore.getItemAsync(
+      "emailReminders_pref",
+    );
     const biometricsEnabled =
       await SecureStore.getItemAsync("biometricsEnabled");
 

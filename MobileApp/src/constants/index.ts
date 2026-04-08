@@ -1,4 +1,4 @@
-import { FeedbackPhase } from "../mock";
+import { FeedbackPhase } from "../types/Feedback";
 
 export const monthNames: string[] = [
   "January",

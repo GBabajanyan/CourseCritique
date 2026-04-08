@@ -3,22 +3,22 @@ import AuthStore from "./authStore";
 import FeedbackStore from "./feedbackStore";
 import ProfileStore from "./profileStore";
 import ApiClient from "../api/client";
-import SettingsStore from "./settingStore";
+import SettingsStore from "./settingsStore";
 
 export class RootStore {
   apiClient: ApiClient;
   authStore: AuthStore;
-  ProfileStore: ProfileStore;
+  profileStore: ProfileStore;
   feedbackStore: FeedbackStore;
-  SettingStore: SettingsStore;
+  settingsStore: SettingsStore;
 
   constructor() {
     this.apiClient = new ApiClient(
       process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000",
     );
-    this.SettingStore = new SettingsStore();
+    this.settingsStore = new SettingsStore();
     this.authStore = new AuthStore(this);
-    this.ProfileStore = new ProfileStore(this);
+    this.profileStore = new ProfileStore(this);
     this.feedbackStore = new FeedbackStore(this);
     this.apiClient.setOnUnauthorized(() => {
       this.authStore.handleUnauthorized();

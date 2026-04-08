@@ -1,6 +1,18 @@
 import { Course } from "../types/Course";
-import { CompletedFeedbacks } from "../types/Feedback";
-import { EventType, UserBadgeType, userDataType } from "../types/User";
+import { EventType, SemesterType } from "../types/User";
+
+type userDataType = {
+  name: string;
+  avatar: string;
+  role: string;
+  degree: string;
+  year: "Senior" | "Junior" | "Somphomore" | "Freshman";
+  feedbacksGiven: number;
+  feedbacksToFill: number;
+  email: string;
+  studentId: string;
+  currentSemester: `${SemesterType} ${string}`;
+};
 
 export const events: EventType[] = [
   { id: 1, title: "Team Meeting", time: "10:00 AM", date: new Date() },
@@ -53,7 +65,7 @@ export const pendingFeedbackCourses: Course[] = [
 ];
 
 // Mock data - completed feedbacks organized by year and semester
-export const completedFeedbacks: CompletedFeedbacks = {
+export const completedFeedbacks = {
   "2024": {
     Fall: [
       {

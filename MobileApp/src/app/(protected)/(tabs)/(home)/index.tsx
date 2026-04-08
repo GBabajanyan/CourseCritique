@@ -1,5 +1,8 @@
+import LoadingScreen from "@/src/components/LoadingScreen/LoadingScreen";
+import ToDoItem from "@/src/components/ToDoItem/ToDoItem";
 import { Colors } from "@/src/constants/colors";
 import { useStore } from "@/src/store/StoreProvider";
+import { useFocusEffect } from "expo-router";
 import { observer } from "mobx-react";
 import React, { useEffect, useState } from "react";
 import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
@@ -7,15 +10,20 @@ import { Calendar } from "react-native-calendars";
 
 import { MarkedDates } from "react-native-calendars/src/types";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-const { NAVY, WHITE, SAFFRON } = Colors;
+const { NAVY, WHITE } = Colors;
 
 const HomeScreen: React.FC = observer(() => {
   const today = new Date().toISOString().split("T")[0];
   const [dateSelected, setDateSelected] = useState(today);
   const { bottom } = useSafeAreaInsets();
-  const { ProfileStore } = useStore();
-  // const { getUserData } = ProfileStore;
+  const { feedbackStore } = useStore();
+  const { isLoading, loadPendingCourses } = feedbackStore;
 
+  useFocusEffect(
+    React.useCallback(() => {
+      loadPendingCourses();
+    }, []),
+  );
   const markedDates: MarkedDates = {
     [dateSelected]: {
       selected: true,
@@ -30,6 +38,14 @@ const HomeScreen: React.FC = observer(() => {
       ],
     },
   };
+
+  /*
+  function addDays(date: Date, days: number): Date {
+  const result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return result;
+}
+  */
   const ev = [
     { id: 1, time: "12:30", title: "eh" },
     { id: 2, time: "12:30", title: "eh" },
@@ -66,14 +82,7 @@ const HomeScreen: React.FC = observer(() => {
     return ev;
     // return events.filter((event) => isSameDay(dateSelected, event.date));
   };
-  const a = () => {
-    return (
-      <View style={{ height: 100, backgroundColor: "red" }}>
-        <Text>Sticky Header</Text>
-      </View>
-    );
-  };
-  
+  if (isLoading) return <LoadingScreen />;
   return (
     <View style={styles.container}>
       <View style={styles.CalendarContainer}>
@@ -99,7 +108,7 @@ const HomeScreen: React.FC = observer(() => {
         />
       </View>
       <View style={styles.eventsContainer}>
-        <Text style={styles.eventsTitle}>Events for {dateSelected}</Text>
+        <Text style={styles.eventsTitle}>TO-DOs for {dateSelected}</Text>
         {getEventsForSelectedDate().length > 0 ? (
           <ScrollView
             showsVerticalScrollIndicator={false}
@@ -109,14 +118,7 @@ const HomeScreen: React.FC = observer(() => {
             ]}
           >
             {ev.map((evt) => (
-              <View key={evt.id} style={styles.eventItem}>
-                <View style={styles.eventTime}>
-                  <Text style={styles.eventTimeText}>{evt.time}</Text>
-                </View>
-                <View style={styles.eventDetails}>
-                  <Text style={styles.eventTitle}>{evt.title}</Text>
-                </View>
-              </View>
+              <ToDoItem key={evt.id} item={evt} />
             ))}
           </ScrollView>
         ) : (
@@ -165,38 +167,6 @@ const styles = StyleSheet.create({
     gap: 16,
     paddingHorizontal: 4,
     overflowY: "hidden",
-  },
-  eventItem: {
-    flexDirection: "row",
-    backgroundColor: "#f8f8f8",
-    padding: 15,
-    // marginBottom: 100,
-    borderRadius: 10,
-    shadowColor: NAVY,
-    shadowOffset: {
-      width: 3,
-      height: 3,
-    },
-    shadowOpacity: 0.5,
-    shadowRadius: 3,
-  },
-  eventTime: {
-    marginRight: 15,
-    justifyContent: "center",
-  },
-  eventTimeText: {
-    fontSize: 14,
-    color: "#003A5D",
-    fontWeight: "500",
-  },
-  eventDetails: {
-    flex: 1,
-    justifyContent: "center",
-  },
-  eventTitle: {
-    fontSize: 16,
-    color: "#333",
-    fontWeight: "500",
   },
   noEvents: {
     textAlign: "center",

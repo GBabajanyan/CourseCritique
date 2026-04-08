@@ -27,8 +27,8 @@ const LoginScreen = observer(() => {
   const [password, setPassword] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const insets = useSafeAreaInsets();
-  const { authStore, SettingStore } = useStore();
-  const { biometricsEnabled, toggleBiometrics } = SettingStore;
+  const { authStore, settingsStore } = useStore();
+  const { biometricsEnabled, toggleBiometrics } = settingsStore;
   const {
     isLoading,
     isBiometricAvailable,

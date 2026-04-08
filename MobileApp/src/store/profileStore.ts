@@ -1,22 +1,7 @@
 import axios from "axios";
 import { makeAutoObservable } from "mobx";
 import { RootStore } from ".";
-
-export interface User {
-  Id: string;
-  name: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  avatar?: string;
-  role: string;
-  degree: string;
-  year: string;
-  studentId: string;
-  joinDate: string;
-  feedbacksGiven?: number;
-  feedbacksToFill?: number;
-}
+import { User } from "../types/User";
 
 class ProfileStore {
   rootStore: RootStore;
@@ -33,15 +18,17 @@ class ProfileStore {
     this.isLoading = true;
 
     try {
-      const { user: userData } = await this.rootStore.apiClient.instance.get(
-        "/profile/me",
-      );
+      const { user: userData } =
+        await this.rootStore.apiClient.instance.get("/profile/me");
 
       if (userData) {
         this.userProfile = { ...this.userProfile, ...userData };
       }
     } catch (error) {
-      console.error("Get user data error:", error.response?.data || error.message);
+      console.error(
+        "Get user data error:",
+        error.response?.data || error.message,
+      );
     } finally {
       this.isLoading = false;
     }

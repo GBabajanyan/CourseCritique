@@ -21,9 +21,9 @@ const { NAVY, SAFFRON } = Colors;
 
 const ProfileScreen: React.FC = () => {
   const router = useRouter();
-  const { authStore, ProfileStore, feedbackStore } = useStore();
+  const { authStore, profileStore, feedbackStore } = useStore();
   const { logout } = authStore;
-  const { userProfile, getProfileData } = ProfileStore;
+  const { userProfile, getProfileData } = profileStore;
   const {
     name,
     email,

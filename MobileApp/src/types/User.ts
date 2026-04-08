@@ -1,23 +1,27 @@
-type userDataType = {
+
+export interface User {
+  Id: string;
   name: string;
-  avatar: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  avatar?: string;
   role: string;
   degree: string;
-  year: "Senior" | "Junior" | "Somphomore" | "Freshman";
-  feedbacksGiven: number;
-  feedbacksToFill: number;
-  email: string;
+  year: string;
   studentId: string;
-  currentSemester: `${SemesterType} ${YearType}`;
-};
+  joinDate: string;
+  feedbacksGiven?: number;
+  feedbacksToFill?: number;
+}
 
-type SemesterType = "Fall" | "Spring" | "Summer";
+export type SemesterType = "Fall" | "Spring" | "Summer";
 
 type YearType = number;
 
-type BiometricLoginType = "Face ID" | "Touch ID" | "none";
+export type BiometricLoginType = "Face ID" | "Touch ID" | "none";
 
-type UserBadgeType = {
+export type UserBadgeType = {
   id: string;
   name: string;
   description: string;
@@ -26,11 +30,10 @@ type UserBadgeType = {
   earned: boolean;
 };
 
-type EventType = {
+export type EventType = {
   id: number;
   title: string;
   time: string;
-  date: Date;
+  date?: Date;
 };
 
-export { EventType, BiometricLoginType, UserBadgeType, userDataType };
