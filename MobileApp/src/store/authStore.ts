@@ -57,7 +57,7 @@ class AuthStore {
   doRefreshToken = async (refreshToken: string) => {
     try {
       const response = await this.rootStore.apiClient.instance.post(
-        `http://localhost:8000/auth/refresh`,
+        `/auth/refresh`,
         {
           refreshToken,
         },
@@ -72,7 +72,7 @@ class AuthStore {
       await this.rootStore.apiClient.setAuthTokens(authToken, newRefreshToken);
       return { userProfile };
     } catch (error: any) {
-      console.error("AuthStore doRefreshToken error", error);
+      console.error("AuthStore doRefreshToken error", error.response?.data || error.message);
       await this.rootStore.apiClient.logout();
     }
   };
@@ -115,7 +115,7 @@ class AuthStore {
     this.toggleIsLoading();
     try {
       const response = await this.rootStore.apiClient.instance.post(
-        `http://localhost:8000/auth/user_login`,
+        `/auth/user_login`,
         {
           login,
           password,

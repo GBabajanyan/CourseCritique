@@ -21,7 +21,7 @@ const { NAVY, SAFFRON } = Colors;
 
 const ProfileScreen: React.FC = () => {
   const router = useRouter();
-  const { authStore, ProfileStore } = useStore();
+  const { authStore, ProfileStore, feedbackStore } = useStore();
   const { logout } = authStore;
   const { userProfile, getProfileData } = ProfileStore;
   const {
@@ -35,6 +35,7 @@ const ProfileScreen: React.FC = () => {
     feedbacksGiven,
     feedbacksToFill,
   } = userProfile;
+  const { completedCount, pendingCount } = feedbackStore;
   const [badgeSelected, setBadgeSelected] = useState<Badge | null>(null);
   const [isBadgeDetailsModalOpen, setIsBadgeDetailsModalOpen] = useState(false);
   const { bottom } = useSafeAreaInsets();
@@ -133,7 +134,7 @@ const ProfileScreen: React.FC = () => {
         {/* Stats Section */}
         <View style={styles.statsSection}>
           <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{userData.feedbacksGiven}</Text>
+            <Text style={styles.statNumber}>{completedCount}</Text>
             <Text style={styles.statLabel}>Feedbacks Given</Text>
           </View>
           <View style={styles.statItem}>
@@ -141,7 +142,7 @@ const ProfileScreen: React.FC = () => {
             <Text style={styles.statLabel}>Badges Earned</Text>
           </View>
           <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{userData.feedbacksToFill}</Text>
+            <Text style={styles.statNumber}>{pendingCount}</Text>
             <Text style={styles.statLabel}> Pending Feedbacks</Text>
           </View>
         </View>

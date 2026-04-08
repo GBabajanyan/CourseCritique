@@ -1,5 +1,3 @@
-// utils/badgeUtils.ts
-
 import { Badge, BADGES } from "../mock/badges";
 
 export type grouppedBadges = {

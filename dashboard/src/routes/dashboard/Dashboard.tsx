@@ -4,8 +4,6 @@ import {
   Row,
   Col,
   Table,
-  Tag,
-  Progress,
   Tabs,
   Statistic,
   Select,
@@ -16,60 +14,27 @@ import {
   UserOutlined,
   MessageOutlined,
   StarOutlined,
-  TrophyOutlined,
   RiseOutlined,
   TeamOutlined,
   FileTextOutlined,
 } from "@ant-design/icons";
-import api from "../api/client";
+import api from "../../api/client";
 import "./Dashboard.css";
+import {
+  AnonymousFeedback,
+  CourseStats,
+  DashboardStats,
+  StudentProfile,
+} from "../../types/dashboardTypes";
+import {
+  courseColumns,
+  feedbackColumns,
+  studentColumns,
+} from "../../config/DashboardConfig";
 
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 const { TabPane } = Tabs;
-
-interface DashboardStats {
-  totalCourses: number;
-  totalStudents: number;
-  totalFeedbacks: number;
-  avgRating: number;
-  completionRate: number;
-  activeUsers: number;
-}
-
-interface CourseStats {
-  id: string;
-  course_code: string;
-  course_name: string;
-  instructor: string;
-  department: string;
-  total_students: number;
-  feedback_count: number;
-  avg_rating: number;
-  completion_rate: number;
-}
-
-interface StudentProfile {
-  id: string;
-  username: string;
-  email: string;
-  name: string;
-  year: string;
-  department: string;
-  feedbacks_given: number;
-  badges_earned: number;
-  join_date: string;
-}
-
-interface AnonymousFeedback {
-  id: string;
-  course_code: string;
-  course_name: string;
-  feedback_phase: string;
-  rating: number;
-  comments: string;
-  submitted_at: string;
-}
 
 const Dashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
@@ -102,7 +67,7 @@ const Dashboard: React.FC = () => {
           api.get("/dashboard/students"),
           api.get("/dashboard/feedbacks/anonymous"),
         ]);
-      console.log("Dashboard stats response:", statsRes.data);
+
       setStats(statsRes.data);
       setCourseStats(coursesRes.data);
       setStudents(studentsRes.data);
@@ -113,165 +78,6 @@ const Dashboard: React.FC = () => {
       setLoading(false);
     }
   };
-
-  // Course table columns
-  const courseColumns = [
-    {
-      title: "Course Code",
-      dataIndex: "course_code",
-      key: "course_code",
-      render: (text: string) => <Tag color="blue">{text}</Tag>,
-    },
-    {
-      title: "Course Name",
-      dataIndex: "course_name",
-      key: "course_name",
-    },
-    {
-      title: "Instructor",
-      dataIndex: "instructor",
-      key: "instructor",
-    },
-    {
-      title: "Department",
-      dataIndex: "department",
-      key: "department",
-      // filters: [...new Set(courseStats.map(c => c.department))].map(d => ({ text: d, value: d })),
-      onFilter: (value: any, record: CourseStats) =>
-        record.department === value,
-    },
-    {
-      title: "Students",
-      dataIndex: "total_students",
-      key: "total_students",
-      sorter: (a: CourseStats, b: CourseStats) =>
-        a.total_students - b.total_students,
-    },
-    {
-      title: "Feedbacks",
-      dataIndex: "feedback_count",
-      key: "feedback_count",
-      sorter: (a: CourseStats, b: CourseStats) =>
-        a.feedback_count - b.feedback_count,
-    },
-    {
-      title: "Completion",
-      dataIndex: "completion_rate",
-      key: "completion_rate",
-      render: (rate: number) => (
-        <Progress percent={rate} size="small" strokeColor="#3b82f6" />
-      ),
-    },
-  ];
-
-  // Student table columns
-  const studentColumns = [
-    {
-      title: "Name",
-      dataIndex: "name",
-      key: "name",
-      render: (text: string, record: StudentProfile) => (
-        <span>{text || record.username}</span>
-      ),
-    },
-    {
-      title: "Email",
-      dataIndex: "email",
-      key: "email",
-    },
-    {
-      title: "Year",
-      dataIndex: "year",
-      key: "year",
-      filters: [
-        { text: "Freshman", value: "Freshman" },
-        { text: "Sophomore", value: "Sophomore" },
-        { text: "Junior", value: "Junior" },
-        { text: "Senior", value: "Senior" },
-      ],
-      onFilter: (value: any, record: StudentProfile) => record.year === value,
-    },
-    {
-      title: "Department",
-      dataIndex: "department",
-      key: "department",
-    },
-    {
-      title: "Feedbacks",
-      dataIndex: "feedbacks_given",
-      key: "feedbacks_given",
-      sorter: (a: StudentProfile, b: StudentProfile) =>
-        a.feedbacks_given - b.feedbacks_given,
-    },
-    {
-      title: "Badges",
-      dataIndex: "badges_earned",
-      key: "badges_earned",
-      render: (count: number) => (
-        <span>
-          <TrophyOutlined style={{ color: "#fbbf24", marginRight: 4 }} />
-          {count}
-        </span>
-      ),
-    },
-    {
-      title: "Joined",
-      dataIndex: "join_date",
-      key: "join_date",
-    },
-  ];
-
-  // Anonymous Feedback columns
-  const feedbackColumns = [
-    {
-      title: "Course",
-      dataIndex: "course_code",
-      key: "course_code",
-      render: (code: string, record: AnonymousFeedback) => (
-        <div>
-          <Tag color="blue">{code}</Tag>
-          <div style={{ fontSize: 12, color: "#666" }}>
-            {record.course_name}
-          </div>
-        </div>
-      ),
-    },
-    {
-      title: "Phase",
-      dataIndex: "feedback_phase",
-      key: "feedback_phase",
-      render: (phase: string) => {
-        const colors: Record<string, string> = {
-          week1: "orange",
-          week3: "gold",
-          midterm: "blue",
-          week12: "green",
-          finals: "red",
-        };
-        return <Tag color={colors[phase] || "default"}>{phase}</Tag>;
-      },
-    },
-    {
-      title: "Rating",
-      dataIndex: "rating",
-      key: "rating",
-      render: (rating: number) => <span>{rating}/5 ⭐</span>,
-    },
-    {
-      title: "Comments",
-      dataIndex: "comments",
-      key: "comments",
-      ellipsis: true,
-      render: (text: string) => text || "—",
-    },
-    {
-      title: "Submitted",
-      dataIndex: "submitted_at",
-      key: "submitted_at",
-      sorter: (a: AnonymousFeedback, b: AnonymousFeedback) =>
-        new Date(a.submitted_at).getTime() - new Date(b.submitted_at).getTime(),
-    },
-  ];
 
   return (
     <div className="admin-dashboard">
@@ -324,7 +130,7 @@ const Dashboard: React.FC = () => {
 
       {/* Tabs for different views */}
       <Tabs defaultActiveKey="courses" className="dashboard-tabs">
-        <TabPane tab="Courses" key="courses" icon={<BookOutlined />}>
+        <TabPane tab="Coursejjs" key="courses" icon={<BookOutlined />}>
           <Card
             title="Course Statistics"
             extra={
@@ -332,12 +138,13 @@ const Dashboard: React.FC = () => {
                 defaultValue="all"
                 style={{ width: 150 }}
                 onChange={setSelectedDepartment}
-              >
-                <Option value="all">All Departments</Option>
-                <Option value="CS">Computer Science</Option>
-                <Option value="MATH">Mathematics</Option>
-                <Option value="PHY">Physics</Option>
-              </Select>
+                options={[
+                  { value: "all", label: "All Departments" },
+                  { value: "CS", label: "Computer Science" },
+                  { value: "MATH", label: "Mathematics" },
+                  { value: "PHY", label: "Physics" },
+                ]}
+              />
             }
           >
             <Table

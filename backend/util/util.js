@@ -1,21 +1,7 @@
 import jwt from "jsonwebtoken";
 
-const accessTokenCookieOptions = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "Strict",
-  maxAge: 30 * 60 * 1000,
-};
-
-const refreshTokenCookieOptions = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "Strict",
-  maxAge: 30 * 24 * 60 * 60 * 1000,
-};
-
 export const generateAuthToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET_KEY, { expiresIn: "15m" });
+  return jwt.sign({ id }, process.env.JWT_SECRET_KEY, { expiresIn: "15h" });
 };
 
 export const generateRefreshToken = (userId) => {

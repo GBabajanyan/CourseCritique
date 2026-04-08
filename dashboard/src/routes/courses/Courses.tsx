@@ -1,0 +1,128 @@
+import React, { useEffect, useState } from "react";
+import { Table, Input, Select, Card, Statistic, Row, Col, Space } from "antd";
+import { SearchOutlined } from "@ant-design/icons";
+import api from "../../api/client";
+import { Course } from "../../types/coursesTypes";
+import "./Courses.css";
+import { coursesColumns } from "../../config/CoursesConfig";
+
+const { Search } = Input;
+const { Option } = Select;
+
+const Courses: React.FC = () => {
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedDepartment, setSelectedDepartment] = useState("all");
+
+  useEffect(() => {
+    fetchCourses();
+  }, []);
+
+  const fetchCourses = async () => {
+    try {
+      const { data } = await api.get("http://localhost:8000/courses/all");
+      setCourses(data);
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredCourses = courses.filter((course) => {
+    const matchesSearch =
+      course.course_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      course.course_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      course.instructor.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesDepartment =
+      selectedDepartment === "all" || course.department === selectedDepartment;
+    return matchesSearch && matchesDepartment;
+  });
+
+  const departments = [
+    "all",
+    ...Array.from(new Set(courses.map((c) => c.department))),
+  ];
+
+  return (
+    <div className="courses-container">
+      {/* Header */}
+      <div className="courses-header">
+        <h1 className="courses-title">Courses</h1>
+        <p className="courses-subtitle">
+          Manage and view all course evaluations
+        </p>
+      </div>
+
+      {/* Stats Row */}
+      <Row gutter={16} style={{ marginBottom: 24 }}>
+        <Col span={8}>
+          <Card>
+            <Statistic title="Total Courses" value={courses.length} />
+          </Card>
+        </Col>
+        <Col span={8}>
+          <Card>
+            <Statistic
+              title="With Feedbacks"
+              value={
+                courses.filter((c) => (c.feedback_completed || 0) > 0).length
+              }
+            />
+          </Card>
+        </Col>
+        <Col span={8}>
+          <Card>
+            <Statistic
+              title="Total Feedbacks"
+              value={courses.reduce(
+                (acc, c) => acc + (c.feedback_completed || 0),
+                0,
+              )}
+            />
+          </Card>
+        </Col>
+      </Row>
+
+      {/* Filters */}
+      <Card style={{ marginBottom: 24 }}>
+        <Space size="middle" wrap>
+          <Search
+            placeholder="Search by code, name, or instructor..."
+            allowClear
+            style={{ width: 300 }}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            prefix={<SearchOutlined />}
+          />
+          <Select
+            defaultValue="all"
+            style={{ width: 200 }}
+            onChange={setSelectedDepartment}
+          >
+            {departments.map((dept) => (
+              <Option key={dept} value={dept}>
+                {dept === "all" ? "All Departments" : dept}
+              </Option>
+            ))}
+          </Select>
+        </Space>
+      </Card>
+
+      {/* Table */}
+      <Card>
+        <Table
+          columns={coursesColumns}
+          dataSource={filteredCourses}
+          rowKey="id"
+          loading={loading}
+          pagination={{ pageSize: 10, showSizeChanger: true }}
+          scroll={{ x: 1000 }}
+        />
+      </Card>
+    </div>
+  );
+};
+
+export default Courses;

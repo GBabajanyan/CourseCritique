@@ -1,15 +1,15 @@
 import {
-  currentCourseCode,
-  currentCourseName,
   currentSemester,
   currentYear,
 } from "@/src/mock";
+import { useStore } from "@/src/store/StoreProvider";
+import { Course } from "@/src/types/Course";
 import { usePathname, useRouter, useSegments } from "expo-router";
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const getHeaderParams = (pathname: string) => {
+const getHeaderParams = (pathname: string, selectedCourse?: Course) => {
   switch (pathname) {
     case "/":
       return { title: "Course Critique", subtitle: "" };
@@ -31,9 +31,15 @@ const getHeaderParams = (pathname: string) => {
         subtitle: `${currentSemester} Semester ${currentYear}`,
       };
     case "/feedback/Pending/FeedbackForm":
+      if (!selectedCourse)
+        return {
+          title: "Give Feedback",
+        };
+
+      const { courseName, courseCode } = selectedCourse;
       return {
         title: "Give Feedback",
-        subtitle: `${currentCourseCode} | ${currentCourseName}`,
+        subtitle: `${courseCode} | ${courseName}`,
       };
     case "/profile/allBadges":
       return {
@@ -70,7 +76,13 @@ const CustomHeader = () => {
   const segments = useSegments();
   const parentRouteName = segments[segments.length - 2];
 
-  const { title, subtitle, backButton } = getHeaderParams(activeTab);
+  const { feedbackStore } = useStore();
+  const { selectedCourse } = feedbackStore;
+
+  const { title, subtitle, backButton } = getHeaderParams(
+    activeTab,
+    selectedCourse,
+  );
 
   const goBack = () => {
     if (router.canGoBack()) router.back();

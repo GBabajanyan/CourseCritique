@@ -1,19 +1,11 @@
 import { useStore } from "@/src/store/StoreProvider";
-import {
-  Redirect,
-  useFocusEffect,
-  useLocalSearchParams,
-  useNavigation,
-  useRouter,
-} from "expo-router";
-import React, { useEffect, useState } from "react";
+import { useRouter } from "expo-router";
+import React, { useState } from "react";
 import {
   Alert,
   ScrollView,
-  StatusBar,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -21,18 +13,15 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Progress from "react-native-progress";
 import { FORM_CONFIG } from "@/src/constants/feedbackForm";
 import StepRenderer from "@/src/components/feedbackForm/StepRenderer";
-import { FeedbackRatings } from "@/src/store/feedbackStore";
-import { set } from "mobx";
+import { FeedbackRatings } from "@/src/types/Feedback";
 
 const FeedbackForm: React.FC = () => {
   const router = useRouter();
-  // const course = useLocalSearchParams<FeedbackFormScreenProps>();
   const insets = useSafeAreaInsets();
   const { feedbackStore } = useStore();
   const {
-    selectedCourse: course,
-    ratings,
-    setSelectedCourse,
+    currentFeedbackCourse: course,
+    setCurrentFeedbackCourse,
     submitFeedback,
   } = feedbackStore;
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -69,7 +58,7 @@ const FeedbackForm: React.FC = () => {
     setIsSubmitting(true);
 
     // Validate all required fields are filled
-    // for (const key of Object.keys(ratings)) {
+    // for (const key of Object.keys(formData)) {
     //   if (
     //     formData[key as keyof FeedbackRatings] === undefined &&
     //     key !== "open_feedback"
@@ -80,29 +69,27 @@ const FeedbackForm: React.FC = () => {
     //   }
     // }
 
-    try {
-      // Simulate API call
-      await submitFeedback(formData);
-      Alert.alert(
-        "Feedback Submitted!",
-        `Thank you for your feedback on ${course?.courseCode}.`,
-        [
-          {
-            text: "OK",
-            onPress: () => {
-              setSelectedCourse(null);
-              router.dismiss();
-              router.replace("/(protected)/(tabs)/feedback/Completed");
+    await submitFeedback(formData)
+      .then(() => {
+        Alert.alert(
+          "Feedback Submitted!",
+          `Thank you for your feedback on ${course?.courseCode}.`,
+          [
+            {
+              text: "OK",
+              onPress: () => {
+                setCurrentFeedbackCourse(null);
+                router.dismiss();
+                router.replace("/(protected)/(tabs)/feedback/Completed");
+              },
             },
-          },
-        ],
-      );
-    } catch (error) {
-      Alert.alert("Error", "Failed to submit feedback. Please try again.");
-      console.log(error);
-    } finally {
-      setIsSubmitting(false);
-    }
+          ],
+        );
+      })
+      .catch((err) => {
+        Alert.alert("Error", "Failed to submit feedback. Please try again.");
+      })
+      .finally(() => setIsSubmitting(false));
   };
 
   const getStepTitle = () => currentStepConfig.title;

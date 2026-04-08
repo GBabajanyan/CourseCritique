@@ -60,10 +60,8 @@ class ApiClient {
     return new Promise((resolve, reject) => {
       this.refreshQueue.push({
         resolve: (authToken: string) => {
-          console.log("ads");
 
           originalRequest.headers.Authorization = `Bearer ${authToken}`;
-          console.log("asafsg");
           resolve(this.client(originalRequest));
         },
         reject,
@@ -139,7 +137,6 @@ class ApiClient {
 
   private responseOnRejectInterceptor = async (error: AxiosError) => {
     const originalRequest = error.config as CustomAxiosRequestConfig;
-    console.log("meow");
 
     if (
       !originalRequest ||
@@ -215,7 +212,7 @@ class ApiClient {
       }
     } catch (error) {
       if (isAxiosError(error))
-        console.error("Axios error: ", error.response?.data);
+      console.error("Axios error: ", error.response?.data);
       else console.error("Logout error:", error);
       throw error;
     }

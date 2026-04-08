@@ -42,7 +42,6 @@ const _layout = () => {
           borderRadius: 20,
           backgroundColor: "white",
           padding: 4,
-          position: "absolute",
           top: 4,
           left: 0,
           transform: [{ translateX: "5%" }],
@@ -56,7 +55,6 @@ const _layout = () => {
         tabBarActiveBackgroundColor: "rgba(70, 55, 189, 0.1)",
         tabBarAllowFontScaling: true,
         animation: "shift",
-        sceneStyle: { paddingTop: isFeedbackPage ? 0 : 40 },
       }}
       initialRouteName="Pending"
     >

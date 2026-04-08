@@ -1,13 +1,15 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import authRoutes from "./routes/auth.js";
-import feedbackRoutes from "./routes/feedback.js";
-import course from "./routes/course.js";
-import dashboard from "./routes/dashboard.js";
+import authRoutes from "./routes/mobileApp/auth.js";
+import feedbackRoutes from "./routes/mobileApp/feedback.js";
+import coursesRoutes from "./routes/mobileApp/courses.js";
+import courseRoutes from "./routes/dashboard/course.js";
+import dashboardRoutes from "./routes/dashboard/dashboard.js";
 import cookieParser from "cookie-parser";
-import { verifyToken } from "./routes/verifyToken.js";
 import pool from "./db-config.js";
+import verifyToken from "./routes/middleware/verifyToken.js";
+import requireRole from "./routes/middleware/roleCheck.js";
 
 dotenv.config();
 
@@ -28,17 +30,35 @@ app.use(cors());
 //   }),
 // );
 
-app.use("/auth", authRoutes);
-app.use("/feedback", feedbackRoutes, verifyToken);
-app.use("/course", course);
-app.use("/dashboard", dashboard);
+const dashboardAccesRoles = ["admin", "instructor"];
+const MobileAppAccessRoles = ["student"];
+
+app.use(
+  "/auth",
+  authRoutes,
+  requireRole([...MobileAppAccessRoles, ...dashboardAccesRoles]),
+);
+app.use(
+  "/feedback",
+  feedbackRoutes,
+  verifyToken,
+  requireRole(MobileAppAccessRoles),
+);
+app.use(
+  "/courses",
+  coursesRoutes,
+  verifyToken,
+  requireRole(MobileAppAccessRoles),
+);
+
+app.use("/dashboard", dashboardRoutes, requireRole(dashboardAccesRoles));
+app.use("/dashboard/courses", courseRoutes, requireRole(dashboardAccesRoles));
 
 app.get("/profile/me", verifyToken, async (req, res) => {
   try {
-
     const { rows: profileRows } = await pool.query(
       `SELECT * FROM profile_users WHERE "userId" = $1`,
-      [req.user.userId],
+      [req.userData.auth_id],
     );
 
     let userProfile;

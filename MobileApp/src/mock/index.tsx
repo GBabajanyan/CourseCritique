@@ -1,24 +1,6 @@
 import { Course } from "../types/Course";
+import { CompletedFeedbacks } from "../types/Feedback";
 import { EventType, UserBadgeType, userDataType } from "../types/User";
-
-export interface FeedbackData {
-  rating: number;
-  comments: string;
-  improvements: string;
-  wouldRecommend: boolean;
-}
-
-export interface CompletedFeedback {
-  // export interface CompletedFeedback extends Course {
-  submittedDate: string;
-  feedbackData: FeedbackData;
-}
-
-export interface CompletedFeedbacks {
-  [year: string]: {
-    [semester: string]: CompletedFeedback[];
-  };
-}
 
 export const events: EventType[] = [
   { id: 1, title: "Team Meeting", time: "10:00 AM", date: new Date() },
@@ -71,7 +53,7 @@ export const pendingFeedbackCourses: Course[] = [
 ];
 
 // Mock data - completed feedbacks organized by year and semester
-export const completedFeedbacks = {
+export const completedFeedbacks: CompletedFeedbacks = {
   "2024": {
     Fall: [
       {
@@ -82,7 +64,7 @@ export const completedFeedbacks = {
         instructor: "Dr. Brown",
         submittedDate: "2024-11-15",
         deadline: "2024-11-15",
-        feedbackPhase: "week3",
+        feedbackPhase: "addDrop",
         feedbackData: {
           rating: 4,
           comments: "Great lab sessions with clear instructions.",
@@ -174,7 +156,7 @@ export const completedFeedbacks = {
         instructor: "Prof. Garcia",
         submittedDate: "2023-04-10",
         deadline: "2023-04-10",
-        feedbackPhase: "week12",
+        feedbackPhase: "finals",
         feedbackData: {
           rating: 5,
           comments: "Inspiring course that broadened my perspective.",
@@ -189,7 +171,8 @@ export const completedFeedbacks = {
 // Mock user data
 export const userData: userDataType = {
   name: "John Doe",
-  avatar: "https://static.vecteezy.com/system/resources/thumbnails/038/252/103/small/ai-generated-asian-male-student-smiling-happily-on-transparent-background-study-success-concept-png.png",
+  avatar:
+    "https://static.vecteezy.com/system/resources/thumbnails/038/252/103/small/ai-generated-asian-male-student-smiling-happily-on-transparent-background-study-success-concept-png.png",
   role: "Student",
   degree: "BSCS",
   year: "Senior",
@@ -203,6 +186,3 @@ export const userData: userDataType = {
 // Current semester info
 export const currentYear: string = "2026";
 export const currentSemester: string = "Fall";
-
-export const currentCourseCode: string = "CS101";
-export const currentCourseName: string = "Introduction to Computer Science";

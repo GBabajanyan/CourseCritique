@@ -26,19 +26,15 @@ export const dayNames: string[] = [
 ];
 
 export const phaseNames: Record<FeedbackPhase, string> = {
-  week1: "Week 1 Feedback",
-  week3: "Week 3 Feedback",
-  midterm: "Midterm Feedback",
-  week12: "Week 12 Feedback",
-  finals: "Final Feedback",
+  addDrop: "Add/Drop Impressions",
+  midterm: "Post Midterm",
+  finals: "Pre-Final",
 };
 
-export const phaseColors: Record<FeedbackPhase, string> = {
-  week1: "#FF6B35",
-  week3: "#FFA500",
-  midterm: "#007AFF",
-  week12: "#28A745",
-  finals: "#DC3545",
+export const localeDateOptions = {
+  year: "numeric",
+  month: "numeric",
+  day: "numeric",
 };
 
 const isValidEmail = (email: string): boolean => {

@@ -3,7 +3,7 @@ import { makeAutoObservable } from "mobx";
 import { RootStore } from ".";
 
 export interface User {
-  userId: string;
+  Id: string;
   name: string;
   firstName: string;
   lastName: string;
@@ -34,7 +34,7 @@ class ProfileStore {
 
     try {
       const { user: userData } = await this.rootStore.apiClient.instance.get(
-        "http://localhost:8000/profile/me",
+        "/profile/me",
       );
 
       if (userData) {

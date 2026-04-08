@@ -46,7 +46,8 @@
       [
         "expo-local-authentication",
         {
-          "faceIDPermission": "Allow $(PRODUCT_NAME) to use Face ID."
+          "faceIDPermission": "We will use Face ID for authentication.",
+          "fingerprintPermission": "We will use Fingerprint for authentication.",
         }
       ],
       "expo-font",

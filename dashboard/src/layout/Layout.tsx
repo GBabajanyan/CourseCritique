@@ -2,24 +2,16 @@ import React, { useState } from "react";
 import { Layout, Menu, Button, Typography } from "antd";
 import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import {
-  DashboardOutlined,
-  BookOutlined,
-  UserOutlined,
-  SettingOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   LogoutOutlined,
 } from "@ant-design/icons";
 import "./Layout.css";
+import { menuItems } from "../config/LayoutConfig";
+import { COLORS } from "../constants/colors";
 
 const { Header, Sider, Content } = Layout;
 const { Title } = Typography;
-
-const COLORS = {
-  NAVY: "#003A5D",
-  SAFFRON: "#EEBC03",
-  WHITE: "#fff",
-};
 
 const AppLayout: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -32,29 +24,6 @@ const AppLayout: React.FC = () => {
     localStorage.removeItem("user");
     window.location.href = "/login";
   };
-
-  const menuItems = [
-    {
-      key: "/",
-      icon: <DashboardOutlined />,
-      label: "Dashboard",
-    },
-    {
-      key: "/courses",
-      icon: <BookOutlined />,
-      label: "Courses",
-    },
-    {
-      key: "/profile",
-      icon: <UserOutlined />,
-      label: "Profile",
-    },
-    {
-      key: "/settings",
-      icon: <SettingOutlined />,
-      label: "Settings",
-    },
-  ];
 
   const handleMenuClick = (path: string) => {
     navigate(path);
@@ -83,14 +52,14 @@ const AppLayout: React.FC = () => {
         >
           {!collapsed ? (
             <Title level={4} style={{ color: COLORS.SAFFRON, margin: 0 }}>
-              Course Feedback
+              Course Critique
             </Title>
           ) : (
             <Title
               level={4}
               style={{ color: COLORS.SAFFRON, margin: 0, fontSize: 20 }}
             >
-              CF
+              Cc
             </Title>
           )}
         </div>

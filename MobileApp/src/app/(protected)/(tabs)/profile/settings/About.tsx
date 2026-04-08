@@ -25,7 +25,18 @@ const AboutScreen = ({ navigation }: any) => {
 
         <View style={styles.section}>
           <Text style={styles.description}>
-            Course Feedback App allows students to submit anonymous evaluations
+            Student course evaluations are carefully considered by AUA
+            administration and faculty to assess and improve learning and
+            enhance teaching. We seek your objective evaluation and constructive
+            comments for this purpose. The contents of evaluation forms are
+            released to the instructor, in an anonymous form, after course
+            grades have been submitted.
+          </Text>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.description}>
+            Course Critique allows students to submit anonymous evaluations
             of courses they attend and track their feedback history.
           </Text>
         </View>

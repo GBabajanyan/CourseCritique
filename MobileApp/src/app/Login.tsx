@@ -43,8 +43,6 @@ const LoginScreen = observer(() => {
 
   useEffect(() => {
     const autoBiometricLogin = async () => {
-      const refreshToken = await SecureStore.getItemAsync("refreshToken");
-      console.log("refreshT", refreshToken);
       if (isBiometricAvailable) {
         await handleBiometricLogin();
       }
