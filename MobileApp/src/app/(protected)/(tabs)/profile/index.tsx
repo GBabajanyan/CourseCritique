@@ -24,18 +24,8 @@ const ProfileScreen: React.FC = () => {
   const { authStore, profileStore, feedbackStore } = useStore();
   const { logout } = authStore;
   const { userProfile, getProfileData } = profileStore;
-  const {
-    name,
-    email,
-    avatar,
-    role,
-    year,
-    degree,
-    studentId,
-    feedbacksGiven,
-    feedbacksToFill,
-  } = userProfile;
-  const { completedCount, pendingCount } = feedbackStore;
+  const { name, email, avatar, role, year, degree, studentId } = userProfile;
+  const { completedFeedbacksCount, pendingCount } = feedbackStore;
   const [badgeSelected, setBadgeSelected] = useState<Badge | null>(null);
   const [isBadgeDetailsModalOpen, setIsBadgeDetailsModalOpen] = useState(false);
   const { bottom } = useSafeAreaInsets();
@@ -134,7 +124,7 @@ const ProfileScreen: React.FC = () => {
         {/* Stats Section */}
         <View style={styles.statsSection}>
           <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{completedCount}</Text>
+            <Text style={styles.statNumber}>{completedFeedbacksCount}</Text>
             <Text style={styles.statLabel}>Feedbacks Given</Text>
           </View>
           <View style={styles.statItem}>

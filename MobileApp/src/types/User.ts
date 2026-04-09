@@ -1,6 +1,6 @@
 
 export interface User {
-  Id: string;
+  id: string;
   name: string;
   firstName: string;
   lastName: string;
@@ -17,8 +17,6 @@ export interface User {
 
 export type SemesterType = "Fall" | "Spring" | "Summer";
 
-type YearType = number;
-
 export type BiometricLoginType = "Face ID" | "Touch ID" | "none";
 
 export type UserBadgeType = {
@@ -30,10 +28,4 @@ export type UserBadgeType = {
   earned: boolean;
 };
 
-export type EventType = {
-  id: number;
-  title: string;
-  time: string;
-  date?: Date;
-};
 

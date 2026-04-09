@@ -3,6 +3,7 @@ import { Colors, phaseColors } from "@/src/constants/colors";
 import { useStore } from "@/src/store/StoreProvider";
 import { Course } from "@/src/types/Course";
 import { FeedbackPhase } from "@/src/types/Feedback";
+import { getPhaseColor, getPhaseDisplayName } from "@/src/util/general";
 import { useRouter } from "expo-router";
 import { JSX } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -18,13 +19,6 @@ const PendingCourseFeedbackCard = ({
   const router = useRouter();
   const { feedbackStore } = useStore();
   const { setCurrentFeedbackCourse } = feedbackStore;
-
-  const getPhaseDisplayName = (phase: FeedbackPhase): string =>
-    phaseNames[phase];
-
-  const getPhaseColor = (phase: FeedbackPhase): string => {
-    return phaseColors[phase];
-  };
 
   return (
     <TouchableOpacity

@@ -1,18 +1,9 @@
-import { localeDateOptions } from "../constants";
 import { Course, FlashListItem } from "../types/Course";
 import {
   CompletedFeedbackFromDB,
   CompletedFeedbackListConfigItem,
 } from "../types/Feedback";
-
-export const semesterByMonthNumber = (n: number) => {
-  if (n <= 5) return "Spring";
-  if (n <= 9) return "Summer";
-  return "Fall";
-};
-
-export const processToDate = (fullDate: any) =>
-  new Date(fullDate).toLocaleDateString("en-CA", localeDateOptions);
+import { processToDate, semesterByMonthNumber } from "./general";
 
 export const generateConfigArrayFromCompletedFeedbacks = (
   data: CompletedFeedbackFromDB[],

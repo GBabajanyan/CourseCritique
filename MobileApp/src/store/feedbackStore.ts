@@ -1,16 +1,16 @@
-import { action, makeAutoObservable, runInAction } from "mobx";
-import { RootStore } from ".";
 import { AxiosInstance } from "axios";
+import { action, makeAutoObservable, runInAction } from "mobx";
+import { MarkedDates } from "react-native-calendars/src/types";
+import { RootStore } from ".";
+import { feedbackColors } from "../constants/colors";
 import { Course } from "../types/Course";
 import {
   CompletedFeedbackFromDB,
   CompletedFeedbackListConfigItem,
   FeedbackRatings,
 } from "../types/Feedback";
-import {
-  generateConfigArrayFromCompletedFeedbacks,
-  processToDate,
-} from "../util/course";
+import { generateConfigArrayFromCompletedFeedbacks } from "../util/course";
+import { processToDate } from "../util/general";
 
 class FeedbackStore {
   rootStore: RootStore;
@@ -21,7 +21,10 @@ class FeedbackStore {
 
   pendingFeedbacks: Course[] = [];
   completedFeedbacks: CompletedFeedbackListConfigItem[] = [];
+  completedFeedbacksCount: number = 0;
   allCourses: Course[] = [];
+
+  pendingCalendar: MarkedDates = {};
 
   isLoading: boolean = false;
 
@@ -35,6 +38,14 @@ class FeedbackStore {
   get pendingCount(): number {
     return this.pendingFeedbacks.length;
   }
+
+  switchSelectedDateOnCalendar = (oldDate: string, newDate: string) => {
+    this.pendingCalendar[oldDate].selected = false;
+    if (!this.pendingCalendar[newDate]) {
+      this.pendingCalendar[newDate] = {};
+    }
+    this.pendingCalendar[newDate].selected = true;
+  };
 
   setCurrentFeedbackCourse = (course: Course | null) => {
     this.currentFeedbackCourse = course;
@@ -60,6 +71,7 @@ class FeedbackStore {
         this.pendingFeedbacks = [
           ...data.map((item: Course) => ({
             ...item,
+            startDate: processToDate(item.startDate),
             deadline: processToDate(item.deadline),
           })),
         ];
@@ -71,16 +83,59 @@ class FeedbackStore {
     }
   };
 
+  loadPendingCoursesForHome = async (): Promise<void> => {
+    await this.loadPendingCourses()
+      .then(async () => {
+        this.setIsLoading(true);
+
+        this.pendingCalendar = {} as MarkedDates;
+        const indicesToExclude: Set<number> = new Set();
+        this.pendingFeedbacks.forEach(({ startDate, deadline }) => {
+          const startDateTimestamp = new Date(startDate);
+          const deadlineTimestamp = new Date(deadline);
+          let randomIndex = Math.round(Math.random() * 7);
+          while (indicesToExclude.has(randomIndex)) {
+            randomIndex = Math.round(Math.random() * 7);
+          }
+          indicesToExclude.add(randomIndex);
+
+          for (
+            let theDate = startDateTimestamp;
+            theDate <= deadlineTimestamp;
+            theDate.setDate(theDate.getDate() + 1) //next day
+          ) {
+            const formattedTheDate = processToDate(theDate);
+            if (
+              !this.pendingCalendar[formattedTheDate] ||
+              !this.pendingCalendar[formattedTheDate].periods
+            ) {
+              this.pendingCalendar[formattedTheDate] = { periods: [] };
+            }
+            this.pendingCalendar[formattedTheDate].periods?.push({
+              startingDay: formattedTheDate === startDate,
+              endingDay: formattedTheDate === deadline,
+              color: feedbackColors[randomIndex],
+            });
+          }
+        });
+      })
+      .catch((error) => {
+        console.error("Load pending courses error:", error);
+      })
+      .finally(() => this.setIsLoading(false));
+  };
+
   loadCompletedFeedbacks = async (): Promise<void> => {
     this.setIsLoading(true);
 
     try {
       const { data } =
         await this.rootStore.apiClient.instance.get(`/feedback/completed`);
-
+      const { rows, rowCount } = data;
       this.completedFeedbacks = generateConfigArrayFromCompletedFeedbacks(
-        data as CompletedFeedbackFromDB[],
+        rows as CompletedFeedbackFromDB[],
       );
+      this.completedFeedbacksCount = rowCount;
     } catch (error) {
       console.error("Load completed feedbacks error:", error);
     } finally {

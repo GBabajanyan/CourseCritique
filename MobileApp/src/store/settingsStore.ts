@@ -1,9 +1,9 @@
 // stores/settingsStore.ts
-import { makeAutoObservable } from "mobx";
-import * as SecureStore from "expo-secure-store";
 import * as LocalAuthentication from "expo-local-authentication";
+import * as SecureStore from "expo-secure-store";
+import { makeAutoObservable } from "mobx";
 import { SemesterType } from "../types/User";
-import { semesterByMonthNumber } from "../util/course";
+import { processToDate, semesterByMonthNumber } from "../util/general";
 
 class SettingsStore {
   darkMode: boolean = false;
@@ -11,12 +11,14 @@ class SettingsStore {
   emailReminders: boolean = true;
   biometricsEnabled: boolean = false;
 
+  currentDate: string;
   currentYear: number;
   currentSemester: SemesterType;
 
   constructor() {
     makeAutoObservable(this, {}, { autoBind: true });
     const now = new Date();
+    this.currentDate = processToDate(now);
     this.currentYear = now.getFullYear();
     this.currentSemester = semesterByMonthNumber(now.getMonth());
     this.loadSettings();

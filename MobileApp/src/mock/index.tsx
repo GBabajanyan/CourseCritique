@@ -1,5 +1,5 @@
-import { Course } from "../types/Course";
-import { EventType, SemesterType } from "../types/User";
+import { Course, EventType } from "../types/Course";
+import { SemesterType } from "../types/User";
 
 type userDataType = {
   name: string;

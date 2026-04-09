@@ -4,6 +4,17 @@ export const Colors = {
   WHITE: "#fff",
 };
 
+export const feedbackColors = [
+  "#FF6B35", // Orange (matches addDrop)
+  "#007AFF", // Blue (matches midterm)
+  "#DC3545", // Red (matches finals)
+  "#28A745", // Green (new - fresh)
+  "#6F42C1", // Purple (new - distinctive)
+  "#FD7E14", // Amber (new - warm)
+  "#20C997", // Teal (new - cool)
+  "#000",
+];
+
 export const phaseColors: Record<string, string> = {
   addDrop: "#FF6B35",
   midterm: "#007AFF",
@@ -11,20 +22,20 @@ export const phaseColors: Record<string, string> = {
 };
 
 export const departmentColors: Record<string, string> = {
-  BAB: "#8E44AD", // Business - Amethyst
-  CBE: "#D35400", // Business/Economics - Pumpkin
-  CHSS: "#9B59B6", // Humanities/Social Sciences - Royal Purple
-  CS: "#003A5D", // Computer Science - Navy Aua
-  CSE: "#EEBC03", // Computational Sciences - Saffron
-  DS: "#F39C12", // Data Science - Forest Green
-  EC: "#E67E22", // English/Communications - Burnt Orange
-  ECON: "#48C9B0", // Economics - Golden Orange
-  ENGS: "#3498DB", // Engineering - Sky Blue
-  ESS: "#2ECC71", // Environmental Science - Emerald
-  ENV: "#27AE60", // Environment - Light Sea Green
-  EPIC: "#F1C40F", // Design - Sunflower
-  HRSJ: "#E74C3C", // Human Rights - Alizarin
-  PG: "#8B4513", // Political Science - Gray
-  PH: "#16A085", // Public Health - Green Sea
-  default: "#95A5A6", // Default - Concrete
+  BAB: "#8E44AD",
+  CBE: "#D35400",
+  CHSS: "#9B59B6",
+  CS: "#003A5D",
+  CSE: "#EEBC03",
+  DS: "#F39C12",
+  EC: "#E67E22",
+  ECON: "#48C9B0",
+  ENGS: "#3498DB",
+  ESS: "#2ECC71",
+  ENV: "#27AE60",
+  EPIC: "#F1C40F",
+  HRSJ: "#E74C3C",
+  PG: "#8B4513",
+  PH: "#16A085",
+  default: "#95A5A6",
 };

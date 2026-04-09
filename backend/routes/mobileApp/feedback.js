@@ -12,12 +12,16 @@ router.get("/pending", verifyToken, async (req, res) => {
       c.course_code as "courseCode",
       c.course_name as "courseName",
       c.instructor,
+      c.department,
       c.section,
       f.deadline,
+      f.start_date as "startDate",
       f.feedback_phase as "feedbackPhase"
     FROM feedback f
     JOIN course c ON f.course_id = c.id
-    WHERE  f.status = 'pending'
+    WHERE  f.status = 'pending'  
+    AND NOW() < f.deadline 
+    AND NOW() > f.start_date
     AND f.profile_id = $1
     ORDER BY f.deadline ASC`,
       [profile_id],
@@ -55,7 +59,8 @@ router.get("/completed", verifyToken, async (req, res) => {
     /*
     SELECT COUNT(*) FROM feedback WHERE profile_id = 'f140d3ee-e9b2-4bb8-8ab7-c3e42e5135c4' AND status = 'completed';
     */
-    res.send(result.rows);
+    const { rows, rowCount } = result;
+    res.send({ rows, rowCount });
   } catch (err) {
     res.sendStatus(500);
     console.log(err);
