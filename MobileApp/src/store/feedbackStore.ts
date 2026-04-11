@@ -12,6 +12,10 @@ import {
 } from "../types/Feedback";
 import { generateConfigArrayFromCompletedFeedbacks } from "../util/course";
 import { processToDate } from "../util/general";
+import {
+  cancelDeadlineNotification,
+  scheduleDeadlineNotification,
+} from "../util/notifications";
 
 class FeedbackStore {
   rootStore: RootStore;
@@ -24,6 +28,8 @@ class FeedbackStore {
   completedFeedbacks: CompletedFeedbackListConfigItem[] = [];
   completedFeedbacksCount: number = 0;
   allCourses: Course[] = [];
+
+  notificationIds: Record<string, string> = {};
 
   pendingCalendar: MarkedDates = {};
 
@@ -105,15 +111,18 @@ class FeedbackStore {
         this.pendingCalendar = {} as MarkedDates;
         const today = processToDate(new Date());
         this.pendingCalendar[today] = { selected: true };
-        const indicesToExclude: Set<number> = new Set();
-        this.pendingFeedbacks.forEach(({ startDate, deadline }) => {
+
+        const colorIndicesToExclude: Set<number> = new Set();
+
+        this.pendingFeedbacks.forEach((feedback) => {
+          const { startDate, deadline } = feedback;
           const startDateTimestamp = new Date(startDate);
           const deadlineTimestamp = new Date(deadline);
           let randomIndex = Math.round(Math.random() * 7);
-          while (indicesToExclude.has(randomIndex)) {
+          while (colorIndicesToExclude.has(randomIndex)) {
             randomIndex = Math.round(Math.random() * 7);
           }
-          indicesToExclude.add(randomIndex);
+          colorIndicesToExclude.add(randomIndex);
 
           for (
             let theDate = startDateTimestamp;
@@ -134,6 +143,16 @@ class FeedbackStore {
             });
           }
         });
+
+        for (const feedback of this.pendingFeedbacks) {
+          const notificationId = await scheduleDeadlineNotification(
+            feedback.courseCode,
+            feedback.courseName,
+            new Date(feedback.deadline),
+            feedback.id,
+          );
+          this.notificationIds[feedback.id] = notificationId;
+        }
       })
       .catch((error) => {
         console.error("Load pending courses error:", error);
@@ -206,11 +225,20 @@ class FeedbackStore {
     try {
       if (this.currentFeedbackCourse === null)
         throw new Error("No FeedbackCourse data");
+
+      const { id } = this.currentFeedbackCourse;
       const feedbackJson = JSON.stringify(feedbackData);
+
       await this.rootStore.apiClient.instance.post(`/feedback/submit`, {
         ratings: feedbackJson,
         feedbackId: this.currentFeedbackCourse.id,
       });
+
+      const notificationId = this.notificationIds[id];
+      if (notificationId) {
+        await cancelDeadlineNotification(notificationId);
+        delete this.notificationIds[id];
+      }
     } catch (error) {
       console.error("Submit feedback error:", error);
       throw error;
