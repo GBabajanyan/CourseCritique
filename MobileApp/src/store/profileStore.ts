@@ -1,8 +1,7 @@
-import axios from "axios";
 import { makeAutoObservable } from "mobx";
+import { Platform } from "react-native";
 import { RootStore } from ".";
 import { User } from "../types/User";
-
 class ProfileStore {
   rootStore: RootStore;
 
@@ -12,6 +11,19 @@ class ProfileStore {
   constructor(rootStore: RootStore) {
     this.rootStore = rootStore;
     makeAutoObservable(this, {}, { autoBind: true });
+  }
+
+  async savePushToken(token: string) {
+    try {
+      await this.rootStore.apiClient.instance.post("/users/push-token", {
+        token: token,
+        deviceType: Platform.OS,
+      });
+      console.log("Push token saved:", token);
+      
+    } catch (error) {
+      console.error("Failed to save push token:", error);
+    }
   }
 
   getProfileData = async (): Promise<void> => {

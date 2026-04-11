@@ -1,6 +1,7 @@
 import express from "express";
 import pool from "../../db-config.js";
 import verifyToken from "../middleware/verifyToken.js";
+import { sendPushNotifications } from "../../util/util.js";
 
 const router = express.Router();
 
@@ -24,8 +25,7 @@ router.get("/:id", async (req, res) => {
     const { id } = req.params;
 
     const result = await pool.query(
-      `
-      SELECT 
+      `SELECT 
         c.id,
         c.course_code,
         c.course_name,
@@ -40,8 +40,7 @@ router.get("/:id", async (req, res) => {
       LEFT JOIN enrollment e ON c.id = e.course_id
       LEFT JOIN feedback f ON c.id = f.course_id
       WHERE c.id = $1
-      GROUP BY c.id, c.course_code, c.course_name, c.instructor, c.department, c.credits, c.description
-    `,
+      GROUP BY c.id, c.course_code, c.course_name, c.instructor, c.department, c.credits, c.description`,
       [id],
     );
 
@@ -114,6 +113,24 @@ router.post("/:id/feedback-periods-create", verifyToken, async (req, res) => {
       WHERE course_id = $1`,
       [id],
     );
+
+    const tokens = await pool.query(
+      `SELECT p.expo_push_token, p.name
+    FROM profile_users p
+    WHERE p."studentId" = ANY($1)`,
+      [students.rows.map((s) => s.profile_id)],
+    );
+    const messages = tokens.rows
+      .filter((t) => t.expo_push_token)
+      .map((t) => ({
+        to: t.expo_push_token,
+        sound: "default",
+        title: "New Feedback Period",
+        body: `${phase} feedback for your course is now open`,
+        data: { courseId: id, phase },
+      }));
+
+    await sendPushNotifications(messages);
 
     res.json({
       message: `Feedback period "${phase}" created for ${students.rows.length} students`,

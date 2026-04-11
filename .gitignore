@@ -2,7 +2,7 @@ CourseCritique.code-workspace
 
 # dependencies
 node_modules/
-
+.vscode
 # Expo
 .expo/
 dist/
