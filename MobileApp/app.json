@@ -9,50 +9,32 @@
     "scheme": "coursecritique",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "supportsTablet": true,
+      "bundleIdentifier": "com.gbabaja.CourseCritique",
+      // "supportsTablet": true,
       "config": {
         "usesNonExemptEncryption": false
-      },
-      "infoPlist": {
-        "NSFaceIDUsageDescription": "This app uses the camera to scan barcodes on event tickets."
       }
     },
     "android": {
-      "predictiveBackGestureEnabled": false
+      "adaptiveIcon": {
+        "backgroundColor": "#003A5D",
+        "foregroundImage": "./assets/images/teddy.png"
+      },
+      "package": "com.gbabaja.CourseCritique"
     },
     "web": {
       "output": "static",
       "favicon": "./assets/images/teddy.png"
     },
-    "splash": {
-      "image": "./assets/images/teddy.png",
-      "backgroundColor": "#003A5D"
-    },
     "plugins": [
-      "expo-router",
-      [
-        "expo-splash-screen",
-        {
-          "backgroundColor": "#003A5D",
-          "image": "./assets/images/teddy.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "dark": {
-            "backgroundColor": "#003A5D"
-          }
-        }
-      ],
       "expo-secure-store",
       [
         "expo-local-authentication",
         {
           "faceIDPermission": "We will use Face ID for authentication.",
-          "fingerprintPermission": "We will use Fingerprint for authentication.",
+          "fingerprintPermission": "We will use Fingerprint for authentication."
         }
-      ],
-      "expo-font",
-      "expo-image",
-      "expo-web-browser"
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

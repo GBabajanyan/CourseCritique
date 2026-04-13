@@ -77,7 +77,7 @@ app.get("/profile/me", verifyToken, async (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  res.sendStatus(200);
+  res.json({ message: "CC" }).status(200);
 });
 
 app.listen(PORT, () => console.log("listening to PORT " + PORT));

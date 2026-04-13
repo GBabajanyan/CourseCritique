@@ -110,10 +110,7 @@ class AuthStore {
     }
   };
 
-  login = async (
-    login: string,
-    password: string,
-  ): Promise<{ success: boolean }> => {
+  login = async (login: string, password: string): Promise<void> => {
     this.toggleIsLoading();
     try {
       const response = await this.rootStore.apiClient.instance.post(
@@ -131,10 +128,9 @@ class AuthStore {
         this.currentUser = user;
         this.isAuthenticated = true;
       });
-      return { success: true };
     } catch (error: any) {
       console.log("Login error: ", error.message);
-      return { success: false };
+      throw error;
     } finally {
       this.toggleIsLoading();
     }

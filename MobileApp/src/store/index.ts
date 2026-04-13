@@ -14,7 +14,7 @@ export class RootStore {
 
   constructor() {
     this.apiClient = new ApiClient(
-      process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000",
+      process.env.EXPO_PUBLIC_API_URL || "http://192.168.100.254:8000",
     );
     this.settingsStore = new SettingsStore();
     this.authStore = new AuthStore(this);

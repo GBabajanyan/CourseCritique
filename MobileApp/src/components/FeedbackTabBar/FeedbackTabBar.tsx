@@ -1,11 +1,10 @@
 import { Colors } from "@/src/constants/colors";
-import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { Link, usePathname, useRouter } from "expo-router";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 const { NAVY, WHITE } = Colors;
 
-const FeedbackTabBar = (props: BottomTabBarProps) => {
+const FeedbackTabBar = () => {
   const activeTab = usePathname();
   const router = useRouter();
 

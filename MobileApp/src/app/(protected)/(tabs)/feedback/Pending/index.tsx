@@ -7,7 +7,7 @@ import { Course } from "@/src/types/Course";
 import { observer } from "mobx-react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect } from "expo-router";
 import PendingCourseFeedbackCard from "@/src/components/CourseFeedbackCard/Pending/PendingCourseFeedbackCard";
 import LoadingScreen from "@/src/components/LoadingScreen/LoadingScreen";
 
