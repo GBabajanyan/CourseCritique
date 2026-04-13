@@ -1,11 +1,10 @@
-import CourseStatsModal from "@/src/components/CourseDetailsModal/CourseStatsModal";
 import PendingCourseFeedbackCard from "@/src/components/CourseFeedbackCard/Pending/PendingCourseFeedbackCard";
 import LoadingScreen from "@/src/components/LoadingScreen/LoadingScreen";
 import { useColors } from "@/src/hooks/useColors";
 import { currentSemester, currentYear } from "@/src/mock";
 import { useStore } from "@/src/store/StoreProvider";
 import { observer } from "mobx-react";
-import React, { useState } from "react";
+import { default as React, default as React, useState } from "react";
 import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -17,7 +16,7 @@ const PendingFeedbacks: React.FC = observer(() => {
   const { feedbackStore } = useStore();
   const {
     isPageLoading,
-    courseFeedbackInSearchModal,
+    // courseFeedbackInSearchModal,
     pendingFeedbacks,
     // loadPendingCourses,
     setCourseFeedbackInSearchModal,

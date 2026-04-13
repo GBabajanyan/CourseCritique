@@ -82,8 +82,7 @@ const LoginScreen = observer(() => {
     // }
 
     await login(username, password)
-      .then(async () => {
-        await loadLoggingData();
+      .then(() => {
         if (!biometricsEnabled) {
           Alert.alert(
             "Login Successful",
