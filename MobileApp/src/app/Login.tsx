@@ -14,12 +14,11 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import * as SecureStore from "expo-secure-store";
 
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useStore } from "../store/StoreProvider";
 import { AntDesign, MaterialCommunityIcons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Colors } from "../constants/colors";
+import { useStore } from "../store/StoreProvider";
 const { NAVY } = Colors;
 
 const LoginScreen = observer(() => {
@@ -72,35 +71,48 @@ const LoginScreen = observer(() => {
     //   return;
     // }
 
-    const { success } = await login(username, password);
-    if (success) {
-      if (!biometricsEnabled) {
-        Alert.alert(
-          "Login Successful",
-          "Do you want to enable biometric login?",
-          [
-            {
-              text: "No",
-              onPress: () => console.log("Biometric login not enabled"),
-              style: "cancel",
-            },
-            {
-              text: "Yes",
-              onPress: async () => {
-                try {
-                  await toggleBiometrics();
-                } catch (error) {
-                  console.error("Enable biometrics error:", error);
-                  Alert.alert("Error", "Failed to enable biometric login");
-                }
+    await login(username, password)
+      .then(() => {
+        if (!biometricsEnabled) {
+          Alert.alert(
+            "Login Successful",
+            "Do you want to enable biometric login?",
+            [
+              {
+                text: "No",
+                onPress: () => console.log("Biometric login not enabled"),
+                style: "cancel",
               },
-            },
-          ],
-        );
-      }
-    } else {
-      Alert.alert("Error", "Invalid credentials");
-    }
+              {
+                text: "Yes",
+                onPress: async () => {
+                  try {
+                    await toggleBiometrics();
+                  } catch (error) {
+                    console.error("Enable biometrics error:", error);
+                    Alert.alert("Error", "Failed to enable biometric login");
+                  }
+                },
+              },
+            ],
+          );
+        }
+      })
+      .catch((err) => {
+        let errorMessage;
+        switch (err?.status) {
+          case 400:
+            errorMessage = "Invalid username or password. Please try again";
+            break;
+          case 500:
+            errorMessage = "Server error. Please try again later";
+            break;
+          default:
+            errorMessage = "An Unknown error occurred. Please try again later";
+            break;
+        }
+        Alert.alert("Error", errorMessage);
+      });
   };
 
   return (

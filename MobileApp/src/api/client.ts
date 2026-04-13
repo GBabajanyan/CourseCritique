@@ -60,7 +60,6 @@ class ApiClient {
     return new Promise((resolve, reject) => {
       this.refreshQueue.push({
         resolve: (authToken: string) => {
-
           originalRequest.headers.Authorization = `Bearer ${authToken}`;
           resolve(this.client(originalRequest));
         },
@@ -87,10 +86,7 @@ class ApiClient {
     const refreshToken = await this.getRefreshToken();
     if (!refreshToken) throw new Error("No refresh token");
 
-    const response = await axios.post(
-      `${this.client.defaults.baseURL}/auth/refresh`,
-      { refreshToken },
-    );
+    const response = await axios.post(`/auth/refresh`, { refreshToken });
 
     const { authToken, refreshToken: newRefreshToken } = response.data;
     await this.setAuthTokens(authToken, newRefreshToken);
@@ -212,7 +208,7 @@ class ApiClient {
       }
     } catch (error) {
       if (isAxiosError(error))
-      console.error("Axios error: ", error.response?.data);
+        console.error("Axios error: ", error.response?.data);
       else console.error("Logout error:", error);
       throw error;
     }

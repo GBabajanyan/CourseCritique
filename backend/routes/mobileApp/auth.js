@@ -27,7 +27,7 @@ router.post("/user_reg", async (req, res) => {
     const username = email.split("@")[0];
     const hashedPassword = await bcrypt.hash(password, 10);
     const auth_user = await pool.query(
-      "INSERT INTO auth_users (username, email, password_hash) VALUES ($1, $2, $3) RETURNING *",
+      "INSERT INTO auth_users (username, email, password_hash, is_active) VALUES ($1, $2, $3, true) RETURNING *",
       [username, email, hashedPassword],
     );
     const registered_user = auth_user.rows[0].id;
@@ -89,7 +89,8 @@ router.post("/user_login", async (req, res) => {
     await pool.query(
       `UPDATE auth_users 
      SET refresh_token = $1, 
-         refresh_token_expires = NOW() + INTERVAL '30 days'
+         refresh_token_expires = NOW() + INTERVAL '30 days',
+         last_login = NOW()
      WHERE id = $2`,
       [refreshToken, user.id],
     );
