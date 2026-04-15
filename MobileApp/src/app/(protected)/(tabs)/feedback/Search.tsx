@@ -17,8 +17,9 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FlashList } from "@shopify/flash-list";
 import { transformCoursesToFlashListConfig } from "@/src/util/course";
+const { WHITE } = Colors;
 
-const Search = observer(() => {
+const SearchFeedbacks = observer(() => {
   const [searchQuery, setSearchQuery] = useState("");
   const { bottom } = useSafeAreaInsets();
   const { feedbackStore } = useStore();
@@ -171,7 +172,7 @@ const Search = observer(() => {
         ]}
       />
 
-      {/* {allCourses.length === 0 && (
+      {flashListData.length === 0 && (
         <View style={styles.emptyState}>
           <Text style={styles.emptyStateEmoji}>🎉</Text>
           <Text style={styles.emptyStateText}>No pending feedbacks!</Text>
@@ -179,7 +180,7 @@ const Search = observer(() => {
             All caught up with your course evaluations.
           </Text>
         </View>
-      )} */}
+      )}
     </View>
   );
 });
@@ -247,6 +248,31 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#666",
   },
+  emptyState: {
+    backgroundColor: WHITE,
+    marginHorizontal: 20,
+    padding: 40,
+    borderRadius: 12,
+    alignItems: "center",
+    marginTop: 20,
+  },
+  emptyStateEmoji: {
+    fontSize: 48,
+    marginBottom: 16,
+  },
+  emptyStateText: {
+    fontSize: 18,
+    color: "#333",
+    fontWeight: "600",
+    textAlign: "center",
+    marginBottom: 8,
+  },
+  emptyStateSubtext: {
+    fontSize: 14,
+    color: "#666",
+    textAlign: "center",
+    lineHeight: 20,
+  },
 });
 
-export default Search;
+export default SearchFeedbacks;

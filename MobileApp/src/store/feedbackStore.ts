@@ -89,6 +89,8 @@ class FeedbackStore {
         this.setIsLoading(true);
 
         this.pendingCalendar = {} as MarkedDates;
+        const today = processToDate(new Date());
+        this.pendingCalendar[today] = { selected: true };
         const indicesToExclude: Set<number> = new Set();
         this.pendingFeedbacks.forEach(({ startDate, deadline }) => {
           const startDateTimestamp = new Date(startDate);
