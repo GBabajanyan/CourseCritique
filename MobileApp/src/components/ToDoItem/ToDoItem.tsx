@@ -3,7 +3,13 @@ import { useStore } from "@/src/store/StoreProvider";
 import { Course } from "@/src/types/Course";
 import { getPhaseColor, getPhaseDisplayName } from "@/src/util/general";
 import { useRouter } from "expo-router";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 const { SAFFRON, NAVY, WHITE } = Colors;
 
 const ToDoItem = ({
@@ -18,11 +24,19 @@ const ToDoItem = ({
   const { setCurrentFeedbackCourse } = feedbackStore;
 
   return (
-    // <Pressable style={styles.badgeItem} onPress={onPress}>
-    <View key={item.id} style={styles.toDoCard}>
+    <Pressable
+      // style={styles.badgeItem}
+      style={[styles.toDoCard, { shadowColor: NAVY }]}
+      onPress={() => {
+        setCurrentFeedbackCourse(item);
+        router.push("/feedback/Pending/FeedbackForm");
+      }}
+    >
+      {/* <View key={item.id} style={[styles.toDoCard, { shadowColor: NAVY }]}> */}
       <View style={styles.toDoDetails}>
         <Text style={styles.courseCode}>{item.courseCode}</Text>
         <Text style={styles.courseName}>{item.courseName}</Text>
+        <Text style={styles.subText}>(Press to fill feedback)</Text>
       </View>
       <View style={styles.eventDetails}>
         <View
@@ -37,7 +51,7 @@ const ToDoItem = ({
         </View>
         <Text style={styles.deadline}>Due: {item.deadline}</Text>
       </View>
-      <View style={styles.eventDetails}>
+      {/* <View style={styles.eventDetails}>
         <TouchableOpacity
           style={styles.feedbackButton}
           onPress={() => {
@@ -47,9 +61,9 @@ const ToDoItem = ({
         >
           <Text style={styles.feedbackButtonText}>Give Feedback</Text>
         </TouchableOpacity>
-      </View>
-    </View>
-    // </Pressable>
+      </View> */}
+      {/* </View> */}
+    </Pressable>
   );
 };
 
@@ -64,21 +78,36 @@ const styles = StyleSheet.create({
       width: 3,
       height: 3,
     },
+    justifyContent: "space-between",
     shadowOpacity: 0.5,
     shadowRadius: 3,
     gap: 12,
   },
   toDoDetails: {
     justifyContent: "center",
-    width: "25%",
+  },
+  courseCode: {
+    fontSize: 16,
+    color: "#333",
+    fontWeight: "500",
   },
   courseName: {
     fontSize: 14,
-    color: "#003A5D",
+    color: NAVY,
     fontWeight: "500",
   },
+  subText: {
+    fontSize: 10,
+    color: "#ADAAA8",
+    fontWeight: "500",
+  },
+  eventDetails: {
+    flex: 1,
+    alignItems: "flex-end",
+    gap: 4,
+  },
   deadline: {
-    fontSize: 14,
+    fontSize: 12,
     color: "#ff6b35",
     fontWeight: "500",
   },
@@ -89,25 +118,15 @@ const styles = StyleSheet.create({
   },
   phaseBadgeText: {
     color: "#ffffff",
-    fontSize: 10,
+    fontSize: 8,
     fontWeight: "bold",
-  },
-  eventDetails: {
-    flex: 1,
-    justifyContent: "space-around",
-    gap: 4,
-  },
-  courseCode: {
-    fontSize: 16,
-    color: "#333",
-    fontWeight: "500",
   },
   feedbackButton: {
     borderColor: NAVY,
     backgroundColor: WHITE,
     borderWidth: 1,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
     borderRadius: 8,
     alignSelf: "flex-start",
     shadowColor: NAVY,

@@ -80,15 +80,15 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 3,
+    gap:4
   },
   courseHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: 12,
   },
   courseInfo: {
-    flex: 1,
+    flex: 2,
   },
   courseCodeRow: {
     flexDirection: "row",
@@ -124,6 +124,7 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   deadlineContainer: {
+    flex: 2,
     alignItems: "flex-end",
   },
   deadlineText: {
