@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 3,
-    gap: 4,
+    gap:4
   },
   courseHeader: {
     flexDirection: "row",
