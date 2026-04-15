@@ -38,7 +38,7 @@ const HomeScreen: React.FC = observer(() => {
     }, []),
   );
 
-  const getEventsForSelectedDate = useMemo(() => {
+  const eventsForSelectedDate = useMemo(() => {
     return pendingFeedbacks.filter(({ startDate, deadline }) =>
       startDate ? isTheDateBetween(dateSelected, startDate, deadline) : false,
     );
@@ -83,8 +83,8 @@ const HomeScreen: React.FC = observer(() => {
       ) : (
         <View style={styles.eventsContainer}>
           <Text style={styles.eventsTitle}>TO-DOs for {dateSelected}</Text>
-          {getEventsForSelectedDate.length > 0 ? (
-            getEventsForSelectedDate.map((evt) => (
+          {eventsForSelectedDate.length > 0 ? (
+            eventsForSelectedDate.map((evt) => (
               <ToDoItem key={evt.id} item={evt} />
             ))
           ) : (

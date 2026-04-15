@@ -5,13 +5,13 @@ export const Colors = {
 };
 
 export const feedbackColors = [
-  "#FF6B35", // Orange (matches addDrop)
-  "#007AFF", // Blue (matches midterm)
-  "#DC3545", // Red (matches finals)
-  "#28A745", // Green (new - fresh)
-  "#6F42C1", // Purple (new - distinctive)
-  "#FD7E14", // Amber (new - warm)
-  "#20C997", // Teal (new - cool)
+  "#FF6B35",
+  "#007AFF",
+  "#DC3545",
+  "#28A745",
+  "#6F42C1",
+  "#FD7E14",
+  "#20C997",
   "#000",
 ];
 

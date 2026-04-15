@@ -132,7 +132,7 @@ export const styles = StyleSheet.create({
     elevation: 2,
   },
   courseInfo: {
-    flex: 1,
+    flex: 2,
   },
   courseCodeRow: {
     flexDirection: "row",
@@ -196,6 +196,7 @@ export const styles = StyleSheet.create({
   },
   feedbackMeta: {
     alignItems: "flex-end",
+    flex:1
   },
   expandIcon: {
     fontSize: 12,
