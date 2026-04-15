@@ -1,19 +1,19 @@
-import React, { useState } from "react";
 import CourseDetailsModal from "@/src/components/CourseDetailsModal/CourseDetailsModal";
+import PendingCourseFeedbackCard from "@/src/components/CourseFeedbackCard/Pending/PendingCourseFeedbackCard";
+import LoadingScreen from "@/src/components/LoadingScreen/LoadingScreen";
 import { Colors } from "@/src/constants/colors";
 import { currentSemester, currentYear } from "@/src/mock";
 import { useStore } from "@/src/store/StoreProvider";
 import { Course } from "@/src/types/Course";
+import { useFocusEffect } from "expo-router";
 import { observer } from "mobx-react";
+import React, { useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useFocusEffect } from "expo-router";
-import PendingCourseFeedbackCard from "@/src/components/CourseFeedbackCard/Pending/PendingCourseFeedbackCard";
-import LoadingScreen from "@/src/components/LoadingScreen/LoadingScreen";
 
-const { NAVY, WHITE } = Colors;
+const { WHITE } = Colors;
 
-const PendingFeedback: React.FC = observer(() => {
+const PendingFeedbacks: React.FC = observer(() => {
   const [isCourseDetailsModalOpen, setIsCourseDetailsModalOpen] =
     useState(false);
   // const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
@@ -138,4 +138,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PendingFeedback;
+export default PendingFeedbacks;

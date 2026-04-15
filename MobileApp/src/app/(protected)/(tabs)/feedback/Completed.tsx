@@ -10,7 +10,7 @@ import { ScrollView, SectionList, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 const { NAVY, WHITE } = Colors;
 
-const Completed = observer(() => {
+const CompletedFeedbacks = observer(() => {
   const { feedbackStore } = useStore();
   const { isLoading, completedFeedbacks, loadCompletedFeedbacks } =
     feedbackStore;
@@ -143,4 +143,4 @@ export const styles = StyleSheet.create({
   },
 });
 
-export default Completed;
+export default CompletedFeedbacks;

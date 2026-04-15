@@ -95,10 +95,11 @@ class FeedbackStore {
         this.setIsLoading(true);
 
         this.pendingCalendar = {} as MarkedDates;
+
+        const today = processToDate(new Date());
+        this.pendingCalendar[today] = { selected: true };
         const colorIndicesToExclude: Set<number> = new Set();
-        
-        this.pendingFeedbacks.forEach((feedback) => {
-          const { startDate, deadline } = feedback;
+        this.pendingFeedbacks.forEach(({ startDate, deadline }) => {
           const startDateTimestamp = new Date(startDate);
           const deadlineTimestamp = new Date(deadline);
           let randomIndex = Math.round(Math.random() * 7);
