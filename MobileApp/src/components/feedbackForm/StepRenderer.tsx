@@ -12,7 +12,7 @@ interface StepRendererProps {
 const StepRenderer: React.FC<StepRendererProps> = ({ step, data, update }) => {
   return (
     <View>
-      <View style={{ gap: 24 }}>
+      <View style={{ gap: 20 }}>
         {step.questions.map((q) => (
           <QuestionBlock
             key={q.key}

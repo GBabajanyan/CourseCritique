@@ -10,7 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-const { SAFFRON, NAVY, WHITE } = Colors;
+const { SUB, NAVY, WHITE } = Colors;
 
 const ToDoItem = ({
   item,
@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
   },
   subText: {
     fontSize: 10,
-    color: "#ADAAA8",
+    color: SUB,
     fontWeight: "500",
   },
   eventDetails: {

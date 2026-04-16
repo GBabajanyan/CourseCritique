@@ -8,6 +8,7 @@ import { useFocusEffect } from "expo-router";
 import { observer } from "mobx-react";
 import React, { useCallback, useMemo, useState } from "react";
 import {
+  Pressable,
   StyleSheet,
   Text,
   TextInput,
@@ -17,7 +18,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FlashList } from "@shopify/flash-list";
 import { transformCoursesToFlashListConfig } from "@/src/util/course";
-const { WHITE } = Colors;
+const { WHITE, SUB } = Colors;
 
 const SearchFeedbacks = observer(() => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -37,7 +38,12 @@ const SearchFeedbacks = observer(() => {
   const [expandedDepartments, setExpandedDepartments] = useState<Set<string>>(
     new Set(),
   );
-
+  const actionAllIcon = expandedDepartments.size
+    ? "chevron-collapse-outline"
+    : "chevron-expand-outline";
+  const actionAllText = expandedDepartments.size
+    ? "Collapse All"
+    : "Expand All";
   useFocusEffect(
     React.useCallback(() => {
       loadAllCourses();
@@ -45,7 +51,11 @@ const SearchFeedbacks = observer(() => {
   );
 
   const filteredCourses = useMemo(() => {
-    if (!searchQuery.trim()) return allCourses;
+    if (!searchQuery.trim()) {
+      setExpandedDepartments(new Set());
+      return allCourses;
+    }
+    setExpandedDepartments(new Set(Object.keys(departmentColors)));
 
     return allCourses.filter(
       (course) =>
@@ -57,14 +67,11 @@ const SearchFeedbacks = observer(() => {
   }, [allCourses, searchQuery]);
 
   const flashListData = useMemo(() => {
-    const departmentsToExpand = !searchQuery
-      ? expandedDepartments
-      : new Set(Object.keys(departmentColors));
     return transformCoursesToFlashListConfig(
       filteredCourses,
-      departmentsToExpand,
+      expandedDepartments,
     );
-  }, [filteredCourses, expandedDepartments, searchQuery]);
+  }, [filteredCourses, expandedDepartments]);
 
   const toggleDepartment = (department: string) => {
     setExpandedDepartments((prev) => {
@@ -76,6 +83,14 @@ const SearchFeedbacks = observer(() => {
       }
       return newSet;
     });
+  };
+
+  const toggleActionAll = () => {
+    setExpandedDepartments(
+      new Set(
+        expandedDepartments.size ? undefined : Object.keys(departmentColors),
+      ),
+    );
   };
 
   const handleCoursePress = async (course: Course) => {
@@ -156,10 +171,15 @@ const SearchFeedbacks = observer(() => {
       </View>
 
       {/* Results Count */}
-      <Text style={styles.resultsCount}>
-        {filteredCourses.length} courses found
-      </Text>
-
+      <View style={styles.actionsRow}>
+        <Text style={styles.resultsCount}>
+          {filteredCourses.length} courses found
+        </Text>
+        <Pressable onPress={toggleActionAll} style={styles.pressAllButton}>
+          <Text style={{ color: SUB, fontSize: 12 }}>{actionAllText}</Text>
+          <Ionicons name={actionAllIcon} size={24} color={SUB} />
+        </Pressable>
+      </View>
       <FlashList
         data={flashListData}
         renderItem={renderItem}
@@ -209,16 +229,23 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#333",
   },
+  //results row
+  actionsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 8,
+  },
+  pressAllButton: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
   resultsCount: {
     fontSize: 12,
-    color: "#999",
-    marginVertical: 8,
-    marginBottom: 8,
+    color: SUB,
   },
   //flashlist
-  listContent: {
-    rowGap: 8,
-  },
+  listContent: {},
   sectionHeader: {
     flexDirection: "row",
     justifyContent: "space-between",

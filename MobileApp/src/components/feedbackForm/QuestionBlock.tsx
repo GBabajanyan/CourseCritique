@@ -3,7 +3,7 @@ import { View, Text, TextInput } from "react-native";
 import RatingScale from "./RatingScale";
 import { FEEDBACK_VALUES_BY_TYPE } from "@/src/constants/feedbackForm";
 import { Colors } from "@/src/constants/colors";
-const { NAVY } = Colors;
+const { NAVY, SUB } = Colors;
 
 interface QuestionBlockProps {
   label: string;
@@ -24,14 +24,22 @@ const QuestionBlock: React.FC<QuestionBlockProps> = ({
     FEEDBACK_VALUES_BY_TYPE[type][value];
 
   return (
-    <View style={{ gap: 12 }}>
-      <Text style={{ fontSize: 24, color: NAVY }}>{`${label}:`}</Text>
+    <View>
+      <Text
+        style={{
+          fontSize: 24,
+          color: NAVY,
+          marginBottom: 12,
+          textAlign: type === "thumb" ? "center" : "left",
+        }}
+      >{`${label}:`}</Text>
       {type === "text" ? (
         <TextInput
           placeholder="Enter your feedback here..."
           multiline
           numberOfLines={4}
           onChangeText={onChange}
+          placeholderTextColor={SUB}
           style={{
             minHeight: 150,
             justifyContent: "flex-start",
@@ -52,9 +60,9 @@ const QuestionBlock: React.FC<QuestionBlockProps> = ({
         style={{
           fontSize: 14,
           color: "#666",
-          textAlign: "right",
-          marginTop: 4,
-          display: showRatingValue ? "flex" : "none",
+          display: "flex",
+          textAlign: type === "thumb" ? "center" : "left",
+          marginTop: 12,
         }}
       >
         {showRatingValue ? FEEDBACK_VALUES_BY_TYPE[type][value] : ""}

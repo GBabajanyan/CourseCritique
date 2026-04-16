@@ -17,7 +17,7 @@ import { Calendar } from "react-native-calendars";
 
 import { DateData } from "react-native-calendars/src/types";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-const { NAVY, WHITE, SAFFRON } = Colors;
+const { NAVY, WHITE, SAFFRON, SUB } = Colors;
 
 const HomeScreen: React.FC = observer(() => {
   const { bottom } = useSafeAreaInsets();
@@ -73,7 +73,7 @@ const HomeScreen: React.FC = observer(() => {
             selectedDayBackgroundColor: "#2d4150",
             selectedDayTextColor: WHITE,
             dayTextColor: "#2d4150",
-            textDisabledColor: "#dd99ee",
+            textDisabledColor: SUB,
           }}
           displayLoadingIndicator={isLoading}
         />

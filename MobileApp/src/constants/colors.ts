@@ -2,6 +2,7 @@ export const Colors = {
   NAVY: "#003A5D",
   SAFFRON: "#EEBC03",
   WHITE: "#fff",
+  SUB: "#ADAAA8",
 };
 
 export const feedbackColors = [
