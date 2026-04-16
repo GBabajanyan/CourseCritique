@@ -13,20 +13,6 @@ export interface FeedbackData {
   wouldRecommend: Thumb;
 }
 
-export interface CompletedFeedback extends Course {
-  submittedDate?: string;
-  feedbackData?: FeedbackData;
-}
-export interface CompletedFeedbackFromDB extends Course {
-  submittedDate: string;
-  feedbackData: FeedbackRatings;
-}
-
-export type CompletedFeedbackListConfigItem = Record<
-  number,
-  Record<string, CompletedFeedback[]>
->;
-
 export type FeedbackRatings = {
   course_pace: Rating5;
   course_load: Rating5;
@@ -51,6 +37,29 @@ export type FeedbackRatings = {
   open_feedback: string | undefined;
 };
 
+export interface PendingFeedback extends Course {
+  deadline: string;
+  startDate: string;
+  feedbackPhase: FeedbackPhase;
+  //id turns into feedback id
+}
+export interface CompletedFeedback extends Course {
+  feedbackPhase: FeedbackPhase;
+  submittedDate?: string;
+  feedbackData?: FeedbackData;
+  //id turns into feedback id
+}
+export interface CompletedFeedbackFromDB extends Course {
+  submittedDate: string;
+  feedbackData: FeedbackRatings;
+  //id turns into feedback id
+}
+
+export type CompletedFeedbackListConfigItem = Record<
+  number,
+  Record<string, CompletedFeedback[]>
+>;
+
 type CompletedCourseFeedbackCardType = {
   item: CompletedFeedback;
   type: "completed";
@@ -59,6 +68,7 @@ type StatInfoCourseFeedbackCardType = {
   item: Course;
   type: "statsInfo";
 };
+
 type CourseFeedbackCardBaseType = {
   isExpanded?: boolean;
   onToggle?: () => void;

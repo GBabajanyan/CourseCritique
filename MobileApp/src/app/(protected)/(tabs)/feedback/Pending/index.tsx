@@ -1,44 +1,46 @@
-import CourseDetailsModal from "@/src/components/CourseDetailsModal/CourseDetailsModal";
+import CourseStatsModal from "@/src/components/CourseDetailsModal/CourseStatsModal";
 import PendingCourseFeedbackCard from "@/src/components/CourseFeedbackCard/Pending/PendingCourseFeedbackCard";
 import LoadingScreen from "@/src/components/LoadingScreen/LoadingScreen";
 import { Colors } from "@/src/constants/colors";
 import { currentSemester, currentYear } from "@/src/mock";
 import { useStore } from "@/src/store/StoreProvider";
-import { Course } from "@/src/types/Course";
-import { useFocusEffect } from "expo-router";
 import { observer } from "mobx-react";
 import React, { useState } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const { WHITE } = Colors;
 
 const PendingFeedbacks: React.FC = observer(() => {
-  const [isCourseDetailsModalOpen, setIsCourseDetailsModalOpen] =
-    useState(false);
+  const [isCourseStatsModalOpen, setIsCourseStatsModalOpen] = useState(false);
   // const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const { bottom } = useSafeAreaInsets();
   const { feedbackStore } = useStore();
-  const { isLoading, pendingFeedbacks, loadPendingCourses } = feedbackStore;
+  const {
+    isPageLoading,
+    courseFeedbackInSearchModal,
+    pendingFeedbacks,
+    // loadPendingCourses,
+    setCourseFeedbackInSearchModal,
+    fetchCourseStats,
+  } = feedbackStore;
 
   const bottomPadding = bottom + 20;
 
-  useFocusEffect(
-    React.useCallback(() => {
-      loadPendingCourses();
-    }, []),
-  );
-
-  const openCourseDetailsModal = (course: Course) => {
-    // setSelectedCourse(course);
-    setIsCourseDetailsModalOpen(true);
+  const openCourseStatsModal = async (courseCode: string) => {
+    const res = await fetchCourseStats(courseCode);
+    if (!res) {
+      return Alert.alert("Something went wrong. Please come back later");
+    }
+    setCourseFeedbackInSearchModal(res);
+    setIsCourseStatsModalOpen(true);
   };
 
   const closeCourseDetailsModal = () => {
-    setIsCourseDetailsModalOpen(false);
-    // setSelectedCourse(null);
+    setIsCourseStatsModalOpen(false);
+    setCourseFeedbackInSearchModal(null);
   };
-  if (isLoading) return <LoadingScreen />;
+  if (isPageLoading) return <LoadingScreen />;
 
   return (
     <ScrollView
@@ -48,10 +50,9 @@ const PendingFeedbacks: React.FC = observer(() => {
         { paddingBottom: bottomPadding },
       ]}
     >
-      <CourseDetailsModal
-        visible={isCourseDetailsModalOpen}
+      <CourseStatsModal
+        visible={isCourseStatsModalOpen}
         closeModal={closeCourseDetailsModal}
-        courseDetails={null}
       />
       <View>
         <Text style={styles.currentSemesterTitle}>
@@ -65,12 +66,12 @@ const PendingFeedbacks: React.FC = observer(() => {
       </View>
 
       <View style={styles.courseItemContainer}>
-        {pendingFeedbacks.map((course) => (
+        {pendingFeedbacks.map((feedback) => (
           <PendingCourseFeedbackCard
-            key={course.id}
-            course={course}
+            key={feedback.id}
+            feedbackData={feedback}
             onPress={() => {
-              openCourseDetailsModal(course);
+              openCourseStatsModal(feedback.courseCode);
             }}
           />
         ))}

@@ -3,7 +3,6 @@ import LoadingScreen from "@/src/components/LoadingScreen/LoadingScreen";
 import { Colors } from "@/src/constants/colors";
 import { useStore } from "@/src/store/StoreProvider";
 import { CompletedFeedback } from "@/src/types/Feedback";
-import { useFocusEffect } from "expo-router";
 import { observer } from "mobx-react";
 import React, { useState } from "react";
 import { ScrollView, SectionList, StyleSheet, Text, View } from "react-native";
@@ -12,7 +11,7 @@ const { NAVY, WHITE } = Colors;
 
 const CompletedFeedbacks = observer(() => {
   const { feedbackStore } = useStore();
-  const { isLoading, completedFeedbacks, loadCompletedFeedbacks } =
+  const { isPageLoading, completedFeedbacks, loadCompletedFeedbacks } =
     feedbackStore;
   const [expandedFeedbackId, setExpandedFeedbackId] = useState<string | null>(
     null,
@@ -21,11 +20,11 @@ const CompletedFeedbacks = observer(() => {
   const { bottom } = useSafeAreaInsets();
   const bottomPadding = bottom;
 
-  useFocusEffect(
-    React.useCallback(() => {
-      loadCompletedFeedbacks();
-    }, []),
-  );
+  // useFocusEffect(
+  //   React.useCallback(() => {
+  //     loadCompletedFeedbacks();
+  //   }, []),
+  // );
 
   const toggleFeedback = (id: string): void => {
     setExpandedFeedbackId(expandedFeedbackId === id ? null : id);
@@ -55,7 +54,7 @@ const CompletedFeedbacks = observer(() => {
       ))}
     </View>
   );
-  if (isLoading) return <LoadingScreen />;
+  if (isPageLoading) return <LoadingScreen />;
 
   return !!Object.keys(completedFeedbacks).length ? (
     <SectionList

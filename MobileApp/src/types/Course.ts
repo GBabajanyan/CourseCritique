@@ -1,17 +1,13 @@
-import { FeedbackPhase } from "./Feedback";
 
 export interface Course {
-  id: string;
+  id: string; //course id
   courseCode: string;
   courseName: string;
   section: string;
   instructor: string;
-  feedbackPhase: FeedbackPhase;
-  deadline: string;
-  startDate: string;
-  department?: string;
   credits?: number;
-  avg_rating?: number;
+  department?: string;
+  stats?: any;
 }
 
 export interface SectionHeader {
@@ -28,9 +24,3 @@ export interface CourseItem {
 
 export type FlashListItem = SectionHeader | CourseItem;
 
-export interface EventType {
-  id: number;
-  title: string;
-  time: string;
-  date?: Date;
-}

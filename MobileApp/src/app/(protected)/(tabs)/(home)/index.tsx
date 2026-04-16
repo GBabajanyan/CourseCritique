@@ -1,9 +1,7 @@
-import LoadingScreen from "@/src/components/LoadingScreen/LoadingScreen";
 import ToDoItem from "@/src/components/ToDoItem/ToDoItem";
 import { Colors } from "@/src/constants/colors";
 import { useStore } from "@/src/store/StoreProvider";
 import { isTheDateBetween } from "@/src/util/general";
-import { useFocusEffect } from "expo-router";
 import { observer } from "mobx-react";
 import React, { useMemo, useState } from "react";
 import {
@@ -23,20 +21,20 @@ const HomeScreen: React.FC = observer(() => {
   const { bottom } = useSafeAreaInsets();
   const { feedbackStore, settingsStore } = useStore();
   const {
-    isLoading,
+    isPageLoading,
     pendingCalendar,
     pendingFeedbacks,
     switchSelectedDateOnCalendar,
-    loadPendingCoursesForHome,
+    // loadPendingCoursesForHome,
   } = feedbackStore;
   const { currentDate } = settingsStore;
   const [dateSelected, setDateSelected] = useState(currentDate);
 
-  useFocusEffect(
-    React.useCallback(() => {
-      loadPendingCoursesForHome();
-    }, []),
-  );
+  // useFocusEffect(
+  //   React.useCallback(() => {
+  //     loadPendingCoursesForHome();
+  //   }, []),
+  // );
 
   const eventsForSelectedDate = useMemo(() => {
     return pendingFeedbacks.filter(({ startDate, deadline }) =>
@@ -49,6 +47,7 @@ const HomeScreen: React.FC = observer(() => {
     switchSelectedDateOnCalendar(dateSelected, newDateString);
     setDateSelected(newDateString);
   };
+
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
@@ -75,10 +74,11 @@ const HomeScreen: React.FC = observer(() => {
             dayTextColor: "#2d4150",
             textDisabledColor: SUB,
           }}
-          displayLoadingIndicator={isLoading}
+          hideArrows
+          displayLoadingIndicator={isPageLoading}
         />
       </View>
-      {isLoading ? (
+      {isPageLoading ? (
         <ActivityIndicator size="large" color={NAVY} />
       ) : (
         <View style={styles.eventsContainer}>
