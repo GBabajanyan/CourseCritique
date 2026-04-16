@@ -51,6 +51,14 @@ const LoginScreen = observer(() => {
   }, []);
 
   useEffect(() => {
+    const checkBiometrics = async () => {
+      await checkBiometricSupport();
+    };
+
+    checkBiometrics();
+  }, []);
+
+  useEffect(() => {
     const autoBiometricLogin = async () => {
       if (isBiometricAvailable) {
         await handleBiometricLogin().then(async () => await loadLoggingData());
