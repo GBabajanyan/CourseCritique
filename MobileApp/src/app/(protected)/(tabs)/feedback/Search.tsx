@@ -213,7 +213,6 @@ const SearchFeedbacks = observer(() => {
         closeModal={handleCloseCourseDetailsModal}
         visible={isCourseDetailsModalOpen}
       />
-
       {flashListData.length === 0 && (
         <View style={styles.emptyState}>
           <Text style={styles.emptyStateEmoji}>🎉</Text>
