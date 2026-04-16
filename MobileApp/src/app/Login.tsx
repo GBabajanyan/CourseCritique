@@ -34,11 +34,20 @@ const LoginScreen = observer(() => {
     biometricType,
     login,
     biometricLogin,
+    checkBiometricSupport,
   } = authStore;
 
   const biometricLoginIcon =
     biometricType === "Face ID" ? "face-recognition" : "fingerprint";
   const biometricIconColor = isLoading ? "grey" : "black";
+
+  useEffect(() => {
+    const checkBiometrics = async () => {
+      await checkBiometricSupport();
+    };
+
+    checkBiometrics();
+  }, []);
 
   useEffect(() => {
     const autoBiometricLogin = async () => {

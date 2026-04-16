@@ -99,7 +99,18 @@ const ProfileScreen: React.FC = () => {
       <View style={styles.profileCard}>
         {/* Avatar and Basic Info */}
         <View style={styles.avatarSection}>
-          <Image src={avatar} style={styles.avatarContainer} />
+          {avatar ? (
+            <Image src={avatar} style={styles.avatarContainer} />
+          ) : (
+            <View style={styles.avatarContainer}>
+              <Text style={styles.avatarInitials}>
+                {name
+                  .split(" ")
+                  .map((w: string) => w[0])
+                  .join("")}
+              </Text>
+            </View>
+          )}
           <View style={styles.basicInfo}>
             <Text style={styles.name}>{name}</Text>
             <Text style={styles.role}>{role}</Text>
@@ -248,8 +259,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginRight: 16,
   },
-  avatar: {
-    fontSize: 4,
+  avatarInitials: {
+    fontSize: 32,
+    fontWeight: 600,
+    textTransform: "uppercase",
   },
   basicInfo: {
     flex: 1,
