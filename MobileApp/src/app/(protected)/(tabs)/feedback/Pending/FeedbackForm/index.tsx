@@ -1,23 +1,23 @@
+import StepRenderer from "@/src/components/feedbackForm/StepRenderer";
+import { FORM_CONFIG } from "@/src/constants/feedbackForm";
 import { useStore } from "@/src/store/StoreProvider";
+import { FeedbackRatings } from "@/src/types/Feedback";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   Alert,
+  KeyboardAvoidingView,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Progress from "react-native-progress";
-import { FORM_CONFIG } from "@/src/constants/feedbackForm";
-import StepRenderer from "@/src/components/feedbackForm/StepRenderer";
-import { FeedbackRatings } from "@/src/types/Feedback";
 
 const FeedbackForm: React.FC = () => {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
   const { feedbackStore } = useStore();
   const {
     currentFeedbackCourse: course,
@@ -95,7 +95,10 @@ const FeedbackForm: React.FC = () => {
   const getStepTitle = () => currentStepConfig.title;
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
       <View style={styles.progressContainer}>
         <Progress.Bar
           progress={currentStep / totalSteps}
@@ -143,7 +146,7 @@ const FeedbackForm: React.FC = () => {
           )}
         </TouchableOpacity>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 

@@ -3,8 +3,8 @@ export const FORM_CONFIG = [
     key: "course_structure",
     title: "Course Structure",
     questions: [
-      { key: "course_pace", label: "Course pace was appropriate", type: "3" },
-      { key: "course_load", label: "Course load was adequate", type: "5" },
+      { key: "course_pace", label: "Course pace", type: "3" },
+      { key: "course_load", label: "Course load", type: "3" },
       {
         key: "class_organization",
         label: "Classes were structured & well-organized",
@@ -91,7 +91,7 @@ export const FORM_CONFIG = [
         type: "thumb",
       },  {
         key: "open_feedback",
-        label: "Please share any additional feedback or suggestions for improvement.",
+        label: "Please share any additional feedback or suggestions for improvement",
         type: "text",
       },
     ],

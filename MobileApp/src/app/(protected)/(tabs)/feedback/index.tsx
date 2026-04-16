@@ -1,9 +1,6 @@
 import { Colors } from "@/src/constants/colors";
 import React, { useState } from "react";
-import {
-  StyleSheet,
-  useWindowDimensions
-} from "react-native";
+import { StyleSheet, useWindowDimensions } from "react-native";
 import { SceneMap, TabBar, TabView } from "react-native-tab-view";
 import CompletedFeedbacks from "./Completed";
 import PendingFeedbacks from "./Pending";
@@ -39,7 +36,7 @@ const FeedbackTabs = () => {
             activeColor={WHITE}
             inactiveColor={NAVY}
             pressOpacity={0.9}
-            onTabPress={({ route }) => console.log(JSON.stringify(route))}
+            // onTabPress={({ route }) => console.log(JSON.stringify(route))} //on tab press scroll to top
           />
         );
       }}
