@@ -1,13 +1,16 @@
+import CourseStatsModal from "@/src/components/CourseDetailsModal/CourseStatsModal";
 import CourseFeedbackCard from "@/src/components/CourseFeedbackCard/Completed/CourseFeedbackCard";
 import LoadingScreen from "@/src/components/LoadingScreen/LoadingScreen";
 import { Colors, departmentColors } from "@/src/constants/colors";
 import { useStore } from "@/src/store/StoreProvider";
-import { Course, FlashListItem } from "@/src/types/Course";
+import { FlashListItem } from "@/src/types/Course";
+import { transformCoursesToFlashListConfig } from "@/src/util/course";
 import { Ionicons } from "@expo/vector-icons";
-import { useFocusEffect } from "expo-router";
+import { FlashList } from "@shopify/flash-list";
 import { observer } from "mobx-react";
 import React, { useCallback, useMemo, useState } from "react";
 import {
+  Alert,
   Pressable,
   StyleSheet,
   Text,
@@ -16,8 +19,6 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { FlashList } from "@shopify/flash-list";
-import { transformCoursesToFlashListConfig } from "@/src/util/course";
 const { WHITE, SUB } = Colors;
 
 const SearchFeedbacks = observer(() => {
@@ -25,9 +26,8 @@ const SearchFeedbacks = observer(() => {
   const { bottom } = useSafeAreaInsets();
   const { feedbackStore } = useStore();
   const {
-    isLoading,
+    isPageLoading,
     allCourses,
-    courseFeedbackInSearchModal,
     setCourseFeedbackInSearchModal,
     loadAllCourses,
     fetchCourseStats,
@@ -44,11 +44,12 @@ const SearchFeedbacks = observer(() => {
   const actionAllText = expandedDepartments.size
     ? "Collapse All"
     : "Expand All";
-  useFocusEffect(
-    React.useCallback(() => {
-      loadAllCourses();
-    }, []),
-  );
+
+  // useFocusEffect(
+  //   React.useCallback(() => {
+  //     loadAllCourses();
+  //   }, []),
+  // );
 
   const filteredCourses = useMemo(() => {
     if (!searchQuery.trim()) {
@@ -93,10 +94,18 @@ const SearchFeedbacks = observer(() => {
     );
   };
 
-  const handleCoursePress = async (course: Course) => {
-    setCourseFeedbackInSearchModal(course);
+  const handleCoursePress = async (courseCode: string) => {
+    const res = await fetchCourseStats(courseCode);
+    if (!res) {
+      return Alert.alert("Something went wrong. Please come back later");
+    }
+    setCourseFeedbackInSearchModal(res);
     setIsCourseDetailsModalOpen(true);
-    await fetchCourseStats(course.id);
+  };
+  
+  const handleCloseCourseDetailsModal = () => {
+    setIsCourseDetailsModalOpen(false);
+    setCourseFeedbackInSearchModal(null);
   };
 
   const renderItem = useCallback(({ item }: { item: FlashListItem }) => {
@@ -135,7 +144,7 @@ const SearchFeedbacks = observer(() => {
         key={course.id}
         item={course}
         type="statsInfo"
-        onToggle={() => handleCoursePress(course)}
+        onToggle={() => handleCoursePress(course.courseCode)}
         style={{ marginVertical: 4 }}
       />
     );
@@ -145,7 +154,7 @@ const SearchFeedbacks = observer(() => {
     return item.type;
   }, []);
 
-  if (isLoading) return <LoadingScreen />;
+  if (isPageLoading) return <LoadingScreen />;
 
   return (
     <View style={styles.container}>
@@ -191,7 +200,10 @@ const SearchFeedbacks = observer(() => {
           { paddingBottom: bottomPadding },
         ]}
       />
-
+      <CourseStatsModal
+        closeModal={handleCloseCourseDetailsModal}
+        visible={isCourseDetailsModalOpen}
+      />
       {flashListData.length === 0 && (
         <View style={styles.emptyState}>
           <Text style={styles.emptyStateEmoji}>🎉</Text>

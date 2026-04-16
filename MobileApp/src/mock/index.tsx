@@ -1,5 +1,11 @@
-import { Course, EventType } from "../types/Course";
+import { Course } from "../types/Course";
 import { SemesterType } from "../types/User";
+export interface EventType {
+  id: number;
+  title: string;
+  time: string;
+  date?: Date;
+}
 
 type userDataType = {
   name: string;

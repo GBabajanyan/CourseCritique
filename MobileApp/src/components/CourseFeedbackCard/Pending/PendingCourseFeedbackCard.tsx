@@ -1,8 +1,6 @@
-import { phaseNames } from "@/src/constants";
-import { Colors, phaseColors } from "@/src/constants/colors";
+import { Colors } from "@/src/constants/colors";
 import { useStore } from "@/src/store/StoreProvider";
-import { Course } from "@/src/types/Course";
-import { FeedbackPhase } from "@/src/types/Feedback";
+import { PendingFeedback } from "@/src/types/Feedback";
 import { getPhaseColor, getPhaseDisplayName } from "@/src/util/general";
 import { useRouter } from "expo-router";
 import { JSX } from "react";
@@ -10,10 +8,10 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 const { NAVY, WHITE } = Colors;
 
 const PendingCourseFeedbackCard = ({
-  course,
+  feedbackData,
   onPress,
 }: {
-  course: Course;
+  feedbackData: PendingFeedback;
   onPress: () => void;
 }): JSX.Element => {
   const router = useRouter();
@@ -22,31 +20,35 @@ const PendingCourseFeedbackCard = ({
 
   return (
     <TouchableOpacity
-      key={course.id}
+      key={feedbackData.id}
       style={styles.pendingCourseFeedbackCard}
       onPress={onPress}
     >
       <View style={styles.courseHeader}>
         <View style={styles.courseInfo}>
           <View style={styles.courseCodeRow}>
-            <Text style={styles.courseCode}>{course.courseCode}</Text>
-            <Text style={styles.courseName}>{course.courseName}</Text>
+            <Text style={styles.courseCode}>{feedbackData.courseCode}</Text>
+            <Text style={styles.courseName}>{feedbackData.courseName}</Text>
           </View>
           <View style={styles.courseMeta}>
-            <Text style={styles.sectionText}>Section {course.section}</Text>
-            <Text style={styles.instructorText}>• {course.instructor}</Text>
+            <Text style={styles.sectionText}>
+              Section {feedbackData.section}
+            </Text>
+            <Text style={styles.instructorText}>
+              • {feedbackData.instructor}
+            </Text>
           </View>
         </View>
         <View style={styles.deadlineContainer}>
-          <Text style={styles.deadlineText}>Due: {course.deadline}</Text>
+          <Text style={styles.deadlineText}>Due: {feedbackData.deadline}</Text>
           <View
             style={[
               styles.phaseBadge,
-              { backgroundColor: getPhaseColor(course.feedbackPhase) },
+              { backgroundColor: getPhaseColor(feedbackData.feedbackPhase) },
             ]}
           >
             <Text style={styles.phaseBadgeText}>
-              {getPhaseDisplayName(course.feedbackPhase)}
+              {getPhaseDisplayName(feedbackData.feedbackPhase)}
             </Text>
           </View>
         </View>
@@ -55,7 +57,7 @@ const PendingCourseFeedbackCard = ({
       <TouchableOpacity
         style={styles.feedbackButton}
         onPress={() => {
-          setCurrentFeedbackCourse(course);
+          setCurrentFeedbackCourse(feedbackData);
           router.push("/feedback/Pending/FeedbackForm");
         }}
       >
@@ -80,7 +82,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 3,
-    gap:4
+    gap: 4,
   },
   courseHeader: {
     flexDirection: "row",
@@ -88,7 +90,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
   },
   courseInfo: {
-    flex: 2,
+    flex: 3,
   },
   courseCodeRow: {
     flexDirection: "row",
@@ -142,6 +144,7 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     fontSize: 10,
     fontWeight: "bold",
+    textAlign: "right",
   },
   feedbackButton: {
     backgroundColor: NAVY,

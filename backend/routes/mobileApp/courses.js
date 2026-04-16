@@ -14,10 +14,7 @@ router.get("/", verifyToken, async (req, res) => {
         c.department,
         c.section,
         c.credits,
-        ROUND(AVG(CASE 
-          WHEN f.status = 'completed' THEN (f.response->'ratings'->>'course_pace')::numeric
-          ELSE NULL 
-        END), 1) as avg_rating
+        NULL as stats
       FROM course c
       LEFT JOIN enrollment e ON c.id = e.course_id
       LEFT JOIN feedback f ON c.id = f.course_id
