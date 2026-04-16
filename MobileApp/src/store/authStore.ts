@@ -179,9 +179,8 @@ class AuthStore {
   logout = async () => {
     this.toggleIsLoading();
     try {
-      await this.rootStore.apiClient.logout();
       await this.rootStore.settingsStore.setBiometricsEnabled(false);
-      await this.checkBiometricSupport();
+      await this.rootStore.apiClient.logout();
     } catch (error: any) {
       Alert.alert("Logout Error occured. Please try to log out again later");
       console.error("Logout API error:", error);
