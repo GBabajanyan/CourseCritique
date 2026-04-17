@@ -1,5 +1,6 @@
 import { Colors } from "@/src/constants/colors";
-import React, { useState } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
 import { StyleSheet, useWindowDimensions } from "react-native";
 import { SceneMap, TabBar, TabView } from "react-native-tab-view";
 import CompletedFeedbacks from "./Completed";
@@ -13,9 +14,20 @@ const renderScene = SceneMap({
   search: () => <SearchFeedbacks />,
 });
 
-const FeedbackTabs = () => {
+const Feedback = () => {
+  const router = useRouter();
   const layout = useWindowDimensions();
-  const [index, setIndex] = useState(0);
+  const { tabIndex } = useLocalSearchParams<{ tabIndex: string }>();
+  const initialTab = tabIndex ? parseInt(tabIndex) : 0;
+
+  // After reading, immediately clean the URL
+  useEffect(() => {
+    if (tabIndex) {
+      router.setParams({ tabIndex: undefined });
+    }
+  }, []);
+
+  const [index, setIndex] = useState(initialTab);
 
   const [routes] = useState([
     { key: "pending", title: "Pending" },
@@ -67,4 +79,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default FeedbackTabs;
+export default Feedback;

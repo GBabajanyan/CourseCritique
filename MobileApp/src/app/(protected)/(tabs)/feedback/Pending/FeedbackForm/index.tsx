@@ -80,7 +80,7 @@ const FeedbackForm: React.FC = () => {
               onPress: () => {
                 setCurrentFeedbackCourse(null);
                 router.dismiss();
-                router.replace("/(protected)/(tabs)/feedback/Completed");
+                router.replace("/(protected)/(tabs)/feedback?tabIndex=1");
               },
             },
           ],
