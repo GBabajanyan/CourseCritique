@@ -1,20 +1,17 @@
 import BadgeDetailsModal from "@/src/components/BadgeDetailsModal/BadgeDetailsModal";
 import BadgeItem from "@/src/components/BadgeItem/BadgeItem";
-import { Colors } from "@/src/constants/colors";
+import { useColors } from "@/src/hooks/useColors";
 import { Badge } from "@/src/mock/badges";
 import { groupBadgesBySection } from "@/src/util/badgeUtils";
 import React, { useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-const { WHITE, NAVY } = Colors;
 
 const AllBadges = () => {
   const grouping = groupBadgesBySection();
+  const { SURFACE, NAVY, BACKGROUND } = useColors();
   const [badgeSelected, setBadgeSelected] = useState<Badge | null>(null);
   const [isBadgeDetailsModalOpen, setIsBadgeDetailsModalOpen] = useState(false);
-  const { bottom } = useSafeAreaInsets();
-  const bottomPadding = bottom + 20;
-  
+
   const openBadgeDetailsModal = (badge: Badge) => {
     setBadgeSelected(badge);
     setIsBadgeDetailsModalOpen(true);
@@ -26,15 +23,23 @@ const AllBadges = () => {
   };
 
   return (
-    <ScrollView contentContainerStyle={[styles.badgesGrid, { paddingBottom: bottomPadding }]}>
+    <ScrollView
+      style={{ backgroundColor: BACKGROUND }}
+      contentContainerStyle={[styles.badgesGrid]}
+    >
       <BadgeDetailsModal
         badgeDetails={badgeSelected}
         visible={isBadgeDetailsModalOpen}
         closeModal={closeBadgeDetailsModal}
       />
       {Object.keys(grouping).map((group, i) => (
-        <View key={i} style={styles.badgeSection}>
-          <Text style={styles.badgeSectionTitle}>{group}</Text>
+        <View
+          key={i}
+          style={[styles.badgeSection, { backgroundColor: SURFACE }]}
+        >
+          <Text style={[styles.badgeSectionTitle, { color: NAVY }]}>
+            {group}
+          </Text>
           <View style={styles.badgeContainer}>
             {grouping[group].map((badge: Badge) => (
               <BadgeItem
@@ -52,12 +57,11 @@ const AllBadges = () => {
 
 const styles = StyleSheet.create({
   badgesGrid: {
-    marginVertical: 24,
     minHeight: "100%",
     gap: 24,
+    paddingVertical: 24,
   },
   badgeSection: {
-    backgroundColor: WHITE,
     marginHorizontal: 20,
     paddingHorizontal: 16,
     paddingVertical: 16,
@@ -75,7 +79,6 @@ const styles = StyleSheet.create({
   badgeSectionTitle: {
     wordWrap: "wrap",
     width: "100%",
-    color: NAVY,
     fontSize: 20,
     textAlign: "center",
     fontWeight: "800",

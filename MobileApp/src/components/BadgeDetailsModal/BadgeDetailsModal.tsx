@@ -1,4 +1,4 @@
-import { Colors } from "@/src/constants/colors";
+import { useColors } from "@/src/hooks/useColors";
 import { Badge } from "@/src/mock/badges";
 import React from "react";
 import {
@@ -8,7 +8,6 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-const { SAFFRON, WHITE, NAVY } = Colors;
 
 type Props = {
   visible: boolean;
@@ -17,6 +16,7 @@ type Props = {
 };
 
 const BadgeDetailsModal = ({ visible, closeModal, badgeDetails }: Props) => {
+  const { SAFFRON, TEXT, CARD, NAVY } = useColors();
   return (
     <Modal
       animationType="fade"
@@ -28,29 +28,44 @@ const BadgeDetailsModal = ({ visible, closeModal, badgeDetails }: Props) => {
         <View style={styles.ModalCanvas}>
           <TouchableWithoutFeedback onPress={() => {}}>
             {badgeDetails ? (
-              <View style={styles.ModalBody}>
-                <View style={styles.badgeIcon}>
+              <View
+                style={[
+                  styles.ModalBody,
+                  {
+                    backgroundColor: CARD,
+                    shadowColor: NAVY,
+                  },
+                ]}
+              >
+                <View style={[styles.badgeIcon, { backgroundColor: SAFFRON }]}>
                   <Text style={styles.badgeIconText}>{badgeDetails.icon}</Text>
                 </View>
 
-                <Text style={styles.badgeTitle}>{badgeDetails.name}</Text>
+                <Text style={[styles.badgeTitle, { color: NAVY }]}>
+                  {badgeDetails.name}
+                </Text>
 
-                <Text style={styles.descriptionText}>
+                <Text
+                  style={[
+                    styles.descriptionText,
+                    { color: NAVY, borderColor: NAVY },
+                  ]}
+                >
                   {badgeDetails.description}
                 </Text>
 
-                <Text style={styles.badgeMeta}>
+                <Text style={[styles.badgeMeta, { color: TEXT }]}>
                   Category: {badgeDetails.section}
                 </Text>
 
                 {badgeDetails.rarity && (
-                  <Text style={styles.badgeMeta}>
+                  <Text style={[styles.badgeMeta, { color: TEXT }]}>
                     Rarity: {badgeDetails.rarity}
                   </Text>
                 )}
 
                 {badgeDetails.maxProgress && (
-                  <Text style={styles.badgeMeta}>
+                  <Text style={[styles.badgeMeta, { color: TEXT }]}>
                     MaxProgress: {badgeDetails.maxProgress}
                   </Text>
                 )}
@@ -77,12 +92,10 @@ const styles = StyleSheet.create({
   ModalBody: {
     width: "85%",
     height: "50%",
-    backgroundColor: WHITE,
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 32,
     padding: 24,
-    shadowColor: NAVY,
     shadowOffset: {
       width: 0,
       height: 2,
@@ -96,7 +109,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 700,
     textAlign: "center",
-    color: NAVY,
   },
   badgeIcon: {
     width: 90,
@@ -104,15 +116,12 @@ const styles = StyleSheet.create({
     borderRadius: 45,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: SAFFRON,
   },
   badgeIconText: {
     fontSize: 28,
   },
   descriptionText: {
     flexWrap: "wrap",
-    color: NAVY,
-    borderColor: NAVY,
     borderBottomWidth: 1,
     paddingBottom: 8,
     textAlign: "center",

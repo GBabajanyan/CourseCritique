@@ -1,4 +1,5 @@
 import { useActiveTabParams } from "@/src/hooks/useActiveTabParams";
+import { useColors } from "@/src/hooks/useColors";
 import { useRouter } from "expo-router";
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -6,22 +7,29 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 const CustomHeader = () => {
   const router = useRouter();
+  const { WHITE, TEXT, BORDER, NAVY } = useColors();
   const { title, subtitle, parentRouteName } = useActiveTabParams();
   const goBack = () => {
     if (router.canGoBack()) router.back();
   };
 
   return (
-    <SafeAreaView style={styles.header} edges={["top"]}>
+    <SafeAreaView
+      style={[
+        styles.header,
+        { backgroundColor: WHITE, borderBottomColor: BORDER },
+      ]}
+      edges={["top"]}
+    >
       {parentRouteName && (
         <Pressable style={styles.goBackButton} onPress={goBack}>
           <Text
-            style={styles.goBackText}
+            style={[styles.goBackText, { color: NAVY }]}
           >{`< ${parentRouteName || "Back"}`}</Text>
         </Pressable>
       )}
       <View style={styles.titleContainer}>
-        <Text style={styles.title}>{title}</Text>
+        <Text style={[styles.title, { color: TEXT }]}>{title}</Text>
         {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
       </View>
     </SafeAreaView>
@@ -32,9 +40,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     padding: 10,
-    backgroundColor: "white",
     borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
     justifyContent: "center",
   },
   goBackButton: {
@@ -45,7 +51,6 @@ const styles = StyleSheet.create({
   },
   goBackText: {
     fontSize: 18,
-    color: "#007AFF",
     textTransform: "capitalize",
   },
   titleContainer: {
@@ -56,7 +61,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#1a1a1a",
     textAlign: "center",
     position: "relative",
   },

@@ -1,10 +1,9 @@
-import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
-import { Rating } from "@kolking/react-native-rating";
-import { Colors } from "@/src/constants/colors";
+import { useColors } from "@/src/hooks/useColors";
 import { MaterialIcons } from "@expo/vector-icons";
+import { Rating } from "@kolking/react-native-rating";
+import React from "react";
+import { TouchableOpacity, View } from "react-native";
 
-const { SAFFRON, NAVY } = Colors;
 interface RatingScaleProps {
   type: "5" | "3" | "thumb";
   value?: number;
@@ -18,6 +17,8 @@ const RatingScale: React.FC<RatingScaleProps> = ({
   iconSize,
   onChange,
 }) => {
+  const { SAFFRON, NAVY } = useColors();
+
   if (type === "thumb") {
     const isLiked = !!value;
     const isSelected = value !== undefined;
@@ -50,12 +51,12 @@ const RatingScale: React.FC<RatingScaleProps> = ({
     <View style={{ flexDirection: "row" }}>
       <Rating
         variant="stars-outline"
-        fillColor={SAFFRON}
-        size={iconSize}
-        baseColor={NAVY}
         rating={value}
         onChange={onChange}
         maxRating={Number(type)}
+        fillColor={SAFFRON}
+        baseColor={NAVY}
+        size={iconSize}
       />
     </View>
   );

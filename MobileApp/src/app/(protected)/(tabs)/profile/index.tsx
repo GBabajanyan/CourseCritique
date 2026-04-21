@@ -1,7 +1,7 @@
 import BadgeDetailsModal from "@/src/components/BadgeDetailsModal/BadgeDetailsModal";
 import BadgeItem from "@/src/components/BadgeItem/BadgeItem";
 import InfoRow from "@/src/components/InfoRow/InfoRow";
-import { Colors } from "@/src/constants/colors";
+import { useColors } from "@/src/hooks/useColors";
 import { userData } from "@/src/mock";
 import { Badge, BADGES } from "@/src/mock/badges";
 import { useStore } from "@/src/store/StoreProvider";
@@ -17,10 +17,18 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-const { NAVY, SAFFRON } = Colors;
 
 const ProfileScreen: React.FC = () => {
   const router = useRouter();
+  const {
+    BACKGROUND,
+    NAVY,
+    SAFFRON,
+    TEXT,
+    TEXT_SECONDARY,
+    SURFACE,
+    CARD,
+  } = useColors();
   const { authStore, profileStore, feedbackStore } = useStore();
   const { logout } = authStore;
   const { userProfile, getProfileData } = profileStore;
@@ -30,7 +38,10 @@ const ProfileScreen: React.FC = () => {
   const [isBadgeDetailsModalOpen, setIsBadgeDetailsModalOpen] = useState(false);
   const { bottom } = useSafeAreaInsets();
   const bottomPadding = bottom + 20;
-
+  const statLabelStyle = [styles.statLabel, { color: TEXT }];
+  const statNumberStyle = [styles.statNumber, { color: NAVY }];
+  const actionButtonStyle = [styles.actionButton, { backgroundColor: CARD }];
+  const actionButtonTextStyle = [styles.actionButtonText, { color: TEXT }];
   useFocusEffect(
     React.useCallback(() => {
       getProfileData();
@@ -83,7 +94,7 @@ const ProfileScreen: React.FC = () => {
 
   return (
     <ScrollView
-      style={styles.scrollView}
+      style={[styles.scrollView, { backgroundColor: BACKGROUND }]}
       contentContainerStyle={{
         gap: 32,
         paddingBottom: bottomPadding,
@@ -96,13 +107,26 @@ const ProfileScreen: React.FC = () => {
         closeModal={closeBadgeDetailsModal}
       />
       {/* Profile Card */}
-      <View style={styles.profileCard}>
+      <View
+        style={[
+          styles.profileCard,
+          {
+            backgroundColor: SURFACE,
+            shadowColor: NAVY,
+          },
+        ]}
+      >
         {/* Avatar and Basic Info */}
         <View style={styles.avatarSection}>
           {avatar ? (
-            <Image src={avatar} style={styles.avatarContainer} />
+            <Image
+              src={avatar}
+              style={[styles.avatarContainer, { backgroundColor: SAFFRON }]}
+            />
           ) : (
-            <View style={styles.avatarContainer}>
+            <View
+              style={[styles.avatarContainer, { backgroundColor: SAFFRON }]}
+            >
               <Text style={styles.avatarInitials}>
                 {name
                   .split(" ")
@@ -112,8 +136,8 @@ const ProfileScreen: React.FC = () => {
             </View>
           )}
           <View style={styles.basicInfo}>
-            <Text style={styles.name}>{name}</Text>
-            <Text style={styles.role}>{role}</Text>
+            <Text style={[styles.name, { color: TEXT }]}>{name}</Text>
+            <Text style={[styles.role, { color: TEXT_SECONDARY }]}>{role}</Text>
             <View
               style={[
                 styles.yearBadge,
@@ -133,32 +157,35 @@ const ProfileScreen: React.FC = () => {
         </View>
 
         {/* Stats Section */}
-        <View style={styles.statsSection}>
+        <View style={[styles.statsSection, { backgroundColor: CARD }]}>
           <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{completedFeedbacksCount}</Text>
-            <Text style={styles.statLabel}>Feedbacks Given</Text>
+            <Text style={statNumberStyle}>{completedFeedbacksCount}</Text>
+            <Text style={statLabelStyle}>Feedbacks Given</Text>
           </View>
           <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{earnedBadges.length}</Text>
-            <Text style={styles.statLabel}>Badges Earned</Text>
+            <Text style={statNumberStyle}>{earnedBadges.length}</Text>
+            <Text style={statLabelStyle}>Badges Earned</Text>
           </View>
           <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{pendingCount}</Text>
-            <Text style={styles.statLabel}> Pending Feedbacks</Text>
+            <Text style={statNumberStyle}>{pendingCount}</Text>
+            <Text style={statLabelStyle}> Pending Feedbacks</Text>
           </View>
         </View>
       </View>
 
       {/* Badges Section */}
-      <View style={styles.bagesCard}>
+      <View style={[styles.bagesCard, { backgroundColor: SURFACE }]}>
+        {/* <View style={{ backgroundColor: CARD }}> */}
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Achievement Badges</Text>
+          <Text style={[styles.sectionTitle, { color: TEXT }]}>
+            Achievement Badges
+          </Text>
           <TouchableOpacity onPress={handleBadgesPress}>
-            <Text style={styles.seeAllText}>See All</Text>
+            <Text style={[styles.seeAllText, { color: NAVY }]}>See All</Text>
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.sectionSubtitle}>
+        <Text style={[styles.sectionSubtitle, { color: TEXT }]}>
           {earnedBadges.length} of {BADGES.length} badges unlocked
         </Text>
 
@@ -172,20 +199,27 @@ const ProfileScreen: React.FC = () => {
             />
           ))}
         </View>
-
+        {/* </View> */}
         {/* Locked Badges Preview */}
         {lockedBadges.length > 0 && (
           <View style={styles.lockedSection}>
-            <Text style={styles.lockedTitle}>Locked Badges</Text>
+            <Text style={[styles.lockedTitle, { color: TEXT_SECONDARY }]}>
+              Locked Badges
+            </Text>
             <View style={styles.lockedBadges}>
               {lockedBadges.slice(0, 3).map((badge) => (
-                <View key={badge.id} style={styles.lockedBadge}>
+                <View
+                  key={badge.id}
+                  style={[styles.lockedBadge, { backgroundColor: CARD }]}
+                >
                   <Text style={styles.lockedIcon}>🔒</Text>
-                  <Text style={styles.lockedName}>{badge.name}</Text>
+                  <Text style={[styles.lockedName, { color: TEXT }]}>
+                    {badge.name}
+                  </Text>
                 </View>
               ))}
               {lockedBadges.length > 3 && (
-                <Text style={styles.moreBadgesText}>
+                <Text style={[styles.moreBadgesText, { color: NAVY }]}>
                   +{lockedBadges.length - 3} more
                 </Text>
               )}
@@ -195,7 +229,7 @@ const ProfileScreen: React.FC = () => {
 
         {/* Badges CTA Button */}
         <TouchableOpacity
-          style={styles.badgesButton}
+          style={[styles.badgesButton, { backgroundColor: NAVY }]}
           onPress={handleBadgesPress}
         >
           <Text style={styles.badgesButtonText}>View All Badges</Text>
@@ -203,21 +237,32 @@ const ProfileScreen: React.FC = () => {
       </View>
 
       {/* Actions Section */}
-      <View style={styles.actionsCard}>
-        <TouchableOpacity style={styles.actionButton}>
-          <Text style={styles.actionButtonText}>Edit Avatar</Text>
+      <View
+        style={[
+          styles.actionsCard,
+          {
+            backgroundColor: SURFACE,
+            shadowColor: NAVY,
+          },
+        ]}
+      >
+        <TouchableOpacity style={actionButtonStyle}>
+          <Text style={actionButtonTextStyle}>Edit Avatar</Text>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={handleSettingsPress}
-          style={styles.actionButton}
+          style={actionButtonStyle}
         >
-          <Text style={styles.actionButtonText}>Settings</Text>
+          <Text style={actionButtonTextStyle}>Settings</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.actionButton, styles.logoutButton]}
+          style={[
+            ...actionButtonStyle,
+            { borderWidth: 1, borderColor: "#f44336" },
+          ]}
           onPress={handleLogout}
         >
-          <Text style={[styles.actionButtonText, styles.logoutButtonText]}>
+          <Text style={[...actionButtonTextStyle, { color: "#f44336" }]}>
             Log Out
           </Text>
         </TouchableOpacity>
@@ -228,15 +273,12 @@ const ProfileScreen: React.FC = () => {
 
 const styles = StyleSheet.create({
   scrollView: {
-    flex: 1,
     paddingHorizontal: 24,
     paddingVertical: 20,
   },
   profileCard: {
-    backgroundColor: "#fff",
     borderRadius: 16,
     padding: 20,
-    shadowColor: "#000",
     shadowOffset: {
       width: 2,
       height: 2,
@@ -254,7 +296,6 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: SAFFRON,
     justifyContent: "center",
     alignItems: "center",
     marginRight: 16,
@@ -270,7 +311,6 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#1a1a1a",
     marginBottom: 4,
     textTransform: "capitalize",
   },
@@ -297,7 +337,6 @@ const styles = StyleSheet.create({
   statsSection: {
     flexDirection: "row",
     justifyContent: "space-around",
-    backgroundColor: "#f8f9fa",
     padding: 16,
     borderRadius: 12,
   },
@@ -308,7 +347,6 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: 24,
     fontWeight: "bold",
-    color: NAVY,
     marginBottom: 4,
   },
   statLabel: {
@@ -317,36 +355,36 @@ const styles = StyleSheet.create({
     textAlign: "center",
     wordWrap: "wrap",
   },
-  fillFeedbacksButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: NAVY,
-    padding: 16,
-    borderRadius: 12,
-    marginTop: 8,
-  },
-  fillFeedbacksIcon: {
-    fontSize: 24,
-    marginRight: 12,
-  },
-  fillFeedbacksTextContainer: {
-    flex: 1,
-  },
-  fillFeedbacksTitle: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 2,
-  },
-  fillFeedbacksSubtitle: {
-    color: "rgba(255, 255, 255, 0.8)",
-    fontSize: 12,
-  },
-  chevron: {
-    color: "#fff",
-    fontSize: 20,
-    fontWeight: "bold",
-  },
+  // fillFeedbacksButton: {
+  //   flexDirection: "row",
+  //   alignItems: "center",
+  //   backgroundColor: NAVY,
+  //   padding: 16,
+  //   borderRadius: 12,
+  //   marginTop: 8,
+  // },
+  // fillFeedbacksIcon: {
+  //   fontSize: 24,
+  //   marginRight: 12,
+  // },
+  // fillFeedbacksTextContainer: {
+  //   flex: 1,
+  // },
+  // fillFeedbacksTitle: {
+  //   color: "#fff",
+  //   fontSize: 16,
+  //   fontWeight: "600",
+  //   marginBottom: 2,
+  // },
+  // fillFeedbacksSubtitle: {
+  //   color: "rgba(255, 255, 255, 0.8)",
+  //   fontSize: 12,
+  // },
+  // chevron: {
+  //   color: "#fff",
+  //   fontSize: 20,
+  //   fontWeight: "bold",
+  // },
   bagesCard: {
     backgroundColor: "#fff",
     borderRadius: 16,
@@ -369,10 +407,8 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#1a1a1a",
   },
   seeAllText: {
-    color: NAVY,
     fontSize: 14,
     fontWeight: "600",
   },
@@ -387,35 +423,12 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     justifyContent: "space-around",
   },
-  badgeItem: {
-    alignItems: "center",
-    width: "33.33%",
-    marginBottom: 16,
-  },
-  badgeIcon: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  badgeIconText: {
-    fontSize: 24,
-  },
-  badgeName: {
-    fontSize: 12,
-    color: "#333",
-    textAlign: "center",
-    fontWeight: "500",
-  },
   lockedSection: {
     marginBottom: 20,
   },
   lockedTitle: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#666",
     marginBottom: 12,
   },
   lockedBadges: {
@@ -425,7 +438,6 @@ const styles = StyleSheet.create({
   lockedBadge: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#f8f9fa",
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 20,
@@ -438,15 +450,12 @@ const styles = StyleSheet.create({
   },
   lockedName: {
     fontSize: 12,
-    color: "#999",
   },
   moreBadgesText: {
     fontSize: 12,
-    color: NAVY,
     fontWeight: "500",
   },
   badgesButton: {
-    backgroundColor: NAVY,
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: "center",
@@ -457,10 +466,8 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   actionsCard: {
-    backgroundColor: "#fff",
     borderRadius: 16,
     padding: 20,
-    shadowColor: "#000",
     shadowOffset: {
       width: 2,
       height: 2,
@@ -480,14 +487,6 @@ const styles = StyleSheet.create({
     color: "#333",
     fontSize: 16,
     fontWeight: "600",
-  },
-  logoutButton: {
-    backgroundColor: "#ffebee",
-    borderWidth: 1,
-    borderColor: "#f44336",
-  },
-  logoutButtonText: {
-    color: "#f44336",
   },
 });
 

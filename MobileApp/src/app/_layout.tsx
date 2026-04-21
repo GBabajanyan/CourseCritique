@@ -7,6 +7,7 @@ import React, { useEffect, useRef } from "react";
 import { Platform } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StoreProvider, useStore } from "../store/StoreProvider";
+import { ThemeProvider } from "../theme/ThemeProvider";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -102,17 +103,26 @@ const RootLayout = observer(() => {
 
   return (
     <StoreProvider>
-      <SafeAreaProvider>
-        <Stack screenOptions={{ animation: "none" }}>
-          <Stack.Protected guard={!!isAuthenticated}>
-            <Stack.Screen name="(protected)" options={{ headerShown: false }} />
-          </Stack.Protected>
+      <ThemeProvider>
+        <SafeAreaProvider>
+          <Stack
+            screenOptions={{
+              animation: "none",
+            }}
+          >
+            <Stack.Protected guard={!!isAuthenticated}>
+              <Stack.Screen
+                name="(protected)"
+                options={{ headerShown: false }}
+              />
+            </Stack.Protected>
 
-          <Stack.Protected guard={!isAuthenticated}>
-            <Stack.Screen name="Login" options={{ headerShown: false }} />
-          </Stack.Protected>
-        </Stack>
-      </SafeAreaProvider>
+            <Stack.Protected guard={!isAuthenticated}>
+              <Stack.Screen name="Login" options={{ headerShown: false }} />
+            </Stack.Protected>
+          </Stack>
+        </SafeAreaProvider>
+      </ThemeProvider>
     </StoreProvider>
   );
 });

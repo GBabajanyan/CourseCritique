@@ -1,16 +1,17 @@
 import CourseFeedbackCard from "@/src/components/CourseFeedbackCard/Completed/CourseFeedbackCard";
 import LoadingScreen from "@/src/components/LoadingScreen/LoadingScreen";
-import { Colors } from "@/src/constants/colors";
+import { useColors } from "@/src/hooks/useColors";
 import { useStore } from "@/src/store/StoreProvider";
 import { CompletedFeedback } from "@/src/types/Feedback";
 import { observer } from "mobx-react";
 import React, { useState } from "react";
 import { ScrollView, SectionList, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-const { NAVY, WHITE } = Colors;
 
 const CompletedFeedbacks = observer(() => {
   const { feedbackStore } = useStore();
+  const { NAVY, WHITE, CARD, TEXT, TEXT_SECONDARY, BACKGROUND } =
+    useColors();
   const { isPageLoading, completedFeedbacks, loadCompletedFeedbacks } =
     feedbackStore;
   const [expandedFeedbackId, setExpandedFeedbackId] = useState<string | null>(
@@ -34,7 +35,16 @@ const CompletedFeedbacks = observer(() => {
     section,
   }: {
     section: { title: string; data: any[] };
-  }) => <Text style={styles.yearHeader}>{section.title}</Text>;
+  }) => (
+    <Text
+      style={[
+        styles.yearHeader,
+        { borderBottomColor: NAVY, backgroundColor: BACKGROUND, color: TEXT },
+      ]}
+    >
+      {section.title}
+    </Text>
+  );
 
   const renderItem = ({
     item,
@@ -42,7 +52,9 @@ const CompletedFeedbacks = observer(() => {
     item: { semester: string; feedbacks: CompletedFeedback[] };
   }) => (
     <View style={styles.semesterGroup}>
-      <Text style={styles.semesterHeader}>{item.semester}</Text>
+      <Text style={[styles.semesterHeader, { color: TEXT }]}>
+        {item.semester}
+      </Text>
       {item.feedbacks.map((feedback) => (
         <CourseFeedbackCard
           key={feedback.id}
@@ -76,10 +88,19 @@ const CompletedFeedbacks = observer(() => {
         { paddingBottom: bottomPadding },
       ]}
     >
-      <View style={styles.emptyState}>
+      <View style={[styles.emptyState, { backgroundColor: WHITE }]}>
         <Text style={styles.emptyStateEmoji}>📝</Text>
         <Text style={styles.emptyStateText}>No feedbacks submitted yet</Text>
         <Text style={styles.emptyStateSubtext}>
+          Your completed feedbacks will appear here.
+        </Text>
+      </View>
+      <View style={[styles.emptyState, { backgroundColor: CARD }]}>
+        <Text style={styles.emptyStateEmoji}>🎉</Text>
+        <Text style={[styles.emptyStateText, { color: TEXT }]}>
+          No feedbacks submitted yet
+        </Text>
+        <Text style={[styles.emptyStateSubtext, { color: TEXT_SECONDARY }]}>
           Your completed feedbacks will appear here.
         </Text>
       </View>
@@ -99,11 +120,8 @@ export const styles = StyleSheet.create({
   yearHeader: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#1a1a1a",
     paddingVertical: 8,
     borderBottomWidth: 1,
-    borderBottomColor: NAVY,
-    backgroundColor: "#F2F2F2",
   },
   semesterGroup: {
     gap: 8,
@@ -111,12 +129,10 @@ export const styles = StyleSheet.create({
   semesterHeader: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#333",
     marginBottom: 0,
     marginLeft: 12,
   },
   emptyState: {
-    backgroundColor: WHITE,
     marginHorizontal: 20,
     padding: 40,
     borderRadius: 12,
@@ -129,14 +145,12 @@ export const styles = StyleSheet.create({
   },
   emptyStateText: {
     fontSize: 18,
-    color: "#333",
     fontWeight: "600",
     textAlign: "center",
     marginBottom: 8,
   },
   emptyStateSubtext: {
     fontSize: 14,
-    color: "#666",
     textAlign: "center",
     lineHeight: 20,
   },

@@ -1,7 +1,8 @@
 import CourseStatsModal from "@/src/components/CourseDetailsModal/CourseStatsModal";
 import CourseFeedbackCard from "@/src/components/CourseFeedbackCard/Completed/CourseFeedbackCard";
 import LoadingScreen from "@/src/components/LoadingScreen/LoadingScreen";
-import { Colors, departmentColors } from "@/src/constants/colors";
+import { departmentColors } from "@/src/constants/colors";
+import { useColors } from "@/src/hooks/useColors";
 import { useStore } from "@/src/store/StoreProvider";
 import { FlashListItem } from "@/src/types/Course";
 import { transformCoursesToFlashListConfig } from "@/src/util/course";
@@ -19,12 +20,12 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-const { WHITE, SUB } = Colors;
 
 const SearchFeedbacks = observer(() => {
   const [searchQuery, setSearchQuery] = useState("");
   const { bottom } = useSafeAreaInsets();
-  const { feedbackStore } = useStore();
+  const { NAVY, TEXT_SECONDARY, SURFACE } = useColors();
+  const { feedbackStore, settingsStore } = useStore();
   const {
     isPageLoading,
     allCourses,
@@ -32,6 +33,7 @@ const SearchFeedbacks = observer(() => {
     loadAllCourses,
     fetchCourseStats,
   } = feedbackStore;
+  const { theme } = settingsStore;
   const bottomPadding = bottom + 20;
   const [isCourseDetailsModalOpen, setIsCourseDetailsModalOpen] =
     useState(false);
@@ -102,53 +104,58 @@ const SearchFeedbacks = observer(() => {
     setCourseFeedbackInSearchModal(res);
     setIsCourseDetailsModalOpen(true);
   };
-  
+
   const handleCloseCourseDetailsModal = () => {
     setIsCourseDetailsModalOpen(false);
     setCourseFeedbackInSearchModal(null);
   };
 
-  const renderItem = useCallback(({ item }: { item: FlashListItem }) => {
-    if (item.type === "header") {
-      const { title, count, isCollapsed } = item;
-      return (
-        <TouchableOpacity
-          style={styles.sectionHeader}
-          onPress={() => toggleDepartment(title)}
-          activeOpacity={0.7}
-        >
-          <View style={styles.sectionTitle}>
-            <Ionicons
-              name={!isCollapsed ? "caret-up-outline" : "caret-down-outline"}
-              size={16}
-              color="black"
-            />
-            <View
-              style={[
-                styles.phaseBadge,
-                { backgroundColor: departmentColors[title] },
-              ]}
-            >
-              <Text style={styles.phaseBadgeText}>{title}</Text>
+  const renderItem = useCallback(
+    ({ item }: { item: FlashListItem }) => {
+      if (item.type === "header") {
+        const { title, count, isCollapsed } = item;
+        return (
+          <TouchableOpacity
+            style={[styles.sectionHeader, { backgroundColor: SURFACE }]}
+            onPress={() => toggleDepartment(title)}
+            activeOpacity={0.7}
+          >
+            <View style={styles.sectionTitle}>
+              <Ionicons
+                name={!isCollapsed ? "caret-up-outline" : "caret-down-outline"}
+                size={16}
+                color={NAVY}
+              />
+              <View
+                style={[
+                  styles.phaseBadge,
+                  { backgroundColor: departmentColors[title] },
+                ]}
+              >
+                <Text style={styles.phaseBadgeText}>{title}</Text>
+              </View>
             </View>
-          </View>
-          <Text style={styles.sectionCount}>{count} courses</Text>
-        </TouchableOpacity>
-      );
-    }
+            <Text style={[styles.sectionCount, { color: TEXT_SECONDARY }]}>
+              {count} courses
+            </Text>
+          </TouchableOpacity>
+        );
+      }
 
-    // Course item
-    const { course } = item;
-    return (
-      <CourseFeedbackCard
-        key={course.id}
-        item={course}
-        type="statsInfo"
-        onToggle={() => handleCoursePress(course.courseCode)}
-        style={{ marginVertical: 4 }}
-      />
-    );
-  }, []);
+      // Course item
+      const { course } = item;
+      return (
+        <CourseFeedbackCard
+          key={course.id}
+          item={course}
+          type="statsInfo"
+          onToggle={() => handleCoursePress(course.courseCode)}
+          style={{ marginVertical: 4 }}
+        />
+      );
+    },
+    [theme],
+  );
 
   const getItemType = useCallback((item: FlashListItem) => {
     return item.type;
@@ -158,7 +165,7 @@ const SearchFeedbacks = observer(() => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.searchHeader}>
+      <View style={[styles.searchHeader, { backgroundColor: SURFACE }]}>
         <Ionicons
           name="search"
           size={20}
@@ -181,12 +188,14 @@ const SearchFeedbacks = observer(() => {
 
       {/* Results Count */}
       <View style={styles.actionsRow}>
-        <Text style={styles.resultsCount}>
+        <Text style={[styles.resultsCount, { color: TEXT_SECONDARY }]}>
           {filteredCourses.length} courses found
         </Text>
         <Pressable onPress={toggleActionAll} style={styles.pressAllButton}>
-          <Text style={{ color: SUB, fontSize: 12 }}>{actionAllText}</Text>
-          <Ionicons name={actionAllIcon} size={24} color={SUB} />
+          <Text style={{ color: TEXT_SECONDARY, fontSize: 12 }}>
+            {actionAllText}
+          </Text>
+          <Ionicons name={actionAllIcon} size={24} color={TEXT_SECONDARY} />
         </Pressable>
       </View>
       <FlashList
@@ -204,15 +213,6 @@ const SearchFeedbacks = observer(() => {
         closeModal={handleCloseCourseDetailsModal}
         visible={isCourseDetailsModalOpen}
       />
-      {flashListData.length === 0 && (
-        <View style={styles.emptyState}>
-          <Text style={styles.emptyStateEmoji}>🎉</Text>
-          <Text style={styles.emptyStateText}>No pending feedbacks!</Text>
-          <Text style={styles.emptyStateSubtext}>
-            All caught up with your course evaluations.
-          </Text>
-        </View>
-      )}
     </View>
   );
 });
@@ -254,7 +254,6 @@ const styles = StyleSheet.create({
   },
   resultsCount: {
     fontSize: 12,
-    color: SUB,
   },
   //flashlist
   listContent: {},
@@ -288,7 +287,6 @@ const styles = StyleSheet.create({
     color: "#666",
   },
   emptyState: {
-    backgroundColor: WHITE,
     marginHorizontal: 20,
     padding: 40,
     borderRadius: 12,

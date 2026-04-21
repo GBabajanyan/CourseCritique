@@ -1,5 +1,5 @@
 import ToDoItem from "@/src/components/ToDoItem/ToDoItem";
-import { Colors } from "@/src/constants/colors";
+import { useColors } from "@/src/hooks/useColors";
 import { useStore } from "@/src/store/StoreProvider";
 import { isTheDateBetween } from "@/src/util/general";
 import { observer } from "mobx-react";
@@ -15,9 +15,10 @@ import { Calendar } from "react-native-calendars";
 
 import { DateData } from "react-native-calendars/src/types";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-const { NAVY, WHITE, SAFFRON, SUB } = Colors;
 
 const HomeScreen: React.FC = observer(() => {
+  const { NAVY, WHITE, SAFFRON, TEXT, TEXT_SECONDARY, BACKGROUND } =
+    useColors();
   const { bottom } = useSafeAreaInsets();
   const { feedbackStore, settingsStore } = useStore();
   const {
@@ -27,9 +28,8 @@ const HomeScreen: React.FC = observer(() => {
     switchSelectedDateOnCalendar,
     // loadPendingCoursesForHome,
   } = feedbackStore;
-  const { currentDate } = settingsStore;
+  const { currentDate, theme } = settingsStore;
   const [dateSelected, setDateSelected] = useState(currentDate);
-
   // useFocusEffect(
   //   React.useCallback(() => {
   //     loadPendingCoursesForHome();
@@ -51,6 +51,7 @@ const HomeScreen: React.FC = observer(() => {
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
+      style={{ backgroundColor: BACKGROUND }}
       contentContainerStyle={[
         styles.container,
         styles.eventsScrollViewContainer,
@@ -59,8 +60,15 @@ const HomeScreen: React.FC = observer(() => {
     >
       <View style={styles.CalendarContainer}>
         <Calendar
+          key={theme}
           onDayPress={handleCalendarDayPress}
-          style={styles.eventCalendar}
+          style={[
+            styles.eventCalendar,
+            {
+              borderColor: NAVY,
+              shadowColor: NAVY,
+            },
+          ]}
           enableSwipeMonths
           markingType="multi-period"
           markedDates={pendingCalendar}
@@ -68,11 +76,12 @@ const HomeScreen: React.FC = observer(() => {
             todayBackgroundColor: SAFFRON,
             todayTextColor: WHITE,
             calendarBackground: WHITE,
+            dayTextColor: TEXT,
+            monthTextColor: TEXT_SECONDARY,
+            textDisabledColor: TEXT_SECONDARY,
             textSectionTitleColor: "#b6c1cd",
             selectedDayBackgroundColor: "#2d4150",
-            selectedDayTextColor: WHITE,
-            dayTextColor: "#2d4150",
-            textDisabledColor: SUB,
+            selectedDayTextColor: "#fff",
           }}
           hideArrows
           displayLoadingIndicator={isPageLoading}
@@ -107,12 +116,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   eventCalendar: {
-    borderColor: NAVY,
     borderWidth: 1,
     borderRadius: 50,
-    padding: "5%",
-    paddingBottom: "10%",
-    shadowColor: NAVY,
+    paddingBottom: "7%",
     shadowOffset: {
       width: 0,
       height: 0,
@@ -123,7 +129,7 @@ const styles = StyleSheet.create({
   eventsTitle: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#666",
+    color: "#938b8b",
   },
   eventsContainer: {
     flex: 1,

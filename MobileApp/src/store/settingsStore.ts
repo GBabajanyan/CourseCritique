@@ -1,12 +1,12 @@
-// stores/settingsStore.ts
 import * as LocalAuthentication from "expo-local-authentication";
 import * as SecureStore from "expo-secure-store";
 import { makeAutoObservable } from "mobx";
+import { ThemeMode } from "../theme/ThemeProvider";
 import { SemesterType } from "../types/User";
 import { processToDate, semesterByMonthNumber } from "../util/general";
 
 class SettingsStore {
-  darkMode: boolean = false;
+  theme: ThemeMode = "system";
   pushNotifications: boolean = true;
   emailReminders: boolean = true;
   biometricsEnabled: boolean = false;
@@ -25,8 +25,16 @@ class SettingsStore {
   }
 
   async loadSettings() {
-    // Load from SecureStore (non-sensitive)
-    const darkMode = await SecureStore.getItemAsync("darkMode_pref");
+    const theme = await SecureStore.getItemAsync("theme_pref").then((res) => {
+      switch (res) {
+        case "light":
+          return "light";
+        case "dark":
+          return "dark";
+        default:
+          return "system";
+      }
+    });
     const pushNotifications = await SecureStore.getItemAsync(
       "pushNotifications_pref",
     );
@@ -36,15 +44,15 @@ class SettingsStore {
     const biometricsEnabled =
       await SecureStore.getItemAsync("biometricsEnabled");
 
-    this.darkMode = darkMode === "true";
+    this.theme = theme;
     this.pushNotifications = pushNotifications === "true";
     this.emailReminders = emailReminders === "true";
     this.biometricsEnabled = biometricsEnabled === "true";
   }
 
-  async setDarkMode(value: boolean) {
-    this.darkMode = value;
-    await SecureStore.setItemAsync("darkMode_pref", String(value));
+  async setSettingsTheme(value: ThemeMode) {
+    this.theme = value;
+    await SecureStore.setItemAsync("theme_pref", value);
   }
 
   async setPushNotifications(value: boolean) {

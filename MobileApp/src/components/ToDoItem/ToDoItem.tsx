@@ -1,42 +1,35 @@
-import { Colors } from "@/src/constants/colors";
+import { useColors } from "@/src/hooks/useColors";
 import { useStore } from "@/src/store/StoreProvider";
-import { Course } from "@/src/types/Course";
+import { PendingFeedback } from "@/src/types/Feedback";
 import { getPhaseColor, getPhaseDisplayName } from "@/src/util/general";
 import { useRouter } from "expo-router";
-import {
-  Pressable,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-const { SUB, NAVY, WHITE } = Colors;
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
-const ToDoItem = ({
-  item,
-  onPress = () => {},
-}: {
-  item: Course;
-  onPress?: () => void;
-}) => {
+const ToDoItem = ({ item }: { item: PendingFeedback }) => {
   const router = useRouter();
+  const { TEXT, TEXT_SECONDARY, NAVY, WARNING, CARD } = useColors();
   const { feedbackStore } = useStore();
   const { setCurrentFeedbackCourse } = feedbackStore;
 
   return (
     <Pressable
-      // style={styles.badgeItem}
-      style={[styles.toDoCard, { shadowColor: NAVY }]}
+      key={item.id}
+      style={[styles.toDoCard, { shadowColor: NAVY, backgroundColor: CARD }]}
       onPress={() => {
         setCurrentFeedbackCourse(item);
         router.push("/feedback/Pending/FeedbackForm");
       }}
     >
-      {/* <View key={item.id} style={[styles.toDoCard, { shadowColor: NAVY }]}> */}
       <View style={styles.toDoDetails}>
-        <Text style={styles.courseCode}>{item.courseCode}</Text>
-        <Text style={styles.courseName}>{item.courseName}</Text>
-        <Text style={styles.subText}>(Press to fill feedback)</Text>
+        <Text style={[styles.courseCode, { color: NAVY }]}>
+          {item.courseCode}
+        </Text>
+        <Text style={[styles.courseName, { color: TEXT }]}>
+          {item.courseName}
+        </Text>
+        <Text style={[styles.subText, { color: TEXT_SECONDARY }]}>
+          (Press to fill feedback)
+        </Text>
       </View>
       <View style={styles.eventDetails}>
         <View
@@ -49,20 +42,10 @@ const ToDoItem = ({
             {getPhaseDisplayName(item.feedbackPhase)}
           </Text>
         </View>
-        <Text style={styles.deadline}>Due: {item.deadline}</Text>
+        <Text style={[styles.deadline, { color: WARNING }]}>
+          Due: {item.deadline}
+        </Text>
       </View>
-      {/* <View style={styles.eventDetails}>
-        <TouchableOpacity
-          style={styles.feedbackButton}
-          onPress={() => {
-            setCurrentFeedbackCourse(item);
-            router.push("/feedback/Pending/FeedbackForm");
-          }}
-        >
-          <Text style={styles.feedbackButtonText}>Give Feedback</Text>
-        </TouchableOpacity>
-      </View> */}
-      {/* </View> */}
     </Pressable>
   );
 };
@@ -70,10 +53,8 @@ const ToDoItem = ({
 const styles = StyleSheet.create({
   toDoCard: {
     flexDirection: "row",
-    backgroundColor: "#f8f8f8",
     padding: 15,
     borderRadius: 10,
-    shadowColor: NAVY,
     shadowOffset: {
       width: 3,
       height: 3,
@@ -88,17 +69,14 @@ const styles = StyleSheet.create({
   },
   courseCode: {
     fontSize: 16,
-    color: "#333",
     fontWeight: "500",
   },
   courseName: {
     fontSize: 14,
-    color: NAVY,
     fontWeight: "500",
   },
   subText: {
     fontSize: 10,
-    color: SUB,
     fontWeight: "500",
   },
   eventDetails: {
@@ -108,7 +86,6 @@ const styles = StyleSheet.create({
   },
   deadline: {
     fontSize: 12,
-    color: "#ff6b35",
     fontWeight: "500",
   },
   phaseBadge: {
@@ -120,29 +97,6 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     fontSize: 8,
     fontWeight: "bold",
-  },
-  feedbackButton: {
-    borderColor: NAVY,
-    backgroundColor: WHITE,
-    borderWidth: 1,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    alignSelf: "flex-start",
-    shadowColor: NAVY,
-    shadowOffset: {
-      width: 3,
-      height: 3,
-    },
-    shadowOpacity: 0.5,
-    shadowRadius: 3,
-  },
-  feedbackButtonText: {
-    color: NAVY,
-    fontSize: 14,
-    textAlign: "right",
-    marginRight: 4,
-    fontWeight: "600",
   },
 });
 
