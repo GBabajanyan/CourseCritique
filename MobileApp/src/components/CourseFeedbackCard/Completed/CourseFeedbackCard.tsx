@@ -1,10 +1,10 @@
 import { phaseNames } from "@/src/constants";
-import { Colors, departmentColors, phaseColors } from "@/src/constants/colors";
+import { departmentColors, phaseColors } from "@/src/constants/colors";
+import { useColors } from "@/src/hooks/useColors";
 import { CourseFeedbackCardType, FeedbackPhase } from "@/src/types/Feedback";
 import { Ionicons } from "@expo/vector-icons";
 import React, { JSX } from "react";
-import { View, TouchableOpacity, Text, StyleSheet } from "react-native";
-const { NAVY, WHITE } = Colors;
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 const CourseFeedbackCard = ({
   item,
@@ -13,6 +13,8 @@ const CourseFeedbackCard = ({
   style = {},
   onToggle,
 }: CourseFeedbackCardType): JSX.Element => {
+  const { NAVY, WHITE, CARD, TEXT, TEXT_SECONDARY, SUCCESS, SURFACE } =
+    useColors();
   const isExpandable = isExpanded !== undefined;
   const isTypeCompleted = type === "completed";
   const renderRating = (rating: number): string => {
@@ -31,20 +33,31 @@ const CourseFeedbackCard = ({
     phaseNames[phase];
 
   return (
-    <View key={item.id} style={[styles.completedFeedbackItem, style]}>
+    <View
+      key={item.id}
+      style={[styles.completedFeedbackItem, style, { backgroundColor: CARD }]}
+    >
       <TouchableOpacity style={styles.feedbackHeader} onPress={onToggle}>
         <View style={styles.courseInfo}>
           <View style={styles.courseCodeRow}>
-            <Text style={styles.courseCode}>{item.courseCode}</Text>
-            <Text style={styles.courseName}>{item.courseName}</Text>
+            <Text style={[styles.courseCode, { color: NAVY }]}>
+              {item.courseCode}
+            </Text>
+            <Text style={[styles.courseName, { color: TEXT }]}>
+              {item.courseName}
+            </Text>
           </View>
           <View style={styles.courseMeta}>
-            <Text style={styles.sectionText}>Section {item.section}</Text>
-            <Text style={styles.instructorText}>• {item.instructor}</Text>
+            <Text style={[styles.sectionText, { color: TEXT_SECONDARY }]}>
+              Section {item.section}
+            </Text>
+            <Text style={[styles.instructorText, { color: TEXT_SECONDARY }]}>
+              • {item.instructor}
+            </Text>
           </View>
           {isTypeCompleted && (
             <View style={styles.feedbackMetaRow}>
-              <Text style={styles.submittedDate}>
+              <Text style={[styles.submittedDate, { color: SUCCESS }]}>
                 Submitted: {item.submittedDate}
               </Text>
             </View>
@@ -73,41 +86,52 @@ const CourseFeedbackCard = ({
             </View>
           )}
           {isExpandable && (
-            <Text style={styles.expandIcon}>
-              <Ionicons
-                name={isExpanded ? "caret-up-outline" : "caret-down-outline"}
-                size={24}
-                color="black"
-              />
-            </Text>
+            // <Text style={[styles.expandIcon, { color: NAVY }]}>
+            <Ionicons
+              name={isExpanded ? "caret-up-outline" : "caret-down-outline"}
+              size={24}
+              color="black"
+            />
+            //</Text>
           )}
         </View>
       </TouchableOpacity>
 
       {isExpanded && isTypeCompleted && (
-        <View style={styles.feedbackDetails}>
+        <View style={[styles.feedbackDetails, { backgroundColor: SURFACE }]}>
           <View style={styles.ratingContainer}>
-            <Text style={styles.detailLabel}>Rating:</Text>
+            <Text style={[styles.detailLabel, { color: TEXT_SECONDARY }]}>
+              Rating:
+            </Text>
             <Text style={styles.ratingStars}>
               {renderRating(item.feedbackData?.avgRating)}
             </Text>
           </View>
+          {item?.feedbackData?.comments && (
+            <View style={styles.detailRow}>
+              <Text style={[styles.detailLabel, { color: TEXT_SECONDARY }]}>
+                Comments:
+              </Text>
+              <Text style={[styles.detailText, { color: TEXT_SECONDARY }]}>
+                {item.feedbackData.comments}
+              </Text>
+            </View>
+          )}
 
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Comments:</Text>
-            <Text style={styles.detailText}>{item.feedbackData.comments}</Text>
-          </View>
-
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Suggestions:</Text>
-            <Text style={styles.detailText}>
+            <Text style={[styles.detailLabel, { color: TEXT_SECONDARY }]}>
+              Suggestions:
+            </Text>
+            <Text style={[styles.detailText, { color: TEXT_SECONDARY }]}>
               {item.feedbackData.improvements}
             </Text>
           </View>
 
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Would Recommend:</Text>
-            <Text style={styles.detailText}>
+            <Text style={[styles.detailLabel, { color: TEXT_SECONDARY }]}>
+              Would Recommend:
+            </Text>
+            <Text style={[styles.detailText, { color: TEXT_SECONDARY }]}>
               {item.feedbackData.wouldRecommend ? "Yes ✅" : "No ❌"}
             </Text>
           </View>
@@ -119,7 +143,6 @@ const CourseFeedbackCard = ({
 
 export const styles = StyleSheet.create({
   completedFeedbackItem: {
-    backgroundColor: WHITE,
     borderRadius: 12,
     overflow: "hidden",
     shadowColor: "#000",
@@ -143,7 +166,6 @@ export const styles = StyleSheet.create({
   courseCode: {
     fontSize: 18,
     fontWeight: "bold",
-    color: NAVY,
     marginRight: 8,
   },
   courseName: {
@@ -196,11 +218,10 @@ export const styles = StyleSheet.create({
   },
   feedbackMeta: {
     alignItems: "flex-end",
-    flex:1
+    flex: 1,
   },
   expandIcon: {
     fontSize: 12,
-    color: NAVY,
     fontWeight: "bold",
   },
   feedbackDetails: {
@@ -233,21 +254,6 @@ export const styles = StyleSheet.create({
   ratingStars: {
     fontSize: 16,
     marginLeft: 8,
-  },
-  viewFormButton: {
-    backgroundColor: "transparent",
-    borderWidth: 1,
-    borderColor: NAVY,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 6,
-    alignSelf: "flex-start",
-    marginTop: 8,
-  },
-  viewFormButtonText: {
-    color: NAVY,
-    fontSize: 12,
-    fontWeight: "600",
   },
 });
 

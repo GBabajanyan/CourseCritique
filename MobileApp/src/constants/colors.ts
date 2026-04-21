@@ -1,8 +1,35 @@
 export const Colors = {
-  NAVY: "#003A5D",
-  SAFFRON: "#EEBC03",
-  WHITE: "#fff",
-  SUB: "#ADAAA8",
+  // Light Mode (default)
+  light: {
+    NAVY: "#003A5D",
+    SAFFRON: "#EEBC03",
+    WHITE: "#FFFFFF",
+    BACKGROUND: "#F8F9FA",
+    SURFACE: "#FFFFFF",
+    TEXT: "#1F2937",
+    TEXT_SECONDARY: "#6B7280",
+    BORDER: "#E5E7EB",
+    CARD: "#FFFFFF",
+    ERROR: "#DC2626",
+    SUCCESS: "#10B981",
+    WARNING: "#F59E0B",
+  },
+
+  // Dark Mode
+  dark: {
+    NAVY: "#5B8FB9", // Lighter blue for dark bg
+    SAFFRON: "#EEBC03", // Keep same (contrasts well)
+    WHITE: "#1E1E1E", // Dark bg instead of white
+    BACKGROUND: "#121212", // Material dark background
+    SURFACE: "#1E1E1E", // Card/surface color
+    TEXT: "#FFFFFF", // White text on dark
+    TEXT_SECONDARY: "#9CA3AF", // Gray text
+    BORDER: "#333333", // Subtle border
+    CARD: "#2C2C2C", // Card background
+    ERROR: "#F87171", // Lighter red for dark
+    SUCCESS: "#34D399", // Lighter green for dark
+    WARNING: "#FBBF24", // Lighter yellow for dark
+  },
 };
 
 export const feedbackColors = [

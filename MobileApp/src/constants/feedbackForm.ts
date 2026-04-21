@@ -28,7 +28,7 @@ export const FORM_CONFIG = [
       },
       {
         key: "grading_rubrics",
-        label: "Grading rubrics were comprehensive",
+        label: "Grading assignments was fair",
         type: "3",
       },
     ],
@@ -89,9 +89,11 @@ export const FORM_CONFIG = [
         key: "take_another_course",
         label: "Would take another course with this instructor",
         type: "thumb",
-      },  {
+      },
+      {
         key: "open_feedback",
-        label: "Please share any additional feedback or suggestions for improvement",
+        label:
+          "Please share any additional feedback or suggestions for improvement",
         type: "text",
       },
     ],
@@ -109,5 +111,3 @@ export const FEEDBACK_VALUES_BY_TYPE = {
   "3": { 1: "Needs Improvement", 2: "Satisfactory", 3: "Excellent" },
   thumb: { 0: "Disagree", 1: "Agree" },
 };
-
-

@@ -180,6 +180,7 @@ class AuthStore {
     this.toggleIsLoading();
     try {
       await this.rootStore.settingsStore.setBiometricsEnabled(false);
+      this.setIsBiometricAvailable(false);
       await this.rootStore.apiClient.logout();
     } catch (error: any) {
       Alert.alert("Logout Error occured. Please try to log out again later");

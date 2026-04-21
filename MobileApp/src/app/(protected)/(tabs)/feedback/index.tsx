@@ -1,4 +1,4 @@
-import { Colors } from "@/src/constants/colors";
+import { useColors } from "@/src/hooks/useColors";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { StyleSheet, useWindowDimensions } from "react-native";
@@ -6,7 +6,6 @@ import { SceneMap, TabBar, TabView } from "react-native-tab-view";
 import CompletedFeedbacks from "./Completed";
 import PendingFeedbacks from "./Pending";
 import SearchFeedbacks from "./Search";
-const { NAVY, WHITE } = Colors;
 
 const renderScene = SceneMap({
   pending: () => <PendingFeedbacks />,
@@ -16,6 +15,7 @@ const renderScene = SceneMap({
 
 const Feedback = () => {
   const router = useRouter();
+  const { NAVY, WHITE, BACKGROUND } = useColors();
   const layout = useWindowDimensions();
   const { tabIndex } = useLocalSearchParams<{ tabIndex: string }>();
   const initialTab = tabIndex ? parseInt(tabIndex) : 0;
@@ -39,12 +39,16 @@ const Feedback = () => {
     <TabView
       navigationState={{ index, routes }}
       renderScene={renderScene}
+      style={{ backgroundColor: BACKGROUND }}
       renderTabBar={(props: any) => {
         return (
           <TabBar
             {...props}
-            style={styles.tabBar}
-            indicatorStyle={styles.indicator}
+            style={[
+              styles.tabBar,
+              { borderColor: WHITE, backgroundColor: WHITE },
+            ]}
+            indicatorStyle={[styles.indicator, { backgroundColor: NAVY }]}
             activeColor={WHITE}
             inactiveColor={NAVY}
             pressOpacity={0.9}
@@ -63,11 +67,9 @@ const Feedback = () => {
 const styles = StyleSheet.create({
   tabBar: {
     borderRadius: 40,
-    backgroundColor: "white",
     transform: [{ scale: 0.9 }],
     zIndex: 1,
     elevation: 1,
-    borderColor: WHITE,
     borderWidth: 2,
   },
   indicator: {
@@ -75,7 +77,6 @@ const styles = StyleSheet.create({
     height: "100%",
     borderRadius: 40,
     opacity: 0.9,
-    backgroundColor: NAVY,
   },
 });
 

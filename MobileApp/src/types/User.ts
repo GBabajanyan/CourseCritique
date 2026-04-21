@@ -1,4 +1,3 @@
-
 export interface User {
   id: string;
   name: string;
@@ -9,6 +8,7 @@ export interface User {
   role: string;
   degree: string;
   year: string;
+  phone: string;
   studentId: string;
   joinDate: string;
   feedbacksGiven?: number;
@@ -27,5 +27,3 @@ export type UserBadgeType = {
   color: string;
   earned: boolean;
 };
-
-

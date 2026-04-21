@@ -1,11 +1,10 @@
-import { Colors } from "@/src/constants/colors";
+import { useColors } from "@/src/hooks/useColors";
 import { useStore } from "@/src/store/StoreProvider";
 import { PendingFeedback } from "@/src/types/Feedback";
 import { getPhaseColor, getPhaseDisplayName } from "@/src/util/general";
 import { useRouter } from "expo-router";
 import { JSX } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-const { NAVY, WHITE } = Colors;
 
 const PendingCourseFeedbackCard = ({
   feedbackData,
@@ -15,32 +14,45 @@ const PendingCourseFeedbackCard = ({
   onPress: () => void;
 }): JSX.Element => {
   const router = useRouter();
+  const { NAVY, WHITE, CARD, TEXT, TEXT_SECONDARY, WARNING } = useColors();
   const { feedbackStore } = useStore();
   const { setCurrentFeedbackCourse } = feedbackStore;
 
   return (
     <TouchableOpacity
       key={feedbackData.id}
-      style={styles.pendingCourseFeedbackCard}
+      style={[
+        styles.pendingCourseFeedbackCard,
+        {
+          backgroundColor: CARD,
+          borderLeftColor: NAVY,
+        },
+      ]}
       onPress={onPress}
     >
       <View style={styles.courseHeader}>
         <View style={styles.courseInfo}>
           <View style={styles.courseCodeRow}>
-            <Text style={styles.courseCode}>{feedbackData.courseCode}</Text>
-            <Text style={styles.courseName}>{feedbackData.courseName}</Text>
+            <Text style={[styles.courseCode, { color: NAVY }]}>
+              {feedbackData.courseCode}
+            </Text>
+            <Text style={[styles.courseName, { color: TEXT }]}>
+              {feedbackData.courseName}
+            </Text>
           </View>
           <View style={styles.courseMeta}>
-            <Text style={styles.sectionText}>
+            <Text style={[styles.sectionText, { color: TEXT_SECONDARY }]}>
               Section {feedbackData.section}
             </Text>
-            <Text style={styles.instructorText}>
+            <Text style={[styles.instructorText, { color: TEXT_SECONDARY }]}>
               • {feedbackData.instructor}
             </Text>
           </View>
         </View>
         <View style={styles.deadlineContainer}>
-          <Text style={styles.deadlineText}>Due: {feedbackData.deadline}</Text>
+          <Text style={[styles.deadlineText, { color: WARNING }]}>
+            Due: {feedbackData.deadline}
+          </Text>
           <View
             style={[
               styles.phaseBadge,
@@ -55,13 +67,15 @@ const PendingCourseFeedbackCard = ({
       </View>
 
       <TouchableOpacity
-        style={styles.feedbackButton}
+        style={[styles.feedbackButton, { backgroundColor: NAVY }]}
         onPress={() => {
           setCurrentFeedbackCourse(feedbackData);
           router.push("/feedback/Pending/FeedbackForm");
         }}
       >
-        <Text style={styles.feedbackButtonText}>Give Feedback</Text>
+        <Text style={[styles.feedbackButtonText, { color: WHITE }]}>
+          Give Feedback
+        </Text>
       </TouchableOpacity>
     </TouchableOpacity>
   );
@@ -69,11 +83,9 @@ const PendingCourseFeedbackCard = ({
 
 const styles = StyleSheet.create({
   pendingCourseFeedbackCard: {
-    backgroundColor: WHITE,
     padding: 16,
     borderRadius: 12,
     borderLeftWidth: 4,
-    borderLeftColor: NAVY,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -101,12 +113,10 @@ const styles = StyleSheet.create({
   courseCode: {
     fontSize: 18,
     fontWeight: "bold",
-    color: NAVY,
     marginRight: 8,
   },
   courseName: {
     fontSize: 16,
-    color: "#333",
     flex: 1,
   },
   courseMeta: {
@@ -117,12 +127,10 @@ const styles = StyleSheet.create({
   },
   sectionText: {
     fontSize: 14,
-    color: "#666",
     fontWeight: "500",
   },
   instructorText: {
     fontSize: 14,
-    color: "#666",
     marginLeft: 4,
   },
   deadlineContainer: {
@@ -131,7 +139,6 @@ const styles = StyleSheet.create({
   },
   deadlineText: {
     fontSize: 12,
-    color: "#ff6b35",
     fontWeight: "500",
     marginBottom: 6,
   },
@@ -147,14 +154,12 @@ const styles = StyleSheet.create({
     textAlign: "right",
   },
   feedbackButton: {
-    backgroundColor: NAVY,
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 8,
     alignSelf: "flex-start",
   },
   feedbackButtonText: {
-    color: WHITE,
     fontSize: 14,
     fontWeight: "600",
   },

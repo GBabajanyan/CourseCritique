@@ -1,9 +1,8 @@
-import React from "react";
-import { View, Text, TextInput } from "react-native";
-import RatingScale from "./RatingScale";
 import { FEEDBACK_VALUES_BY_TYPE } from "@/src/constants/feedbackForm";
-import { Colors } from "@/src/constants/colors";
-const { NAVY, SUB } = Colors;
+import { useColors } from "@/src/hooks/useColors";
+import React from "react";
+import { Text, TextInput, View } from "react-native";
+import RatingScale from "./RatingScale";
 
 interface QuestionBlockProps {
   label: string;
@@ -18,13 +17,23 @@ const QuestionBlock: React.FC<QuestionBlockProps> = ({
   value,
   onChange,
 }) => {
+  const { NAVY, TEXT_SECONDARY, TEXT, SURFACE, BORDER } = useColors();
+
   const showRatingValue =
     type !== "text" &&
     value !== undefined &&
     FEEDBACK_VALUES_BY_TYPE[type][value];
 
   return (
-    <View>
+    <View
+      style={{
+        backgroundColor: SURFACE,
+        borderWidth: 1,
+        borderColor: BORDER,
+        padding: 8,
+        borderRadius: 16,
+      }}
+    >
       <Text
         style={{
           fontSize: 24,
@@ -39,12 +48,12 @@ const QuestionBlock: React.FC<QuestionBlockProps> = ({
           multiline
           numberOfLines={4}
           onChangeText={onChange}
-          placeholderTextColor={SUB}
+          placeholderTextColor={TEXT_SECONDARY}
           style={{
             minHeight: 150,
             justifyContent: "flex-start",
             textAlignVertical: "top", // Crucial for Android
-            padding: 10,
+            color: TEXT,
             fontSize: 16,
           }}
         />

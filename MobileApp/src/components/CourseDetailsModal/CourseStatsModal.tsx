@@ -1,3 +1,4 @@
+import { useColors } from "@/src/hooks/useColors";
 import { useStore } from "@/src/store/StoreProvider";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
@@ -18,6 +19,8 @@ type Props = {
 
 const CourseStatsModal = ({ visible, closeModal }: Props) => {
   const { feedbackStore } = useStore();
+  const { CARD, BACKGROUND, SURFACE, TEXT, TEXT_SECONDARY, BORDER } =
+    useColors();
   const { isModalLoading, courseFeedbackInSearchModal: selectedCourse } =
     feedbackStore;
 
@@ -25,13 +28,19 @@ const CourseStatsModal = ({ visible, closeModal }: Props) => {
 
   const renderRatingBar = (label: string, rating: number) => (
     <View style={styles.ratingRow}>
-      <Text style={styles.ratingLabel}>{label}</Text>
-      <View style={styles.ratingBarContainer}>
+      <Text style={[styles.ratingLabel, { color: TEXT_SECONDARY }]}>
+        {label}
+      </Text>
+      <View
+        style={[styles.ratingBarContainer, { backgroundColor: BACKGROUND }]}
+      >
         <View
           style={[styles.ratingBarFill, { width: `${(rating / 5) * 100}%` }]}
         />
       </View>
-      <Text style={styles.ratingValue}>{rating.toFixed(1)}</Text>
+      <Text style={[styles.ratingValue, { color: TEXT_SECONDARY }]}>
+        {rating.toFixed(1)}
+      </Text>
     </View>
   );
 
@@ -40,7 +49,9 @@ const CourseStatsModal = ({ visible, closeModal }: Props) => {
     const yesPercent = total > 0 ? (yes / total) * 100 : 0;
     return (
       <View style={styles.thumbRow}>
-        <Text style={styles.thumbLabel}>{label}</Text>
+        <Text style={[styles.thumbLabel, { color: TEXT_SECONDARY }]}>
+          {label}
+        </Text>
         <View style={styles.thumbBarContainer}>
           <View style={[styles.thumbBarYes, { width: `${yesPercent}%` }]} />
           <View
@@ -48,8 +59,12 @@ const CourseStatsModal = ({ visible, closeModal }: Props) => {
           />
         </View>
         <View style={styles.thumbIcons}>
-          <Text style={styles.thumbText}>👍 {yes}</Text>
-          <Text style={styles.thumbText}>👎 {no}</Text>
+          <Text style={[styles.thumbText, { color: TEXT_SECONDARY }]}>
+            👍 {yes}
+          </Text>
+          <Text style={[styles.thumbText, { color: TEXT_SECONDARY }]}>
+            👎 {no}
+          </Text>
         </View>
       </View>
     );
@@ -65,13 +80,15 @@ const CourseStatsModal = ({ visible, closeModal }: Props) => {
       onRequestClose={closeModal}
     >
       <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
+        <View style={[styles.modalContent, { backgroundColor: SURFACE }]}>
           {/* Modal Header */}
-          <View style={styles.modalHeader}>
+          <View style={[styles.modalHeader, { borderBottomColor: BORDER }]}>
             <TouchableOpacity onPress={closeModal}>
-              <Ionicons name="arrow-back" size={24} color="#333" />
+              <Ionicons name="arrow-back" size={24} color={TEXT_SECONDARY} />
             </TouchableOpacity>
-            <Text style={styles.modalTitle}>Course Statistics</Text>
+            <Text style={[styles.modalTitle, { color: TEXT }]}>
+              Course Statistics
+            </Text>
             <View style={{ width: 24 }} />
           </View>
 
@@ -85,37 +102,54 @@ const CourseStatsModal = ({ visible, closeModal }: Props) => {
             stats && (
               <ScrollView showsVerticalScrollIndicator={false}>
                 {/* Course Info */}
-                <View style={styles.modalCourseInfo}>
+                <View
+                  style={[
+                    styles.modalCourseInfo,
+                    { borderBottomColor: BORDER },
+                  ]}
+                >
                   <Text style={styles.modalCourseCode}>
                     {selectedCourse?.courseCode}
                   </Text>
-                  <Text style={styles.modalCourseName}>
+                  <Text style={[styles.modalCourseName, { color: TEXT }]}>
                     {selectedCourse?.courseName}
                   </Text>
-                  <Text style={styles.modalInstructor}>
+                  <Text
+                    style={[styles.modalInstructor, { color: TEXT_SECONDARY }]}
+                  >
                     {selectedCourse?.instructor}
                   </Text>
                 </View>
 
                 {/* Summary Stats */}
-                <View style={styles.summaryStats}>
+                <View style={[styles.summaryStats, { backgroundColor: CARD }]}>
                   <View style={styles.summaryItem}>
                     <Text style={styles.summaryValue}>
                       {stats.total_feedbacks}
                     </Text>
-                    <Text style={styles.summaryLabel}>Feedbacks</Text>
+                    <Text
+                      style={[styles.summaryLabel, { color: TEXT_SECONDARY }]}
+                    >
+                      Feedbacks
+                    </Text>
                   </View>
                   <View style={styles.summaryDivider} />
                   <View style={styles.summaryItem}>
                     <Text style={styles.summaryValue}>
                       {stats.avg_rating.toFixed(1)}
                     </Text>
-                    <Text style={styles.summaryLabel}>Avg Rating</Text>
+                    <Text
+                      style={[styles.summaryLabel, { color: TEXT_SECONDARY }]}
+                    >
+                      Avg Rating
+                    </Text>
                   </View>
                 </View>
 
                 {/* Ratings Section */}
-                <Text style={styles.sectionTitle}>Course Ratings</Text>
+                <Text style={[styles.sectionTitle, { color: TEXT }]}>
+                  Course Ratings
+                </Text>
                 {renderRatingBar(
                   "Course Pace",
                   stats.ratings_breakdown.course_pace,
@@ -141,7 +175,9 @@ const CourseStatsModal = ({ visible, closeModal }: Props) => {
                   stats.ratings_breakdown.grading_rubrics,
                 )}
 
-                <Text style={styles.sectionTitle}>Instructor Ratings</Text>
+                <Text style={[styles.sectionTitle, { color: TEXT }]}>
+                  Instructor Ratings
+                </Text>
                 {renderRatingBar(
                   "Class Management",
                   stats.ratings_breakdown.class_management,
@@ -171,7 +207,9 @@ const CourseStatsModal = ({ visible, closeModal }: Props) => {
                   stats.ratings_breakdown.inspires_motivation,
                 )}
 
-                <Text style={styles.sectionTitle}>Overall</Text>
+                <Text style={[styles.sectionTitle, { color: TEXT }]}>
+                  Overall
+                </Text>
                 {renderThumbStat(
                   "Substantial Learning",
                   stats.ratings_breakdown.substantial_learning.yes,
@@ -186,10 +224,20 @@ const CourseStatsModal = ({ visible, closeModal }: Props) => {
                 {/* Recent Comments */}
                 {stats.recent_comments.length > 0 && (
                   <>
-                    <Text style={styles.sectionTitle}>Recent Comments</Text>
+                    <Text style={[styles.sectionTitle, { color: TEXT }]}>
+                      Recent Comments
+                    </Text>
                     {stats.recent_comments.map((comment, index) => (
-                      <View key={index} style={styles.commentCard}>
-                        <Text style={styles.commentText}>
+                      <View
+                        key={index}
+                        style={[styles.commentCard, { backgroundColor: CARD }]}
+                      >
+                        <Text
+                          style={[
+                            styles.commentText,
+                            { color: TEXT_SECONDARY },
+                          ]}
+                        >
                           &quot;{comment}&quot;
                         </Text>
                       </View>
@@ -205,103 +253,12 @@ const CourseStatsModal = ({ visible, closeModal }: Props) => {
   );
 };
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f8f9fa",
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  searchHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#fff",
-    margin: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-  },
-  searchIcon: {
-    marginRight: 8,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 16,
-    color: "#333",
-  },
-  resultsCount: {
-    fontSize: 12,
-    color: "#999",
-    marginHorizontal: 16,
-    marginBottom: 8,
-  },
-  listContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 20,
-  },
-  courseCard: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  cardHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  courseCode: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#007AFF",
-  },
-  ratingBadge: {
-    backgroundColor: "#fef3c7",
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 12,
-  },
-  ratingBadgeText: {
-    fontSize: 12,
-    color: "#d97706",
-  },
-  courseName: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#333",
-    marginBottom: 4,
-  },
-  courseInstructor: {
-    fontSize: 14,
-    color: "#666",
-    marginBottom: 4,
-  },
-  courseDept: {
-    fontSize: 12,
-    color: "#999",
-  },
-  feedbackCount: {
-    fontSize: 12,
-    color: "#007AFF",
-    marginTop: 8,
-  },
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0, 0, 0, 0.5)",
     justifyContent: "flex-end",
   },
   modalContent: {
-    backgroundColor: "#fff",
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     maxHeight: "90%",
@@ -313,12 +270,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#e5e7eb",
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#333",
   },
   modalLoading: {
     marginTop: 40,
@@ -327,7 +282,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: "#e5e7eb",
   },
   modalCourseCode: {
     fontSize: 14,
@@ -338,19 +292,16 @@ const styles = StyleSheet.create({
   modalCourseName: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#333",
     marginBottom: 4,
     textAlign: "center",
   },
   modalInstructor: {
     fontSize: 14,
-    color: "#666",
   },
   summaryStats: {
     flexDirection: "row",
     justifyContent: "space-around",
     padding: 20,
-    backgroundColor: "#f8f9fa",
     margin: 16,
     borderRadius: 12,
   },
@@ -364,7 +315,6 @@ const styles = StyleSheet.create({
   },
   summaryLabel: {
     fontSize: 12,
-    color: "#666",
     marginTop: 4,
   },
   summaryDivider: {
@@ -374,7 +324,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#333",
     marginHorizontal: 16,
     marginTop: 20,
     marginBottom: 12,
@@ -393,7 +342,6 @@ const styles = StyleSheet.create({
   ratingBarContainer: {
     flex: 1,
     height: 6,
-    backgroundColor: "#e5e7eb",
     borderRadius: 3,
     marginHorizontal: 8,
     overflow: "hidden",
@@ -407,7 +355,6 @@ const styles = StyleSheet.create({
     width: 35,
     fontSize: 14,
     fontWeight: "500",
-    color: "#333",
   },
   thumbRow: {
     marginHorizontal: 16,
@@ -415,7 +362,6 @@ const styles = StyleSheet.create({
   },
   thumbLabel: {
     fontSize: 14,
-    color: "#666",
     marginBottom: 8,
   },
   thumbBarContainer: {
@@ -437,10 +383,8 @@ const styles = StyleSheet.create({
   },
   thumbText: {
     fontSize: 12,
-    color: "#666",
   },
   commentCard: {
-    backgroundColor: "#f8f9fa",
     marginHorizontal: 16,
     marginBottom: 8,
     padding: 12,
@@ -448,7 +392,6 @@ const styles = StyleSheet.create({
   },
   commentText: {
     fontSize: 14,
-    color: "#666",
     fontStyle: "italic",
   },
 });

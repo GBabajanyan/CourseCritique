@@ -14,20 +14,19 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
 import { AntDesign, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Colors } from "../constants/colors";
+import { useColors } from "../hooks/useColors";
 import { useStore } from "../store/StoreProvider";
-const { NAVY } = Colors;
 
 const LoginScreen = observer(() => {
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const insets = useSafeAreaInsets();
+  const { NAVY, TEXT, TEXT_SECONDARY, BACKGROUND } = useColors();
   const { authStore, settingsStore, feedbackStore } = useStore();
-  const { biometricsEnabled, toggleBiometrics } = settingsStore;
+  const { biometricsEnabled, theme, toggleBiometrics } = settingsStore;
   const {
     isLoading,
     isBiometricAvailable,
@@ -40,7 +39,9 @@ const LoginScreen = observer(() => {
   const biometricLoginIcon =
     biometricType === "Face ID" ? "face-recognition" : "fingerprint";
   const biometricIconColor = isLoading ? "grey" : "black";
-
+  const logoLight = require("../../assets/images/teddy.png");
+  const logoDark = require("../../assets/images/teddy_dark.png");
+  const logo = theme === "dark" ? logoDark : logoLight;
   useEffect(() => {
     const checkBiometrics = async () => {
       await checkBiometricSupport();
@@ -90,7 +91,6 @@ const LoginScreen = observer(() => {
             [
               {
                 text: "No",
-                onPress: () => console.log("Biometric login not enabled"),
                 style: "cancel",
               },
               {
@@ -98,6 +98,7 @@ const LoginScreen = observer(() => {
                 onPress: async () => {
                   try {
                     await toggleBiometrics();
+                    Alert.alert("Biometric Login Enabled");
                   } catch (error) {
                     console.error("Enable biometrics error:", error);
                     Alert.alert("Error", "Failed to enable biometric login");
@@ -126,140 +127,138 @@ const LoginScreen = observer(() => {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <KeyboardAvoidingView
-        style={styles.keyboardAvoidingView}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+    <KeyboardAvoidingView
+      style={[
+        styles.keyboardAvoidingView,
+        {
+          paddingTop: insets.top,
+          backgroundColor: BACKGROUND,
+        },
+      ]}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <ScrollView
+        contentContainerStyle={styles.scrollContainer}
+        showsVerticalScrollIndicator={false}
+        scrollEnabled={false}
       >
-        <ScrollView
-          contentContainerStyle={styles.scrollContainer}
-          showsVerticalScrollIndicator={false}
-        >
-          <View style={styles.heading}>
-            <View style={styles.logoContainer}>
-              <Image
-                source={require("../../assets/images/teddy.png")}
-                style={styles.logo}
-              />
-            </View>
-            <Text style={styles.title}>
-              {isBiometricAvailable ? "Welcome Back" : "CourseCritique"}
-            </Text>
-            <Text style={styles.subtitle}>Sign in to your account</Text>
+        <View style={styles.heading}>
+          <Image source={logo} style={styles.logo} />
+          <Text style={[styles.title, { color: TEXT }]}>
+            {isBiometricAvailable ? "Welcome Back" : "CourseCritique"}
+          </Text>
+          <Text style={[styles.subtitle, { color: TEXT_SECONDARY }]}>
+            Sign in to your account
+          </Text>
+        </View>
+
+        <View style={styles.form}>
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder="Email Address"
+              placeholderTextColor="#999"
+              value={username}
+              onChangeText={setUsername}
+              autoCapitalize="none"
+              autoComplete="username"
+            />
           </View>
 
-          <View style={styles.form}>
-            <View style={styles.inputContainer}>
-              <TextInput
-                style={styles.input}
-                placeholder="Email Address"
-                placeholderTextColor="#999"
-                value={username}
-                onChangeText={setUsername}
-                autoCapitalize="none"
-                autoComplete="username"
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={[styles.input, styles.passwordInput]}
+              placeholder="Password"
+              placeholderTextColor="#999"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!showPassword}
+              autoCapitalize="none"
+            />
+            <TouchableOpacity
+              style={styles.eyeButton}
+              onPress={() => setShowPassword(!showPassword)}
+            >
+              <AntDesign
+                name={showPassword ? "eye-invisible" : "eye"}
+                size={20}
+                color={TEXT_SECONDARY}
               />
-            </View>
-
-            <View style={styles.inputContainer}>
-              <TextInput
-                style={[styles.input, styles.passwordInput]}
-                placeholder="Password"
-                placeholderTextColor="#999"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry={!showPassword}
-                autoCapitalize="none"
-              />
-              <TouchableOpacity
-                style={styles.eyeButton}
-                onPress={() => setShowPassword(!showPassword)}
-              >
-                <AntDesign
-                  name={showPassword ? "eye-invisible" : "eye"}
-                  size={20}
-                  color="#666"
-                />
-              </TouchableOpacity>
-            </View>
-
-            <TouchableOpacity style={styles.forgotPassword}>
-              <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
             </TouchableOpacity>
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity
-                style={[
-                  styles.loginButton,
-                  (isLoading || !username || !password) &&
-                    styles.loginButtonDisabled,
-                ]}
-                onPress={handleLogin}
-                disabled={isLoading || !username || !password}
-              >
-                {isLoading ? (
-                  <View style={styles.loadingContainer}>
-                    <ActivityIndicator color="#fff" size="small" />
-                    <Text style={styles.loginButtonText}>Signing In...</Text>
-                  </View>
-                ) : (
-                  <Text style={styles.loginButtonText}>Sign In</Text>
-                )}
-              </TouchableOpacity>
-              {isBiometricAvailable && (
-                <TouchableOpacity
-                  onPress={handleBiometricLogin}
-                  style={styles.biometricsButton}
-                  disabled={isLoading}
-                >
-                  <MaterialCommunityIcons
-                    name={biometricLoginIcon}
-                    size={36}
-                    color={biometricIconColor}
-                  />
-                </TouchableOpacity>
-              )}
-            </View>
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </View>
+
+          <TouchableOpacity style={styles.forgotPassword}>
+            <Text style={[styles.forgotPasswordText, { color: NAVY }]}>
+              Forgot Password?
+            </Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={[
+              styles.loginButton,
+              (isLoading || !username || !password) &&
+                styles.loginButtonDisabled,
+            ]}
+            onPress={handleLogin}
+            disabled={isLoading || !username || !password}
+          >
+            {isLoading ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator color="#fff" size="small" />
+                <Text style={styles.loginButtonText}>Signing In...</Text>
+              </View>
+            ) : (
+              <Text style={styles.loginButtonText}>Sign In</Text>
+            )}
+          </TouchableOpacity>
+          {isBiometricAvailable && (
+            <TouchableOpacity
+              onPress={handleBiometricLogin}
+              style={styles.biometricsButton}
+              disabled={isLoading}
+            >
+              <MaterialCommunityIcons
+                name={biometricLoginIcon}
+                size={36}
+                color={biometricIconColor}
+              />
+            </TouchableOpacity>
+          )}
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 });
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
   keyboardAvoidingView: {
     flex: 1,
   },
   scrollContainer: {
-    flexGrow: 1,
+    flex: 1,
     justifyContent: "center",
     paddingHorizontal: 30,
-    paddingVertical: 20,
   },
   heading: {
     alignItems: "center",
-    marginBottom: 40,
+    marginBottom: 32,
+    marginTop: -40,
   },
   logo: {
-    width: 150,
-    height: 150,
+    width: 160,
+    height: 160,
     justifyContent: "center",
     alignItems: "center",
   },
   title: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#333",
     marginBottom: 8,
     textAlign: "center",
   },
   subtitle: {
     fontSize: 16,
-    color: "#666",
     textAlign: "center",
   },
   form: {
@@ -297,7 +296,6 @@ const styles = StyleSheet.create({
     marginBottom: 25,
   },
   forgotPasswordText: {
-    color: NAVY,
     fontSize: 14,
     fontWeight: "500",
   },

@@ -1,23 +1,33 @@
+import { useColors } from "@/src/hooks/useColors";
+import { useStore } from "@/src/store/StoreProvider";
+import { Ionicons } from "@expo/vector-icons";
+import { useLocalSearchParams } from "expo-router";
+import { observer } from "mobx-react-lite";
 import React, { useEffect, useRef, useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  TextInput,
   Alert,
-  StatusBar,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
-import { observer } from "mobx-react-lite";
-import { useStore } from "@/src/store/StoreProvider";
-import { useLocalSearchParams } from "expo-router";
 
 const EditProfileScreen = observer(({ navigation }: any) => {
   const { profileStore } = useStore();
   const { section } = useLocalSearchParams();
+  const {
+    NAVY,
+    WHITE,
+    CARD,
+    TEXT,
+    TEXT_SECONDARY,
+    BACKGROUND,
+    SURFACE,
+    BORDER,
+  } = useColors();
   const { userProfile } = profileStore;
   const scrollRef = useRef<ScrollView>(null);
   const [targetY, setTargetY] = useState(0);
@@ -25,12 +35,42 @@ const EditProfileScreen = observer(({ navigation }: any) => {
     name: userProfile?.name || "",
     email: userProfile?.email || "",
     phone: userProfile?.phone || "",
+    degree: "",
+    year: "",
     reason: "",
   });
   const [loading, setLoading] = useState(false);
-  const isReasonFilled = formData.reason.trim().length;
+  const isReasonFilled =
+    formData.reason.trim().length &&
+    Object.entries(formData).some(
+      ([key, val]) => key !== "reason" && val.trim(),
+    );
   const isSubmitDisabled = loading || !isReasonFilled;
-
+  const {
+    sectionStyle,
+    highlightSectionStyle,
+    labelStyle,
+    inputStyle,
+    disabledInput,
+  } = {
+    sectionStyle: [
+      styles.section,
+      { backgroundColor: SURFACE, borderColor: BORDER },
+    ],
+    highlightSectionStyle: [
+      { borderColor: NAVY, shadowColor: NAVY },
+      styles.sectionHighlight,
+    ],
+    labelStyle: [styles.label, { color: TEXT }],
+    inputStyle: [
+      styles.input,
+      { backgroundColor: WHITE, borderColor: BORDER, color: TEXT },
+    ],
+    disabledInput: {
+      backgroundColor: TEXT_SECONDARY,
+      color: WHITE,
+    },
+  };
   useEffect(() => {
     if (section === "academic") {
       scrollRef.current?.scrollTo({ y: targetY, animated: true });
@@ -62,17 +102,11 @@ const EditProfileScreen = observer(({ navigation }: any) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" />
-
+    <SafeAreaView style={[styles.container, { backgroundColor: BACKGROUND }]}>
       <ScrollView showsVerticalScrollIndicator={false} ref={scrollRef}>
-        <View style={styles.infoCard}>
-          <Ionicons
-            name="information-circle-outline"
-            size={24}
-            color="#007AFF"
-          />
-          <Text style={styles.infoText}>
+        <View style={[styles.infoCard, { backgroundColor: CARD }]}>
+          <Ionicons name="information-circle-outline" size={24} color={NAVY} />
+          <Text style={[styles.infoText, { color: NAVY }]}>
             Profile changes require admin approval. Submit a request and we'll
             review it.
           </Text>
@@ -81,16 +115,19 @@ const EditProfileScreen = observer(({ navigation }: any) => {
         {/* Personal Info */}
         <View
           style={[
-            styles.section,
-            section === "personal" && styles.sectionHighlight,
+            sectionStyle,
+            section === "personal" && highlightSectionStyle,
           ]}
         >
-          <Text style={styles.sectionTitle}>Personal Information</Text>
+          <Text style={[styles.sectionTitle, { color: TEXT_SECONDARY }]}>
+            Personal Information
+          </Text>
 
           <View style={styles.field}>
-            <Text style={styles.label}>Full Name</Text>
+            <Text style={labelStyle}>Full Name</Text>
             <TextInput
-              style={styles.input}
+              placeholderTextColor={TEXT_SECONDARY}
+              style={inputStyle}
               value={formData.name}
               onChangeText={(text) => updateFormData("name", text)}
               placeholder="Your full name"
@@ -98,9 +135,10 @@ const EditProfileScreen = observer(({ navigation }: any) => {
           </View>
 
           <View style={styles.field}>
-            <Text style={styles.label}>Email</Text>
+            <Text style={labelStyle}>Email</Text>
             <TextInput
-              style={styles.input}
+              placeholderTextColor={TEXT_SECONDARY}
+              style={inputStyle}
               value={formData.email}
               onChangeText={(text) => updateFormData("email", text)}
               placeholder="Your email"
@@ -110,9 +148,10 @@ const EditProfileScreen = observer(({ navigation }: any) => {
           </View>
 
           <View style={styles.field}>
-            <Text style={styles.label}>Phone (optional)</Text>
+            <Text style={labelStyle}>Phone (optional)</Text>
             <TextInput
-              style={styles.input}
+              placeholderTextColor={TEXT_SECONDARY}
+              style={inputStyle}
               value={formData.phone}
               onChangeText={(text) => updateFormData("phone", text)}
               placeholder="Your phone number"
@@ -124,27 +163,33 @@ const EditProfileScreen = observer(({ navigation }: any) => {
         {/* Academic Info */}
         <View
           style={[
-            styles.section,
-            section === "academic" && styles.sectionHighlight,
+            sectionStyle,
+            section === "academic" && highlightSectionStyle,
           ]}
           onLayout={(event) => setTargetY(event.nativeEvent.layout.y)}
         >
-          <Text style={styles.sectionTitle}>Academic Information</Text>
+          <Text style={[styles.sectionTitle, { color: TEXT_SECONDARY }]}>
+            Academic Information
+          </Text>
 
           <View style={styles.field}>
-            <Text style={styles.label}>Student ID</Text>
+            <Text style={labelStyle}>Student ID</Text>
             <TextInput
-              style={[styles.input, styles.disabledInput]}
+              placeholderTextColor={TEXT_SECONDARY}
+              style={[inputStyle, disabledInput]}
               value={userProfile?.studentId}
               editable={false}
             />
-            <Text style={styles.hint}>Student ID cannot be changed</Text>
+            <Text style={[styles.hint, { color: TEXT_SECONDARY }]}>
+              Student ID cannot be changed
+            </Text>
           </View>
 
           <View style={styles.field}>
-            <Text style={styles.label}>Degree Program</Text>
+            <Text style={labelStyle}>Degree Program</Text>
             <TextInput
-              style={styles.input}
+              placeholderTextColor={TEXT_SECONDARY}
+              style={inputStyle}
               value={formData.degree}
               onChangeText={(text) => updateFormData("degree", text)}
               placeholder="e.g., BSCS, BS Mathematics"
@@ -152,22 +197,25 @@ const EditProfileScreen = observer(({ navigation }: any) => {
           </View>
 
           <View style={styles.field}>
-            <Text style={styles.label}>Year</Text>
+            <Text style={labelStyle}>Year</Text>
             <TextInput
-              style={styles.input}
+              placeholderTextColor={TEXT_SECONDARY}
+              style={inputStyle}
               value={formData.year}
               onChangeText={(text) => updateFormData("year", text)}
               placeholder="Freshman / Sophomore / Junior / Senior"
             />
           </View>
         </View>
-        <View style={styles.section}>
+
+        <View style={sectionStyle}>
           <View style={styles.field}>
-            <Text style={styles.label}>
+            <Text style={labelStyle}>
               Reason for Change <Text style={styles.required}>*</Text>
             </Text>
             <TextInput
-              style={[styles.input, { height: 100 }]}
+              placeholderTextColor={TEXT_SECONDARY}
+              style={[inputStyle, { height: 100 }]}
               multiline
               placeholder="REQUIRED: Explain why you want these changes..."
               value={formData.reason}
@@ -179,6 +227,7 @@ const EditProfileScreen = observer(({ navigation }: any) => {
         <TouchableOpacity
           style={[
             styles.submitButton,
+            { backgroundColor: NAVY },
             isSubmitDisabled && styles.disabledButton,
           ]}
           onPress={handleSubmit}
@@ -198,12 +247,11 @@ const EditProfileScreen = observer(({ navigation }: any) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f8f9fa",
+    paddingHorizontal: 16,
   },
   infoCard: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#e3f2fd",
     margin: 16,
     padding: 12,
     borderRadius: 8,
@@ -212,29 +260,23 @@ const styles = StyleSheet.create({
   infoText: {
     flex: 1,
     fontSize: 13,
-    color: "#007AFF",
     lineHeight: 18,
   },
   section: {
-    backgroundColor: "#fff",
     marginTop: 12,
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderBottomWidth: 1,
     borderTopWidth: 1,
     borderRadius: 16,
-    borderColor: "#e5e5e5",
   },
   sectionHighlight: {
-    borderColor: "#007AFF",
-    shadowColor: "#007AFF",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 5,
   },
   sectionTitle: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#666",
     textTransform: "uppercase",
     letterSpacing: 0.5,
     paddingVertical: 12,
@@ -245,7 +287,6 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: "500",
-    color: "#333",
     marginBottom: 6,
   },
   required: {
@@ -254,24 +295,16 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: "#ddd",
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 16,
-    backgroundColor: "#fff",
-  },
-  disabledInput: {
-    backgroundColor: "#f5f5f5",
-    color: "#999",
   },
   hint: {
     fontSize: 11,
-    color: "#999",
     marginTop: 4,
   },
   submitButton: {
-    backgroundColor: "#007AFF",
     marginHorizontal: 16,
     marginTop: 24,
     paddingVertical: 14,

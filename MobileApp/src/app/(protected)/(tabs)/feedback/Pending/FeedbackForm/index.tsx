@@ -1,5 +1,6 @@
 import StepRenderer from "@/src/components/feedbackForm/StepRenderer";
 import { FORM_CONFIG } from "@/src/constants/feedbackForm";
+import { useColors } from "@/src/hooks/useColors";
 import { useStore } from "@/src/store/StoreProvider";
 import { FeedbackRatings } from "@/src/types/Feedback";
 import { useRouter } from "expo-router";
@@ -18,6 +19,7 @@ import * as Progress from "react-native-progress";
 
 const FeedbackForm: React.FC = () => {
   const router = useRouter();
+  const { CARD, BACKGROUND, TEXT_SECONDARY } = useColors();
   const { feedbackStore } = useStore();
   const {
     currentFeedbackCourse: course,
@@ -96,10 +98,10 @@ const FeedbackForm: React.FC = () => {
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: BACKGROUND }]}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <View style={styles.progressContainer}>
+      <View style={[styles.progressContainer, { backgroundColor: CARD }]}>
         <Progress.Bar
           progress={currentStep / totalSteps}
           width={null}
@@ -107,7 +109,7 @@ const FeedbackForm: React.FC = () => {
           style={{ marginBottom: 8 }}
         />
 
-        <Text style={styles.progressText}>
+        <Text style={[styles.progressText, { color: TEXT_SECONDARY }]}>
           Step {currentStep} of {totalSteps} • {getStepTitle()}
         </Text>
       </View>
@@ -123,8 +125,11 @@ const FeedbackForm: React.FC = () => {
         />
       </ScrollView>
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.btn} onPress={handleBack}>
-          <Text style={styles.secondaryButtonText}>
+        <TouchableOpacity
+          style={[styles.btn, { backgroundColor: CARD, opacity: 0.9 }]}
+          onPress={handleBack}
+        >
+          <Text style={[styles.backButtonText, { color: TEXT_SECONDARY }]}>
             {currentStep === 1 ? "Cancel" : "Back"}
           </Text>
         </TouchableOpacity>
@@ -157,7 +162,6 @@ const styles = StyleSheet.create({
   },
   progressContainer: {
     padding: 20,
-    backgroundColor: "#f8f9fa",
   },
   progressText: {
     fontSize: 12,
@@ -168,196 +172,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
   },
-  courseCode: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#333",
-  },
-  courseName: {
-    fontSize: 14,
-    color: "#666",
-    textAlign: "center",
-  },
-  stepTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#1a1a1a",
-    marginBottom: 8,
-  },
-  stepDescription: {
-    fontSize: 16,
-    color: "#666",
-    marginBottom: 30,
-    lineHeight: 22,
-  },
-  ratingSection: {
-    alignItems: "center",
-    marginBottom: 30,
-  },
-  starsContainer: {
-    flexDirection: "row",
-    marginBottom: 10,
-  },
-  starButton: {
-    padding: 5,
-  },
-  star: {
-    fontSize: 32,
-  },
-  ratingText: {
-    fontSize: 16,
-    color: "#666",
-    fontStyle: "italic",
-  },
-  quickRatings: {
-    marginTop: 20,
-  },
-  quickRatingsTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#333",
-    marginBottom: 15,
-  },
-  quickRatingItem: {
-    marginBottom: 20,
-  },
-  quickRatingLabel: {
-    fontSize: 14,
-    color: "#666",
-    marginBottom: 8,
-  },
-  textInputSection: {
-    marginTop: 10,
-  },
-  inputLabel: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#333",
-    marginBottom: 8,
-    marginTop: 16,
-  },
-  textInput: {
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    backgroundColor: "#f8f9fa",
-  },
-  textArea: {
-    minHeight: 100,
-    textAlignVertical: "top",
-  },
-  recommendationSection: {
-    marginVertical: 20,
-  },
-  recommendButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 16,
-    borderWidth: 2,
-    borderColor: "#e0e0e0",
-    borderRadius: 12,
-    marginBottom: 12,
-  },
-  recommendButtonSelected: {
-    borderColor: "#007AFF",
-    backgroundColor: "#f0f8ff",
-  },
-  recommendIcon: {
-    fontSize: 24,
-    marginRight: 12,
-  },
-  recommendText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#333",
-  },
-  summarySection: {
-    backgroundColor: "#f8f9fa",
-    padding: 16,
-    borderRadius: 12,
-    marginTop: 20,
-  },
-  summaryTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#333",
-    marginBottom: 12,
-  },
-  summaryItem: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 8,
-  },
-  summaryLabel: {
-    fontSize: 14,
-    color: "#666",
-  },
-  summaryValue: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#333",
-  },
-  reviewCard: {
-    backgroundColor: "#f8f9fa",
-    padding: 20,
-    borderRadius: 12,
-    marginTop: 10,
-  },
-  reviewCourse: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#333",
-    marginBottom: 4,
-  },
-  reviewSection: {
-    fontSize: 14,
-    color: "#666",
-    marginBottom: 2,
-  },
-  reviewInstructor: {
-    fontSize: 14,
-    color: "#666",
-    marginBottom: 2,
-  },
-  reviewPhase: {
-    fontSize: 12,
-    color: "#007AFF",
-    fontWeight: "600",
-    marginBottom: 12,
-  },
-  reviewDivider: {
-    height: 1,
-    backgroundColor: "#e0e0e0",
-    marginVertical: 12,
-  },
-  reviewItem: {
-    marginBottom: 12,
-  },
-  reviewLabel: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#333",
-    marginBottom: 4,
-  },
-  reviewValue: {
-    fontSize: 14,
-    color: "#666",
-    lineHeight: 20,
-  },
-  submitNote: {
-    backgroundColor: "#e8f5e8",
-    padding: 16,
-    borderRadius: 8,
-    marginTop: 20,
-  },
-  submitNoteText: {
-    fontSize: 14,
-    color: "#2e7d32",
-    textAlign: "center",
-    lineHeight: 18,
-  },
   footer: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -366,7 +180,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: 0,
     bottom: 24,
-    // backgroundColor: "red",
     width: "100%",
     gap: 24,
   },
@@ -374,24 +187,11 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     borderRadius: 8,
-    // borderWidth: 1,
-    // borderColor: "#e0e0e0",
-    backgroundColor: "#fff",
+    backgroundColor: "transparent",
   },
-  secondaryButton: {
-    // flex: 1,
-    // padding: 16,
-    // borderRadius: 8,
-    // borderWidth: 1,
-    // borderColor: "#e0e0e0",
-    // backgroundColor: "#fff",
-    // marginRight: 10,
-    // alignItems: "center",
-  },
-  secondaryButtonText: {
+  backButtonText: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#4d4c4c",
   },
   primaryButton: {
     flex: 2,
