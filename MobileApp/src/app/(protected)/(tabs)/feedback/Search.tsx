@@ -213,15 +213,6 @@ const SearchFeedbacks = observer(() => {
         closeModal={handleCloseCourseDetailsModal}
         visible={isCourseDetailsModalOpen}
       />
-      {flashListData.length === 0 && (
-        <View style={styles.emptyState}>
-          <Text style={styles.emptyStateEmoji}>🎉</Text>
-          <Text style={styles.emptyStateText}>No pending feedbacks!</Text>
-          <Text style={styles.emptyStateSubtext}>
-            All caught up with your course evaluations.
-          </Text>
-        </View>
-      )}
     </View>
   );
 });
