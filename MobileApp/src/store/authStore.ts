@@ -53,7 +53,9 @@ class AuthStore {
     }
   };
 
-  doRefreshToken = async (refreshToken: string) => {
+  doRefreshToken = async (
+    refreshToken: string,
+  ): Promise<{ userProfile: User }> => {
     try {
       const response = await this.rootStore.apiClient.instance.post(
         `/auth/refresh`,
@@ -71,11 +73,11 @@ class AuthStore {
       await this.rootStore.apiClient.setAuthTokens(authToken, newRefreshToken);
       return { userProfile };
     } catch (error: any) {
-      console.error(
+      await this.rootStore.apiClient.logout();
+      throw new Error(
         "AuthStore doRefreshToken error",
         error.response?.data || error.message,
       );
-      await this.rootStore.apiClient.logout();
     }
   };
 
@@ -122,12 +124,12 @@ class AuthStore {
       );
       const { authToken, refreshToken, user } = response.data;
       await this.rootStore.apiClient.setAuthTokens(authToken, refreshToken);
-
-      this.rootStore.profileStore.setUser(user);
       runInAction(() => {
         this.currentUser = user;
         this.isAuthenticated = true;
       });
+
+      await this.handleAfterLoginLoads(user);
     } catch (error: any) {
       console.log("Login error: ", error.message);
       throw error;
@@ -164,11 +166,10 @@ class AuthStore {
 
       const { userProfile } = await this.doRefreshToken(refreshToken);
 
-      this.rootStore.profileStore.setUser(userProfile);
       runInAction(() => {
         this.currentUser = userProfile;
       });
-      this.checkAuthStatus();
+      this.handleAfterLoginLoads(userProfile);
     } catch (error: any) {
       console.log("Biometric login error:", error?.message);
     } finally {
@@ -181,6 +182,8 @@ class AuthStore {
     try {
       await this.rootStore.settingsStore.setBiometricsEnabled(false);
       this.setIsBiometricAvailable(false);
+      await this.rootStore.notificationsStore.cancelAllNotifications(); //scheduled
+      await this.rootStore.notificationsStore.clearAllNotifications(); //fired
       await this.rootStore.apiClient.logout();
     } catch (error: any) {
       Alert.alert("Logout Error occured. Please try to log out again later");
@@ -195,6 +198,15 @@ class AuthStore {
       this.isAuthenticated = false;
       this.currentUser = null;
     });
+  };
+
+  handleAfterLoginLoads = async (userProfile?: User) => {
+    if (userProfile) this.rootStore.profileStore.setUser(userProfile);
+    const areNotifsEnabled = this.rootStore.settingsStore.inAppNotifications;
+    if (areNotifsEnabled)
+      await this.rootStore.notificationsStore.loadNotifications();
+    await this.rootStore.feedbackStore.loadLoggingData();
+    await this.checkAuthStatus();
   };
 }
 

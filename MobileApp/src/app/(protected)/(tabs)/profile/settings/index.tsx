@@ -20,12 +20,12 @@ const SettingsScreen = observer(() => {
   const { isBiometricAvailable, biometricType } = authStore;
   const {
     biometricsEnabled: isBiometricsEnabled,
-    pushNotifications,
+    inAppNotifications,
     theme,
     emailReminders,
     toggleBiometrics,
     setSettingsTheme,
-    setPushNotifications,
+    setinAppNotifications,
     setEmailReminders,
   } = settingsStore;
 
@@ -78,10 +78,10 @@ const SettingsScreen = observer(() => {
         <Text style={sectionTitleStyle}>Preferences</Text>
         <SettingItem
           icon="notifications-outline"
-          title="Push Notifications"
+          title="In-App Notifications"
           type="toggle"
-          value={pushNotifications}
-          onValueChange={setPushNotifications}
+          value={inAppNotifications}
+          onValueChange={setinAppNotifications}
         />
         <SettingItem
           icon="moon-outline"

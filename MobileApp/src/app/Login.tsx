@@ -24,8 +24,10 @@ const LoginScreen = observer(() => {
   const [password, setPassword] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const insets = useSafeAreaInsets();
+
   const { NAVY, TEXT, TEXT_SECONDARY, BACKGROUND } = useColors();
-  const { authStore, settingsStore, feedbackStore } = useStore();
+
+  const { authStore, settingsStore } = useStore();
   const { biometricsEnabled, theme, toggleBiometrics } = settingsStore;
   const {
     isLoading,
@@ -35,13 +37,14 @@ const LoginScreen = observer(() => {
     biometricLogin,
     checkBiometricSupport,
   } = authStore;
-  const { loadLoggingData } = feedbackStore;
   const biometricLoginIcon =
     biometricType === "Face ID" ? "face-recognition" : "fingerprint";
-  const biometricIconColor = isLoading ? "grey" : "black";
+  const biometricIconColor = isLoading ? TEXT_SECONDARY : TEXT;
+
   const logoLight = require("../../assets/images/teddy.png");
   const logoDark = require("../../assets/images/teddy_dark.png");
   const logo = theme === "dark" ? logoDark : logoLight;
+
   useEffect(() => {
     const checkBiometrics = async () => {
       await checkBiometricSupport();
@@ -53,7 +56,7 @@ const LoginScreen = observer(() => {
   useEffect(() => {
     const autoBiometricLogin = async () => {
       if (isBiometricAvailable) {
-        await handleBiometricLogin().then(async () => await loadLoggingData());
+        await handleBiometricLogin();
       }
     };
 
@@ -83,7 +86,6 @@ const LoginScreen = observer(() => {
 
     await login(username, password)
       .then(async () => {
-        await loadLoggingData();
         if (!biometricsEnabled) {
           Alert.alert(
             "Login Successful",
