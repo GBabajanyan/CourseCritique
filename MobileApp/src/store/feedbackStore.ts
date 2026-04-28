@@ -1,4 +1,3 @@
-import { AxiosInstance } from "axios";
 import { action, makeAutoObservable, runInAction } from "mobx";
 import { MarkedDates } from "react-native-calendars/src/types";
 import { RootStore } from ".";
@@ -19,7 +18,6 @@ import {
 
 class FeedbackStore {
   rootStore: RootStore;
-  api: AxiosInstance;
 
   currentFeedbackCourse: PendingFeedback | null = null;
   courseFeedbackInSearchModal: Course | null = null;
@@ -38,7 +36,6 @@ class FeedbackStore {
 
   constructor(rootStore: RootStore) {
     this.rootStore = rootStore;
-    this.api = rootStore.apiClient.instance;
     makeAutoObservable(this, {}, { autoBind: true });
   }
 
@@ -107,21 +104,32 @@ class FeedbackStore {
     await this.loadPendingCourses()
       .then(async () => {
         this.setIsPageLoading(true);
+        const { inAppNotifications: notifsEnabled } =
+          this.rootStore.settingsStore;
+        const {
+          manageFeedbackNotifications,
+          manageWeeklyNotifications,
+          updateNotificationsBadge,
+        } = this.rootStore.notificationsStore;
 
         this.pendingCalendar = {} as MarkedDates;
 
         const today = processToDate(new Date());
         this.pendingCalendar[today] = { selected: true };
         const colorIndicesToExclude: Set<number> = new Set();
-        this.pendingFeedbacks.forEach(({ startDate, deadline }) => {
+
+        this.pendingFeedbacks.forEach(async (feedback) => {
+          const { id, courseCode, courseName, startDate, deadline } = feedback;
+
           const startDateTimestamp = new Date(startDate);
           const deadlineTimestamp = new Date(deadline);
+
           let randomIndex = Math.round(Math.random() * 7);
           while (colorIndicesToExclude.has(randomIndex)) {
             randomIndex = Math.round(Math.random() * 7);
           }
           colorIndicesToExclude.add(randomIndex);
-
+          //create calendar config
           for (
             let theDate = startDateTimestamp;
             theDate <= deadlineTimestamp;
@@ -140,20 +148,24 @@ class FeedbackStore {
               color: feedbackColors[randomIndex],
             });
           }
-        });
 
-        for (const feedback of this.pendingFeedbacks) {
-          const notificationId = await scheduleDeadlineNotification(
-            feedback.courseCode,
-            feedback.courseName,
-            new Date(feedback.deadline),
-            feedback.id,
-          );
-          this.notificationIds[feedback.id] = notificationId;
-        }
+          //Manage notifications
+          if (!notifsEnabled) return;
+
+          await manageFeedbackNotifications(id, {
+            courseCode: courseCode,
+            courseName: courseName,
+            startDate: new Date(startDate),
+            deadlineDate: new Date(deadline),
+          });
+        });
+        if (!notifsEnabled) return;
+        if (this.pendingCount) await manageWeeklyNotifications();
+        await updateNotificationsBadge();
       })
       .catch((error) => {
-        console.error("Load pending courses error:", error);
+        console.error("Load pending courses error:", error?.message);
+        console.error(error);
       })
       .finally(() => this.setIsPageLoading(false));
   };
@@ -232,11 +244,18 @@ class FeedbackStore {
         feedbackId: this.currentFeedbackCourse.id,
       });
 
-      const notificationId = this.notificationIds[id];
-      if (notificationId) {
-        await cancelDeadlineNotification(notificationId);
-        delete this.notificationIds[id];
-      }
+      await this.loadPendingCoursesForHome();
+      await this.loadCompletedFeedbacks();
+
+      const {
+        cancelWeeklyNotification,
+        cancelFeedbackNotifications,
+        updateNotificationsBadge,
+      } = this.rootStore.notificationsStore;
+
+      if (!this.pendingCount) await cancelWeeklyNotification();
+      await cancelFeedbackNotifications(id);
+      await updateNotificationsBadge();
     } catch (error) {
       console.error("Submit feedback error:", error);
       throw error;

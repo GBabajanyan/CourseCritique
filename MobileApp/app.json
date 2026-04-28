@@ -5,22 +5,26 @@
     "owner": "gbabaja",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/teddy.png",
+    "icon": "./assets/images/icon.png",
     "scheme": "coursecritique",
     "userInterfaceStyle": "automatic",
     "ios": {
       "bundleIdentifier": "com.gbabaja.CourseCritique",
-      // "supportsTablet": true,
       "config": {
         "usesNonExemptEncryption": false
-      }
+      },
+      "appleTeamId": "CC77G22ZM8"
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#003A5D",
         "foregroundImage": "./assets/images/teddy.png"
       },
-      "package": "com.gbabaja.CourseCritique"
+      "package": "com.gbabaja.CourseCritique",
+      "permissions": [
+        "android.permission.USE_BIOMETRIC",
+        "android.permission.USE_FINGERPRINT"
+      ]
     },
     "web": {
       "output": "static",

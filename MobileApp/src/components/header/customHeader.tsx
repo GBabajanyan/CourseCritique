@@ -4,11 +4,13 @@ import { useRouter } from "expo-router";
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import NotificationDropdown from "../NotificationDropdown/NotificationDropdown";
 
 const CustomHeader = () => {
   const router = useRouter();
   const { WHITE, TEXT, BORDER, NAVY } = useColors();
-  const { title, subtitle, parentRouteName } = useActiveTabParams();
+  const { title, subtitle, parentRouteName, rightButton } =
+    useActiveTabParams();
   const goBack = () => {
     if (router.canGoBack()) router.back();
   };
@@ -32,6 +34,7 @@ const CustomHeader = () => {
         <Text style={[styles.title, { color: TEXT }]}>{title}</Text>
         {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
       </View>
+      {rightButton && <NotificationDropdown />}
     </SafeAreaView>
   );
 };

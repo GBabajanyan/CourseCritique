@@ -9,12 +9,13 @@ export const useActiveTabParams = () => {
   const { currentFeedbackCourse: selectedCourse } = feedbackStore;
   const { currentSemester, currentYear } = settingsStore;
 
-  let title, subtitle, backButton;
+  let title, subtitle, backButton, rightButton;
 
   switch (activeTab) {
     case "/":
       title = "Course Critique";
       subtitle = "";
+      rightButton = true;
       break;
     case "/profile":
       title = "Profile";
@@ -70,5 +71,5 @@ export const useActiveTabParams = () => {
     ? segments[segments.length - 2]
     : undefined;
 
-  return { title, subtitle, parentRouteName };
+  return { title, subtitle, parentRouteName, rightButton };
 };

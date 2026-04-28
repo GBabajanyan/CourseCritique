@@ -4,6 +4,7 @@ import FeedbackStore from "./feedbackStore";
 import ProfileStore from "./profileStore";
 import ApiClient from "../api/client";
 import SettingsStore from "./settingsStore";
+import NotificationsStore from "./notificationsStore";
 
 export class RootStore {
   apiClient: ApiClient;
@@ -11,12 +12,15 @@ export class RootStore {
   profileStore: ProfileStore;
   feedbackStore: FeedbackStore;
   settingsStore: SettingsStore;
+  notificationsStore: NotificationsStore;
 
   constructor() {
     this.apiClient = new ApiClient(
       process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000",
     );
-    this.settingsStore = new SettingsStore();
+
+    this.notificationsStore = new NotificationsStore();
+    this.settingsStore = new SettingsStore(this);
     this.authStore = new AuthStore(this);
     this.profileStore = new ProfileStore(this);
     this.feedbackStore = new FeedbackStore(this);

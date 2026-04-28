@@ -1,5 +1,3 @@
-import * as Constants from "expo-constants";
-import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import { Stack, useRouter } from "expo-router";
 import { observer } from "mobx-react";
@@ -19,74 +17,80 @@ Notifications.setNotificationHandler({
   }),
 });
 
-const RootLayout = observer(() => {
+const _layout = observer(() => {
   const router = useRouter();
-  const { authStore, profileStore, feedbackStore } = useStore();
+  const { authStore, feedbackStore, settingsStore, notificationsStore } =
+    useStore();
   const { isAuthenticated } = authStore;
-  const { savePushToken } = profileStore;
   const { pendingFeedbacks, setCurrentFeedbackCourse } = feedbackStore;
+  const { inAppNotifications } = settingsStore;
+  const { addNotification, updateNotificationsBadge } = notificationsStore;
 
   const notificationListener = useRef<any>(null);
   const responseListener = useRef<any>(null);
+  const channelCreated = useRef(false);
+  const pendingFeedbacksRef = useRef(feedbackStore.pendingFeedbacks);
 
   useEffect(() => {
-    const registerForPushNotifications = async () => {
-      if (Device.isDevice) {
-        const { status: existingStatus } =
-          await Notifications.getPermissionsAsync();
-        let finalStatus = existingStatus;
+    pendingFeedbacksRef.current = feedbackStore.pendingFeedbacks;
+  }, [feedbackStore.pendingFeedbacks]);
 
-        if (existingStatus !== "granted") {
-          const { status } = await Notifications.requestPermissionsAsync();
-          finalStatus = status;
-        }
-
-        if (finalStatus !== "granted") {
-          alert("Failed to get push token!");
-          return;
-        }
-
-        const projectId = Constants.expoConfig?.extra?.eas?.projectId;
-        const token = await Notifications.getExpoPushTokenAsync({ projectId });
-
-        await savePushToken(token.data);
-
-        // console.log("Expo push token:", token.data);
-      } else {
-        // alert("Must use physical device for push notifications");
-      }
-    };
-
-    registerForPushNotifications();
-
+  useEffect(() => {
     // Android channel setup
-    if (Platform.OS === "android") {
-      Notifications.setNotificationChannelAsync("default", {
-        name: "default",
-        importance: Notifications.AndroidImportance.MAX,
+
+    if (
+      !channelCreated.current &&
+      inAppNotifications &&
+      Platform.OS === "android"
+    ) {
+      Notifications.setNotificationChannelAsync("deadlines", {
+        name: "Feedback Deadlines",
+        importance: Notifications.AndroidImportance.HIGH,
         vibrationPattern: [0, 250, 250, 250],
         lightColor: "#FF231F7C",
       });
+      channelCreated.current = true;
     }
 
-    // Add listeners
     notificationListener.current =
-      Notifications.addNotificationReceivedListener((notification) => {
-        // console.log("Notification received while app is open:", notification);
+      Notifications.addNotificationReceivedListener(async (notification) => {
+        if (!inAppNotifications) return;
+
+        await addNotification(notification);
+        await updateNotificationsBadge();
       });
 
     responseListener.current =
       Notifications.addNotificationResponseReceivedListener((response) => {
-        // console.log("User tapped notification:", response);
-        const data = response.notification.request.content.data;
-        if (data?.courseId) {
-          const pendingCourse = pendingFeedbacks.filter(
-            (value) => value.id === data.courseId,
-          );
-          if (pendingCourse.length) {
-            setCurrentFeedbackCourse(pendingCourse[0]);
-            router.push("/feedback/Pending/FeedbackForm");
-          }
+        const { data } = response.notification.request.content;
+        if (!data) return;
+        switch (data.type) {
+          case "deadline":
+          case "last_chance":
+          case "early_bird":
+            if (data?.feedbackId) {
+              const pendingCourse = pendingFeedbacksRef.current.find(
+                (value) => value.id === data.feedbackId,
+              );
+              if (pendingCourse) {
+                setCurrentFeedbackCourse(pendingCourse);
+                router.push("/feedback/Pending/FeedbackForm");
+              } else {
+                router.replace("/feedback/Pending");
+              }
+            }
+            break;
+          case "weekly_reminder":
+            router.replace("/(protected)/(tabs)/feedback/Pending");
+            break;
+          case "thank_you":
+            router.replace("/(protected)/(tabs)/feedback/Completed");
+            break;
+          case "achievement":
+            router.push("/(protected)/(tabs)/profile/allBadges");
+            break;
+          default:
+            break;
         }
       });
 
@@ -99,7 +103,7 @@ const RootLayout = observer(() => {
         responseListener.current.remove();
       }
     };
-  }, []);
+  }, [inAppNotifications]);
 
   return (
     <StoreProvider>
@@ -127,4 +131,4 @@ const RootLayout = observer(() => {
   );
 });
 
-export default RootLayout;
+export default _layout;
