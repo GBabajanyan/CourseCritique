@@ -201,16 +201,16 @@ class ApiClient {
         );
       }
 
-      await this.clearTokens();
-
-      if (this.onUnauthorized) {
-        this.onUnauthorized();
-      }
     } catch (error) {
+      if (!__DEV__) return;
       if (isAxiosError(error))
         console.error("Axios error: ", error.response?.data);
       else console.error("Logout error:", error);
-      throw error;
+    } finally {
+      await this.clearTokens();
+      if (this.onUnauthorized) {
+        this.onUnauthorized();
+      }
     }
   }
 }

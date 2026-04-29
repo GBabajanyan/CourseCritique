@@ -11,6 +11,7 @@ import {
 } from "../types/Feedback";
 import { generateConfigArrayFromCompletedFeedbacks } from "../util/course";
 import { processToDate } from "../util/general";
+import { wrapStoreMethods } from "../util/errorHandler";
 
 class FeedbackStore {
   rootStore: RootStore;
@@ -32,6 +33,7 @@ class FeedbackStore {
 
   constructor(rootStore: RootStore) {
     this.rootStore = rootStore;
+    wrapStoreMethods(this, rootStore, { showReport: true });
     makeAutoObservable(this, {}, { autoBind: true });
   }
 
@@ -75,25 +77,19 @@ class FeedbackStore {
 
   loadPendingCourses = async (): Promise<void> => {
     this.setIsPageLoading(true);
+    const { data } =
+      await this.rootStore.apiClient.instance.get(`/feedback/pending`);
 
-    try {
-      const { data } =
-        await this.rootStore.apiClient.instance.get(`/feedback/pending`);
-
-      runInAction(() => {
-        this.pendingFeedbacks = [
-          ...data.map((item: PendingFeedback) => ({
-            ...item,
-            startDate: processToDate(item.startDate),
-            deadline: processToDate(item.deadline),
-          })),
-        ];
-      });
-    } catch (error) {
-      console.error("Load pending courses error:", error);
-    } finally {
-      this.setIsPageLoading(false);
-    }
+    runInAction(() => {
+      this.pendingFeedbacks = [
+        ...data.map((item: PendingFeedback) => ({
+          ...item,
+          startDate: processToDate(item.startDate),
+          deadline: processToDate(item.deadline),
+        })),
+      ];
+    });
+    this.setIsPageLoading(false);
   };
 
   loadPendingCoursesForHome = async (): Promise<void> => {
@@ -159,43 +155,29 @@ class FeedbackStore {
         if (this.pendingCount) await manageWeeklyNotifications();
         await updateNotificationsBadge();
       })
-      .catch((error) => {
-        console.error("Load pending courses error:", error?.message);
-        console.error(error);
-      })
-      .finally(() => this.setIsPageLoading(false));
+      .then(() => this.setIsPageLoading(false));
   };
 
   loadCompletedFeedbacks = async (): Promise<void> => {
     this.setIsPageLoading(true);
 
-    try {
-      const { data } =
-        await this.rootStore.apiClient.instance.get(`/feedback/completed`);
-      const { rows, rowCount } = data;
-      this.completedFeedbacks = generateConfigArrayFromCompletedFeedbacks(
-        rows as CompletedFeedbackFromDB[],
-      );
-      this.completedFeedbacksCount = rowCount;
-    } catch (error) {
-      console.error("Load completed feedbacks error:", error);
-    } finally {
-      this.setIsPageLoading(false);
-    }
+    const { data } =
+      await this.rootStore.apiClient.instance.get(`/feedback/completed`);
+    const { rows, rowCount } = data;
+    this.completedFeedbacks = generateConfigArrayFromCompletedFeedbacks(
+      rows as CompletedFeedbackFromDB[],
+    );
+    this.completedFeedbacksCount = rowCount;
+    this.setIsPageLoading(false);
   };
 
   loadAllCourses = async (): Promise<void> => {
     this.setIsPageLoading(true);
-    try {
-      const { data } = await this.rootStore.apiClient.instance.get(`/courses`);
-      runInAction(() => {
-        this.allCourses = [...data];
-      });
-    } catch (error) {
-      console.error("Load pending courses error:", error);
-    } finally {
-      this.setIsPageLoading(false);
-    }
+    const { data } = await this.rootStore.apiClient.instance.get(`/courses`);
+    runInAction(() => {
+      this.allCourses = [...data];
+    });
+    this.setIsPageLoading(false);
   };
 
   fetchCourseStats = async (courseCode: string) => {
@@ -218,9 +200,6 @@ class FeedbackStore {
       };
 
       return this.allCourses[index];
-    } catch (error) {
-      console.error("fetchCourseStats error:", error.response?.data || error);
-      return null;
     } finally {
       this.setIsModalLoading(false);
     }
@@ -228,36 +207,30 @@ class FeedbackStore {
 
   submitFeedback = async (feedbackData: FeedbackRatings): Promise<void> => {
     this.setIsPageLoading(true);
-    try {
-      if (this.currentFeedbackCourse === null)
-        throw new Error("No FeedbackCourse data");
+    if (this.currentFeedbackCourse === null)
+      throw new Error("No FeedbackCourse data");
 
-      const { id } = this.currentFeedbackCourse;
-      const feedbackJson = JSON.stringify(feedbackData);
+    const { id } = this.currentFeedbackCourse;
+    const feedbackJson = JSON.stringify(feedbackData);
 
-      await this.rootStore.apiClient.instance.post(`/feedback/submit`, {
-        ratings: feedbackJson,
-        feedbackId: this.currentFeedbackCourse.id,
-      });
+    await this.rootStore.apiClient.instance.post(`/feedback/submit`, {
+      ratings: feedbackJson,
+      feedbackId: this.currentFeedbackCourse.id,
+    });
 
-      await this.loadPendingCoursesForHome();
-      await this.loadCompletedFeedbacks();
+    await this.loadPendingCoursesForHome();
+    await this.loadCompletedFeedbacks();
 
-      const {
-        cancelWeeklyNotification,
-        cancelFeedbackNotifications,
-        updateNotificationsBadge,
-      } = this.rootStore.notificationsStore;
+    const {
+      cancelWeeklyNotification,
+      cancelFeedbackNotifications,
+      updateNotificationsBadge,
+    } = this.rootStore.notificationsStore;
 
-      if (!this.pendingCount) await cancelWeeklyNotification();
-      await cancelFeedbackNotifications(id);
-      await updateNotificationsBadge();
-    } catch (error) {
-      console.error("Submit feedback error:", error);
-      throw error;
-    } finally {
-      this.setIsPageLoading(false);
-    }
+    if (!this.pendingCount) await cancelWeeklyNotification();
+    await cancelFeedbackNotifications(id);
+    await updateNotificationsBadge();
+    this.setIsPageLoading(false);
   };
 }
 

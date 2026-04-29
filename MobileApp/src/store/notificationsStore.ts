@@ -8,6 +8,8 @@ import {
 import * as Notifications from "expo-notifications";
 import { DisplayableNotificationTypes } from "../constants";
 import { Platform } from "react-native";
+import { wrapStoreMethods } from "../util/errorHandler";
+import { RootStore } from ".";
 
 class NotificationsStore {
   displayNotifications: Notification[] = [];
@@ -18,7 +20,8 @@ class NotificationsStore {
   };
   weeklyNotificationId: string = "";
 
-  constructor() {
+  constructor(rootStore: RootStore) {
+    wrapStoreMethods(this, rootStore, { showReport: true });
     makeAutoObservable(this, {}, { autoBind: true });
   }
 
@@ -78,23 +81,12 @@ class NotificationsStore {
     const SchedulableNotificationTypes = Object.keys(
       this.notificationMaps,
     ) as (keyof typeof this.notificationMaps)[];
-    try {
-      for (const type of SchedulableNotificationTypes) {
-        if (this.notificationMaps[type][feedbackId]) continue;
+    for (const type of SchedulableNotificationTypes) {
+      if (this.notificationMaps[type][feedbackId]) continue;
 
-        const notificationId = await this.scheduleNotification(type, options);
-        if (notificationId)
-          this.notificationMaps[type][feedbackId] = notificationId;
-      }
-    } catch (error) {
-      console.error(
-        "manageFeedbackNotifications Error: ",
-        error?.message || error.response?.data,
-      );
-      throw new Error(
-        "manageFeedbackNotifications Error: " +
-          (error?.message || error.response?.data),
-      );
+      const notificationId = await this.scheduleNotification(type, options);
+      if (notificationId)
+        this.notificationMaps[type][feedbackId] = notificationId;
     }
   };
 
@@ -165,56 +157,44 @@ class NotificationsStore {
         return null;
     }
 
-    try {
-      let notificationId: string;
-      if (triggerDate && triggerDate > new Date()) {
-        notificationId = await Notifications.scheduleNotificationAsync({
-          content: {
-            title,
-            body,
-            data: { type, ...options },
-          },
-          trigger:
-            Platform.OS === "ios"
-              ? {
-                  date: triggerDate,
-                  type: Notifications.SchedulableTriggerInputTypes.DATE,
-                }
-              : {
-                  type: Notifications.SchedulableTriggerInputTypes.DATE,
-                  date: triggerDate,
-                  channelId: "deadlines",
-                },
-        });
-      } else if (triggerDate === null) {
-        notificationId = await Notifications.scheduleNotificationAsync({
-          content: { title, body, data: { type, ...options } },
-          trigger:
-            type === "weekly_reminder"
-              ? {
-                  type: Notifications.SchedulableTriggerInputTypes.WEEKLY,
-                  weekday: 1, // Monday
-                  hour: 10,
-                  minute: 0,
-                  channelId:
-                    Platform.OS === "android" ? "reminders" : undefined,
-                }
-              : null,
-        });
-      } else {
-        return null;
-      }
-      return notificationId;
-    } catch (error) {
-      console.error(
-        "scheduleNotification Error: ",
-        error?.message || error.response?.data,
-      );
-      throw new Error(
-        "scheduleNotification Error: " +
-          (error?.message || error.response?.data),
-      );
+    let notificationId: string;
+    if (triggerDate && triggerDate > new Date()) {
+      notificationId = await Notifications.scheduleNotificationAsync({
+        content: {
+          title,
+          body,
+          data: { type, ...options },
+        },
+        trigger:
+          Platform.OS === "ios"
+            ? {
+                date: triggerDate,
+                type: Notifications.SchedulableTriggerInputTypes.DATE,
+              }
+            : {
+                type: Notifications.SchedulableTriggerInputTypes.DATE,
+                date: triggerDate,
+                channelId: "deadlines",
+              },
+      });
+    } else if (triggerDate === null) {
+      notificationId = await Notifications.scheduleNotificationAsync({
+        content: { title, body, data: { type, ...options } },
+        trigger:
+          type === "weekly_reminder"
+            ? {
+                type: Notifications.SchedulableTriggerInputTypes.WEEKLY,
+                weekday: 1, // Monday
+                hour: 10,
+                minute: 0,
+                channelId: Platform.OS === "android" ? "reminders" : undefined,
+              }
+            : null,
+      });
+    } else {
+      return null;
     }
+    return notificationId;
   };
 
   cancelFeedbackNotifications = async (feedbackId: string) => {

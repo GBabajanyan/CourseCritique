@@ -15,11 +15,12 @@ export class RootStore {
   notificationsStore: NotificationsStore;
 
   constructor() {
+    makeAutoObservable(this, {}, { autoBind: true });
     this.apiClient = new ApiClient(
       process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000",
     );
 
-    this.notificationsStore = new NotificationsStore();
+    this.notificationsStore = new NotificationsStore(this);
     this.settingsStore = new SettingsStore(this);
     this.authStore = new AuthStore(this);
     this.profileStore = new ProfileStore(this);
@@ -27,6 +28,5 @@ export class RootStore {
     this.apiClient.setOnUnauthorized(() => {
       this.authStore.handleUnauthorized();
     });
-    makeAutoObservable(this, {}, { autoBind: true });
   }
 }

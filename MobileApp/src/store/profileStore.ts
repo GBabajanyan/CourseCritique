@@ -1,7 +1,7 @@
 import { makeAutoObservable } from "mobx";
-import { Platform } from "react-native";
 import { RootStore } from ".";
 import { User } from "../types/User";
+import { wrapStoreMethods } from "../util/errorHandler";
 class ProfileStore {
   rootStore: RootStore;
 
@@ -10,61 +10,32 @@ class ProfileStore {
 
   constructor(rootStore: RootStore) {
     this.rootStore = rootStore;
+    wrapStoreMethods(this, rootStore, { showReport: true });
     makeAutoObservable(this, {}, { autoBind: true });
-  }
-
-  async savePushToken(token: string) {
-    try {
-      await this.rootStore.apiClient.instance.post("/users/push-token", {
-        token: token,
-        deviceType: Platform.OS,
-      });
-      console.log("Push token saved:", token);
-      
-    } catch (error) {
-      console.error("Failed to save push token:", error);
-    }
   }
 
   getProfileData = async (): Promise<void> => {
     this.isLoading = true;
+    const { user: userData } =
+      await this.rootStore.apiClient.instance.get("/profile/me");
 
-    try {
-      const { user: userData } =
-        await this.rootStore.apiClient.instance.get("/profile/me");
-
-      if (userData) {
-        this.userProfile = { ...this.userProfile, ...userData };
-      }
-    } catch (error) {
-      console.error(
-        "Get user data error:",
-        error.response?.data || error.message,
-      );
-    } finally {
-      this.isLoading = false;
+    if (userData) {
+      this.userProfile = { ...this.userProfile, ...userData };
     }
+    this.isLoading = false;
   };
 
   // Update user profile
-  updateProfile = async (userData: Partial<User>): Promise<boolean> => {
+  updateProfile = async (userData: Partial<User>): Promise<void> => {
     this.isLoading = true;
 
-    try {
-      // const { user: userData } = await axios.get(
-      //   "http://localhost:8000/auth/user_data"
-      // );
-      const userData: User | null = null;
-      if (userData) {
-        this.userProfile = { ...this.userProfile, ...userData };
-      }
-      return true;
-    } catch (error) {
-      console.error("Update profile error:", error);
-      return false;
-    } finally {
-      this.isLoading = false;
+    // const { user: userData } = await axios.get(
+    //   "http://localhost:8000/auth/user_data"
+    // );
+    if (userData) {
+      this.userProfile = { ...this.userProfile, ...userData };
     }
+    this.isLoading = false;
   };
 
   getUser = () => {
@@ -72,7 +43,7 @@ class ProfileStore {
   };
 
   // Set user data (called after login)
-  setUser = (user: User | null) => {
+  setUser = (user: User) => {
     this.userProfile = user;
   };
 

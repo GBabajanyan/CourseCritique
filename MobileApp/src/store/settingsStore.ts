@@ -1,12 +1,13 @@
 import * as LocalAuthentication from "expo-local-authentication";
+import * as Notifications from "expo-notifications";
 import * as SecureStore from "expo-secure-store";
 import { makeAutoObservable } from "mobx";
+import { Alert } from "react-native";
 import { RootStore } from ".";
 import { ThemeMode } from "../theme/ThemeProvider";
 import { SemesterType } from "../types/User";
 import { processToDate, semesterByMonthNumber } from "../util/general";
-import * as Notifications from "expo-notifications";
-import { Alert } from "react-native";
+import { wrapStoreMethods } from "../util/errorHandler";
 
 class SettingsStore {
   theme: ThemeMode = "system";
@@ -19,9 +20,10 @@ class SettingsStore {
   currentSemester: SemesterType;
 
   rootStore: RootStore;
-  constructor(rootstore: RootStore) {
+  constructor(rootStore: RootStore) {
+    wrapStoreMethods(this, rootStore, { showReport: true });
     makeAutoObservable(this, {}, { autoBind: true });
-    this.rootStore = rootstore;
+    this.rootStore = rootStore;
     const now = new Date();
     this.currentDate = processToDate(now);
     this.currentYear = now.getFullYear();
@@ -140,17 +142,12 @@ class SettingsStore {
   toggleBiometrics = async () => {
     const biometricNewStatus = !this.biometricsEnabled;
     const theWord = biometricNewStatus ? "Enable" : "Disable";
-    try {
-      const result = await LocalAuthentication.authenticateAsync({
-        promptMessage: ` ${theWord} biometric login`,
-      });
-      if (result.success) {
-        await this.setBiometricsEnabled(biometricNewStatus);
-        return biometricNewStatus;
-      }
-    } catch (error) {
-      console.log(` ${theWord} biometrics error:`, error);
-      throw error;
+    const result = await LocalAuthentication.authenticateAsync({
+      promptMessage: ` ${theWord} biometric login`,
+    });
+    if (result.success) {
+      await this.setBiometricsEnabled(biometricNewStatus);
+      return biometricNewStatus;
     }
   };
 

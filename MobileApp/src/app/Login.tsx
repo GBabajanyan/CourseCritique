@@ -122,6 +122,7 @@ const LoginScreen = observer(() => {
             break;
           default:
             errorMessage = "An Unknown error occurred. Please try again later";
+            // throw err;
             break;
         }
         Alert.alert("Error", errorMessage);
