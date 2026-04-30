@@ -227,10 +227,10 @@ class NotificationsStore {
     await Notifications.setBadgeCountAsync(0);
   };
 
-  async updateNotificationsBadge() {
+  updateNotificationsBadge = async () => {
     const badgeCount = this.displayNotifications.length;
     await Notifications.setBadgeCountAsync(badgeCount);
-  }
+  };
 }
 
 export default NotificationsStore;

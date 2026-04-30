@@ -103,7 +103,10 @@ export function wrapStoreMethods<T extends object>(
   options?: { showReport?: boolean },
 ): void {
   const prototype = Object.getPrototypeOf(instance);
-  const methodNames = Object.getOwnPropertyNames(prototype);
+  const methodNames = new Set([
+    ...Object.getOwnPropertyNames(prototype),
+    ...Object.getOwnPropertyNames(instance),
+  ]);
 
   for (const methodName of methodNames) {
     const method = (instance as any)[methodName];
@@ -111,7 +114,6 @@ export function wrapStoreMethods<T extends object>(
     if (methodName === "constructor" || typeof method !== "function") continue;
     if (methodName.startsWith("_")) continue;
 
-    // ✅ Modify instance directly - no return needed
     (instance as any)[methodName] = withErrorHandling(
       method.bind(instance),
       methodName,

@@ -33,7 +33,7 @@ class SettingsStore {
     this.checkNotificationPermissions();
   }
 
-  async loadSettings() {
+  loadSettings = async () => {
     const theme = await SecureStore.getItemAsync("theme_pref").then((res) => {
       switch (res) {
         case "light":
@@ -57,9 +57,9 @@ class SettingsStore {
     this.inAppNotifications = inAppNotifications === "true";
     this.emailReminders = emailReminders === "true";
     this.biometricsEnabled = biometricsEnabled === "true";
-  }
+  };
 
-  async checkNotificationPermissions() {
+  checkNotificationPermissions = async () => {
     const { status } = (await Notifications.getPermissionsAsync()) as {
       status: string;
     };
@@ -72,14 +72,14 @@ class SettingsStore {
       this.inAppNotifications = false;
       await SecureStore.setItemAsync("inAppNotifications_pref", "false");
     }
-  }
+  };
 
-  async setSettingsTheme(value: ThemeMode) {
+  setSettingsTheme = async (value: ThemeMode) => {
     this.theme = value;
     await SecureStore.setItemAsync("theme_pref", value);
-  }
+  };
 
-  async setinAppNotifications(value: boolean) {
+  setinAppNotifications = async (value: boolean) => {
     this.inAppNotifications = value;
     await SecureStore.setItemAsync("inAppNotifications_pref", String(value));
 
@@ -132,12 +132,12 @@ class SettingsStore {
       }
     await manageWeeklyNotifications();
     await updateNotificationsBadge();
-  }
+  };
 
-  async setEmailReminders(value: boolean) {
+  setEmailReminders = async (value: boolean) => {
     this.emailReminders = value;
     await SecureStore.setItemAsync("emailReminders_pref", String(value));
-  }
+  };
 
   toggleBiometrics = async () => {
     const biometricNewStatus = !this.biometricsEnabled;
@@ -151,10 +151,10 @@ class SettingsStore {
     }
   };
 
-  async setBiometricsEnabled(value: boolean) {
+  setBiometricsEnabled = async (value: boolean) => {
     this.biometricsEnabled = value;
     await SecureStore.setItemAsync("biometricsEnabled", String(value));
-  }
+  };
 }
 
 export default SettingsStore;

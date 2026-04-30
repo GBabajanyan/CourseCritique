@@ -23,12 +23,12 @@ class AuthStore {
     this.initializeAuth();
   }
 
-  async initializeAuth() {
+  initializeAuth = async () => {
     this.toggleIsLoading();
     await this.checkBiometricSupport();
     await this.checkAuthStatus();
     this.toggleIsLoading();
-  }
+  };
 
   toggleIsLoading = () => (this.isLoading = !this.isLoading);
 
