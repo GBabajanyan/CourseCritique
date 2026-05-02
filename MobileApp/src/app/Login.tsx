@@ -35,7 +35,6 @@ const LoginScreen = observer(() => {
     biometricType,
     login,
     biometricLogin,
-    checkBiometricSupport,
   } = authStore;
   const biometricLoginIcon =
     biometricType === "Face ID" ? "face-recognition" : "fingerprint";
@@ -44,14 +43,6 @@ const LoginScreen = observer(() => {
   const logoLight = require("../../assets/images/teddy.png");
   const logoDark = require("../../assets/images/teddy_dark.png");
   const logo = theme === "dark" ? logoDark : logoLight;
-
-  useEffect(() => {
-    const checkBiometrics = async () => {
-      await checkBiometricSupport();
-    };
-
-    checkBiometrics();
-  }, []);
 
   useEffect(() => {
     const autoBiometricLogin = async () => {
