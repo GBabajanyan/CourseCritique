@@ -17,8 +17,7 @@ const sendErrorReport = async (
   const errorCause = error instanceof Error ? error.cause : "No cause trace";
   const errorStack = error instanceof Error ? error.stack : "No stack trace";
 
-  const user =
-    rootStore.authStore?.currentUser || rootStore.profileStore?.userProfile;
+  const user = rootStore.profileStore?.userProfile;
   const username = user?.email || user?.name || "Not authenticated";
   const emailBody = `
 Error Report
@@ -39,7 +38,6 @@ Device Info:
 Platform: ${Platform.OS}
 OS Version: ${Platform.Version}
 `;
-  console.log(await MailComposer.isAvailableAsync());
 
   try {
     if (await MailComposer.isAvailableAsync()) {
@@ -62,10 +60,24 @@ export function withErrorHandling<T extends (...args: any[]) => any>(
 ): T {
   const { showReport = true, onError } = options;
 
-  return (async (...args: Parameters<T>) => {
+  return ((...args: Parameters<T>) => {
     try {
-      return await fn(...args);
+      const result = fn(...args);
+
+      if (result instanceof Promise) {
+        return result.catch((error: unknown) => {
+          handleError(error);
+          return undefined;
+        }) as ReturnType<T>;
+      }
+
+      return result;
     } catch (error: unknown) {
+      handleError(error);
+      return undefined as ReturnType<T>;
+    }
+
+    function handleError(error: unknown) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
 
@@ -82,9 +94,13 @@ export function withErrorHandling<T extends (...args: any[]) => any>(
               {
                 text: "Report Developer Team",
                 onPress: () => {
-                  sendErrorReport(error, methodName, rootStore).catch((e) =>
-                    console.error("Report failed:", e),
-                  );
+                  sendErrorReport(error, methodName, rootStore).catch((e) => {
+                    if (__DEV__) console.error("Report failed:", e);
+                    Alert.alert(
+                      "Report failed",
+                      "We couldn’t send the report. Please try again later.",
+                    );
+                  });
                 },
               },
             ]
@@ -92,7 +108,6 @@ export function withErrorHandling<T extends (...args: any[]) => any>(
       ];
 
       Alert.alert("Oops...", `Something went wrong: ${errorMessage}`, buttons);
-      return undefined as ReturnType<T>;
     }
   }) as T;
 }

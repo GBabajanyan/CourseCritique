@@ -1,5 +1,5 @@
 import { useColors } from "@/src/hooks/useColors";
-import { Badge } from "@/src/mock/badges";
+import { Badge } from "@/src/types/Badge";
 import React from "react";
 import {
   Modal,
@@ -8,15 +8,19 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
+import { Bar } from "react-native-progress";
 
 type Props = {
   visible: boolean;
   closeModal: () => void;
-  badgeDetails: Badge | null;
+  badgeDetails: Badge;
 };
 
 const BadgeDetailsModal = ({ visible, closeModal, badgeDetails }: Props) => {
-  const { SAFFRON, TEXT, CARD, NAVY } = useColors();
+  const { SAFFRON, TEXT, TEXT_SECONDARY, CARD, NAVY } = useColors();
+  const { progress, max_progress } = badgeDetails;
+  const progressBar = (progress ?? 0) / max_progress;
+
   return (
     <Modal
       animationType="fade"
@@ -37,7 +41,17 @@ const BadgeDetailsModal = ({ visible, closeModal, badgeDetails }: Props) => {
                   },
                 ]}
               >
-                <View style={[styles.badgeIcon, { backgroundColor: SAFFRON }]}>
+                <View
+                  style={[
+                    styles.badgeIcon,
+                    {
+                      backgroundColor: badgeDetails.earned
+                        ? SAFFRON
+                        : TEXT_SECONDARY,
+                      opacity: badgeDetails.earned ? 1 : 0.5,
+                    },
+                  ]}
+                >
                   <Text style={styles.badgeIconText}>{badgeDetails.icon}</Text>
                 </View>
 
@@ -64,10 +78,19 @@ const BadgeDetailsModal = ({ visible, closeModal, badgeDetails }: Props) => {
                   </Text>
                 )}
 
-                {badgeDetails.maxProgress && (
-                  <Text style={[styles.badgeMeta, { color: TEXT }]}>
-                    MaxProgress: {badgeDetails.maxProgress}
-                  </Text>
+                {badgeDetails.max_progress && (
+                  <View style={styles.badgeMeta}>
+                    <Bar
+                      progress={progressBar}
+                      width={200}
+                      height={10}
+                      color="#007AFF"
+                      unfilledColor="#E5E7EB"
+                    />
+                    <Text style={[styles.badgeMeta, { color: NAVY }]}>
+                      {progress} out of {max_progress}
+                    </Text>
+                  </View>
                 )}
               </View>
             ) : (

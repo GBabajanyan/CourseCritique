@@ -1,5 +1,5 @@
 import { useColors } from "@/src/hooks/useColors";
-import { Badge } from "@/src/mock/badges";
+import { Badge } from "@/src/types/Badge";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 const BadgeItem = ({
@@ -9,11 +9,19 @@ const BadgeItem = ({
   badge: Badge;
   openDetailsModal?: () => void;
 }) => {
-  const { SAFFRON, NAVY } = useColors();
+  const { SAFFRON, TEXT_SECONDARY, NAVY } = useColors();
 
   return (
     <Pressable style={styles.badgeItem} onPress={openDetailsModal}>
-      <View style={[styles.badgeIcon, { backgroundColor: SAFFRON }]}>
+      <View
+        style={[
+          styles.badgeIcon,
+          {
+            backgroundColor: badge.earned ? SAFFRON : TEXT_SECONDARY,
+            opacity: badge.earned ? 1 : 0.5,
+          },
+        ]}
+      >
         <Text style={styles.badgeIconText}>{badge.icon}</Text>
       </View>
       <Text style={[styles.badgeName, { color: NAVY }]}>{badge.name}</Text>

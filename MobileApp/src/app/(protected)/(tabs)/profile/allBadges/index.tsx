@@ -1,13 +1,17 @@
 import BadgeDetailsModal from "@/src/components/BadgeDetailsModal/BadgeDetailsModal";
 import BadgeItem from "@/src/components/BadgeItem/BadgeItem";
+import { allBadgesTraversalOrderBySection } from "@/src/constants/badges";
 import { useColors } from "@/src/hooks/useColors";
-import { Badge } from "@/src/mock/badges";
-import { groupBadgesBySection } from "@/src/util/badgeUtils";
+import { useStore } from "@/src/store/StoreProvider";
+import { Badge } from "@/src/types/Badge";
+import { getBadgesBySection } from "@/src/util/badgeUtils";
 import React, { useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 const AllBadges = () => {
-  const grouping = groupBadgesBySection();
+  const { profileStore } = useStore();
+  const { userBadges } = profileStore;
+  const grouping = getBadgesBySection(userBadges);
   const { SURFACE, NAVY, BACKGROUND } = useColors();
   const [badgeSelected, setBadgeSelected] = useState<Badge | null>(null);
   const [isBadgeDetailsModalOpen, setIsBadgeDetailsModalOpen] = useState(false);
@@ -27,21 +31,23 @@ const AllBadges = () => {
       style={{ backgroundColor: BACKGROUND }}
       contentContainerStyle={[styles.badgesGrid]}
     >
-      <BadgeDetailsModal
-        badgeDetails={badgeSelected}
-        visible={isBadgeDetailsModalOpen}
-        closeModal={closeBadgeDetailsModal}
-      />
-      {Object.keys(grouping).map((group, i) => (
+      {badgeSelected && (
+        <BadgeDetailsModal
+          badgeDetails={badgeSelected}
+          visible={isBadgeDetailsModalOpen}
+          closeModal={closeBadgeDetailsModal}
+        />
+      )}
+      {allBadgesTraversalOrderBySection.map((section, i) => (
         <View
           key={i}
           style={[styles.badgeSection, { backgroundColor: SURFACE }]}
         >
           <Text style={[styles.badgeSectionTitle, { color: NAVY }]}>
-            {group}
+            {section}
           </Text>
           <View style={styles.badgeContainer}>
-            {grouping[group].map((badge: Badge) => (
+            {grouping[section].map((badge: Badge) => (
               <BadgeItem
                 key={badge.id}
                 badge={badge}
@@ -88,7 +94,7 @@ const styles = StyleSheet.create({
   badgeContainer: {
     rowGap: 16,
     display: "flex",
-    justifyContent: "space-between",
+    justifyContent: "space-around",
     flexDirection: "row",
     flexWrap: "wrap",
   },

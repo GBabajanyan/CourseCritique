@@ -1,4 +1,3 @@
-
 export interface Course {
   id: string; //course id
   courseCode: string;
@@ -6,7 +5,7 @@ export interface Course {
   section: string;
   instructor: string;
   credits?: number;
-  department?: string;
+  department: string;
   stats?: any;
 }
 
@@ -23,4 +22,3 @@ export interface CourseItem {
 }
 
 export type FlashListItem = SectionHeader | CourseItem;
-

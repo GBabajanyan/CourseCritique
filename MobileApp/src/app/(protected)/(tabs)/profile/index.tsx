@@ -3,8 +3,8 @@ import BadgeItem from "@/src/components/BadgeItem/BadgeItem";
 import InfoRow from "@/src/components/InfoRow/InfoRow";
 import { useColors } from "@/src/hooks/useColors";
 import { userData } from "@/src/mock";
-import { Badge, BADGES } from "@/src/mock/badges";
 import { useStore } from "@/src/store/StoreProvider";
+import { Badge } from "@/src/types/Badge";
 import { useFocusEffect, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -20,21 +20,31 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const ProfileScreen: React.FC = () => {
   const router = useRouter();
-  const {
-    BACKGROUND,
-    NAVY,
-    SAFFRON,
-    TEXT,
-    TEXT_SECONDARY,
-    SURFACE,
-    CARD,
-  } = useColors();
+  const { BACKGROUND, NAVY, SAFFRON, TEXT, TEXT_SECONDARY, SURFACE, CARD } =
+    useColors();
   const { authStore, profileStore, feedbackStore } = useStore();
   const { logout } = authStore;
-  const { userProfile, getProfileData } = profileStore;
-  const { name, email, avatar, role, year, degree, studentId } = userProfile;
+  const {
+    userProfile,
+    upadateProfileData,
+    checkBadges,
+    getEarnedBadges,
+    getLockedBadges,
+    getBadgesLength,
+  } = profileStore;
+  const {
+    name = "",
+    email = "",
+    avatar = "",
+    role = "",
+    year = "",
+    degree = "",
+    studentId = "",
+  } = userProfile || {};
   const { completedFeedbacksCount, pendingCount } = feedbackStore;
-  const [badgeSelected, setBadgeSelected] = useState<Badge | null>(null);
+  const [badgeSelected, setBadgeSelected] = useState<Badge | null>(
+    null,
+  );
   const [isBadgeDetailsModalOpen, setIsBadgeDetailsModalOpen] = useState(false);
   const { bottom } = useSafeAreaInsets();
   const bottomPadding = bottom + 20;
@@ -44,7 +54,8 @@ const ProfileScreen: React.FC = () => {
   const actionButtonTextStyle = [styles.actionButtonText, { color: TEXT }];
   useFocusEffect(
     React.useCallback(() => {
-      getProfileData();
+      upadateProfileData();
+      checkBadges();
     }, []),
   );
 
@@ -58,8 +69,8 @@ const ProfileScreen: React.FC = () => {
     setBadgeSelected(null);
   };
 
-  const earnedBadges = BADGES.filter((badge, i) => i < 3);
-  const lockedBadges = BADGES.filter((badge, i) => i >= 3 && i < 6);
+  const earnedBadges = getEarnedBadges();
+  const lockedBadges = getLockedBadges();
 
   const handleBadgesPress = () => {
     router.navigate("/(protected)/(tabs)/profile/allBadges");
@@ -101,11 +112,13 @@ const ProfileScreen: React.FC = () => {
       }}
       showsVerticalScrollIndicator={false}
     >
-      <BadgeDetailsModal
-        badgeDetails={badgeSelected}
-        visible={isBadgeDetailsModalOpen}
-        closeModal={closeBadgeDetailsModal}
-      />
+      {badgeSelected && (
+        <BadgeDetailsModal
+          badgeDetails={badgeSelected}
+          visible={isBadgeDetailsModalOpen}
+          closeModal={closeBadgeDetailsModal}
+        />
+      )}
       {/* Profile Card */}
       <View
         style={[
@@ -172,7 +185,6 @@ const ProfileScreen: React.FC = () => {
           </View>
         </View>
       </View>
-
       {/* Badges Section */}
       <View style={[styles.bagesCard, { backgroundColor: SURFACE }]}>
         {/* <View style={{ backgroundColor: CARD }}> */}
@@ -186,12 +198,12 @@ const ProfileScreen: React.FC = () => {
         </View>
 
         <Text style={[styles.sectionSubtitle, { color: TEXT }]}>
-          {earnedBadges.length} of {BADGES.length} badges unlocked
+          {earnedBadges.length} of {getBadgesLength()} badges unlocked
         </Text>
 
         {/* Earned Badges */}
         <View style={styles.badgesGrid}>
-          {earnedBadges.map((badge) => (
+          {earnedBadges.slice(0, 3).map((badge) => (
             <BadgeItem
               key={badge.id}
               badge={badge}
@@ -235,7 +247,6 @@ const ProfileScreen: React.FC = () => {
           <Text style={styles.badgesButtonText}>View All Badges</Text>
         </TouchableOpacity>
       </View>
-
       {/* Actions Section */}
       <View
         style={[
@@ -355,36 +366,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     wordWrap: "wrap",
   },
-  // fillFeedbacksButton: {
-  //   flexDirection: "row",
-  //   alignItems: "center",
-  //   backgroundColor: NAVY,
-  //   padding: 16,
-  //   borderRadius: 12,
-  //   marginTop: 8,
-  // },
-  // fillFeedbacksIcon: {
-  //   fontSize: 24,
-  //   marginRight: 12,
-  // },
-  // fillFeedbacksTextContainer: {
-  //   flex: 1,
-  // },
-  // fillFeedbacksTitle: {
-  //   color: "#fff",
-  //   fontSize: 16,
-  //   fontWeight: "600",
-  //   marginBottom: 2,
-  // },
-  // fillFeedbacksSubtitle: {
-  //   color: "rgba(255, 255, 255, 0.8)",
-  //   fontSize: 12,
-  // },
-  // chevron: {
-  //   color: "#fff",
-  //   fontSize: 20,
-  //   fontWeight: "bold",
-  // },
   bagesCard: {
     backgroundColor: "#fff",
     borderRadius: 16,

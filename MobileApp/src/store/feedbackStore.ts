@@ -220,16 +220,18 @@ class FeedbackStore {
 
     await this.loadPendingCoursesForHome();
     await this.loadCompletedFeedbacks();
+    await this.rootStore.profileStore.checkBadges(true);
 
-    const {
-      cancelWeeklyNotification,
-      cancelFeedbackNotifications,
-      updateNotificationsBadge,
-    } = this.rootStore.notificationsStore;
-
-    if (!this.pendingCount) await cancelWeeklyNotification();
-    await cancelFeedbackNotifications(id);
-    await updateNotificationsBadge();
+    if (this.rootStore.settingsStore.inAppNotifications) {
+      const {
+        cancelWeeklyNotification,
+        cancelFeedbackNotifications,
+        updateNotificationsBadge,
+      } = this.rootStore.notificationsStore;
+      if (!this.pendingCount) await cancelWeeklyNotification();
+      await cancelFeedbackNotifications(id);
+      await updateNotificationsBadge();
+    }
     this.setIsPageLoading(false);
   };
 }

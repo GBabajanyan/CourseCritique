@@ -3,7 +3,7 @@ import pool from "../../db-config.js";
 import verifyToken from "../middleware/verifyToken.js";
 const router = express.Router();
 
-router.get("/pending", verifyToken, async (req, res) => {
+router.get("/pending", async (req, res) => {
   try {
     const { profile_id } = req.userData;
     const result = await pool.query(
@@ -34,7 +34,7 @@ router.get("/pending", verifyToken, async (req, res) => {
   }
 });
 
-router.get("/completed", verifyToken, async (req, res) => {
+router.get("/completed", async (req, res) => {
   try {
     const { profile_id } = req.userData;
 
@@ -46,8 +46,11 @@ router.get("/completed", verifyToken, async (req, res) => {
       COALESCE(f.course_snapshot->>'instructor', c.instructor) as instructor,
       COALESCE(f.course_snapshot->>'section', c.section) as section,
       f.deadline,
+      c.department,
       f.feedback_phase as "feedbackPhase",
 	    f.submitted_at as "submittedDate",
+      f.start_date as "startDate",
+      f.deadline,
 	    f.response as "feedbackData"
     FROM feedback f
     LEFT JOIN course c ON f.course_id = c.id
@@ -68,7 +71,7 @@ router.get("/completed", verifyToken, async (req, res) => {
 });
 
 // GET /api/courses/:id/stats
-router.get("/:id/stats", verifyToken, async (req, res) => {
+router.get("/:id/stats", async (req, res) => {
   const { id } = req.params;
 
   try {
@@ -174,11 +177,48 @@ router.get("/:id/stats", verifyToken, async (req, res) => {
   }
 });
 
-router.post("/submit", verifyToken, async (req, res) => {
+router.post("/submit", async (req, res) => {
   const { ratings, feedbackId } = req.body;
-
   try {
-    // Update feedback with ratings and mark as completed
+    const userId = req.user.id;
+    // Get feedback details
+    const feedback = await pool.query(
+      `
+    SELECT course_id, feedback_phase, deadline 
+    FROM feedback 
+    WHERE id = $1 
+  `,
+      [feedbackId],
+    );
+
+    // Check if this is the first feedback for this course+phase+deadline
+    const existingCount = await pool.query(
+      `
+    SELECT COUNT(*) FROM feedback 
+    WHERE course_id = $1 
+      AND feedback_phase = $2 
+      AND deadline = $3
+      AND status = 'completed'
+  `,
+      [
+        feedback.rows[0].course_id,
+        feedback.rows[0].feedback_phase,
+        feedback.rows[0].deadline,
+      ],
+    );
+
+    // If this is the first one, grant pioneer badge
+    if (parseInt(existingCount.rows[0].count) === 0) {
+      await pool.query(
+        `
+      UPDATE profile_users 
+      SET is_pioneer = true 
+      WHERE "userId" = $1
+    `,
+        [userId],
+      );
+    }
+
     const resl = await pool.query(
       `UPDATE feedback
        SET response = $1, status = 'completed', submitted_at = NOW()

@@ -10,23 +10,13 @@ export interface User {
   year: string;
   phone: string;
   studentId: string;
-  joinDate: string;
-  feedbacksGiven?: number;
-  feedbacksToFill?: number;
+  is_pioneer?: boolean;
 }
 
 export type SemesterType = "Fall" | "Spring" | "Summer";
 
 export type BiometricLoginType = "Face ID" | "Touch ID" | "none";
 
-export type UserBadgeType = {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  color: string;
-  earned: boolean;
-};
 export interface Notification {
   id: string;
   displayId: string;

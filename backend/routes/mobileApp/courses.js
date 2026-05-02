@@ -3,7 +3,7 @@ import pool from "../../db-config.js";
 import verifyToken from "../middleware/verifyToken.js";
 const router = express.Router();
 
-router.get("/", verifyToken, async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT 

@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import authRoutes from "./routes/mobileApp/auth.js";
+import profileRoutes from "./routes/mobileApp/profile.js";
 import feedbackRoutes from "./routes/mobileApp/feedback.js";
 import coursesRoutes from "./routes/mobileApp/courses.js";
 import courseRoutes from "./routes/dashboard/course.js";
@@ -33,48 +34,28 @@ app.use(cors());
 const dashboardAccesRoles = ["admin", "instructor"];
 const MobileAppAccessRoles = ["student"];
 
+app.use("/auth", authRoutes);
 app.use(
-  "/auth",
-  authRoutes,
-  requireRole([...MobileAppAccessRoles, ...dashboardAccesRoles]),
+  "/profile",
+  verifyToken,
+  requireRole(MobileAppAccessRoles),
+  profileRoutes,
 );
 app.use(
   "/feedback",
-  feedbackRoutes,
   verifyToken,
   requireRole(MobileAppAccessRoles),
+  feedbackRoutes,
 );
 app.use(
   "/courses",
-  coursesRoutes,
   verifyToken,
   requireRole(MobileAppAccessRoles),
+  coursesRoutes,
 );
 
-app.use("/dashboard", dashboardRoutes, requireRole(dashboardAccesRoles));
-app.use("/dashboard/courses", courseRoutes, requireRole(dashboardAccesRoles));
-
-app.get("/profile/me", verifyToken, async (req, res) => {
-  try {
-    const { rows: profileRows } = await pool.query(
-      `SELECT * FROM profile_users WHERE "userId" = $1`,
-      [req.userData.auth_id],
-    );
-
-    let userProfile;
-    if (profileRows.length) {
-      const profile = profileRows[0];
-      userProfile = {
-        ...profile,
-        created_at: undefined,
-        join_date: profile.created_at,
-      };
-    }
-    res.json({ user: userProfile });
-  } catch (error) {
-    res.status(500).send("Server Error: Fetch Profile");
-  }
-});
+app.use("/dashboard", requireRole(dashboardAccesRoles), dashboardRoutes);
+app.use("/dashboard/courses", requireRole(dashboardAccesRoles), courseRoutes);
 
 app.get("/", (req, res) => {
   res.json({ message: "CC" }).status(200);

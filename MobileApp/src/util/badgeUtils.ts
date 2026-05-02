@@ -1,42 +1,79 @@
-import { Badge, BADGES } from "../mock/badges";
+import { badgeRules } from "../constants/badges";
+import { badgeContext, grouppedBadges, Badge } from "../types/Badge";
+import { CompletedFeedbackFromDB } from "../types/Feedback";
+import { semesterByMonthNumber } from "./general";
 
-export type grouppedBadges = {
-  milestones: Badge[];
-  quality: Badge[];
-  diversity: Badge[];
-  bonus: Badge[];
-};
+export const getBadgesBySection = (badges: Badge[]) => {
+  const groupByObject = badges.reduce((acc, badge) => {
+    if (acc[badge.section] === undefined) acc[badge.section] = [];
+    acc[badge.section].push(badge);
+    return acc;
+  }, {} as grouppedBadges);
 
-export const groupBadgesBySection = () => {
-  const sections = [...new Set(BADGES.map((badge) => badge.section))];
-  const groupByObject: grouppedBadges = {};
-  sections.forEach((section) => {
-    groupByObject[section] = [];
-  });
-  BADGES.map((badge) => groupByObject[badge.section].push(badge));
   return groupByObject;
 };
 
-// Get badges by section
-export const getBadgesBySection = (section: string) => {
-  return BADGES.filter((badge) => badge.section === section);
+export const updateBadgeProgress = (badge: Badge, ctx: badgeContext) => {
+  if (!badgeRules[badge.id]) return badge;
+  const { earned, progress } = badgeRules[badge.id](ctx);
+  const newBadge = { ...badge, earned, progress };
+  return newBadge;
 };
 
-// Get badge by ID
-export const getBadgeById = (id: string) => {
-  return BADGES.find((badge) => badge.id === id);
+const getSemesterOrder = (dateStr: string): number => {
+  const date = new Date(dateStr);
+  const year = date.getFullYear();
+  const month = date.getMonth();
+  const semester = semesterByMonthNumber(month);
+
+  const semesterMap = { Spring: 1, Summer: 2, Fall: 3 };
+  return year * 10 + semesterMap[semester];
 };
 
-// Get user's earned badges (example)
-export const getUserEarnedBadges = (userBadgeIds: string[]) => {
-  return BADGES.filter((badge) => userBadgeIds.includes(badge.id));
+export const calculateSemesterStreak = (
+  feedbacks: CompletedFeedbackFromDB[],
+): number => {
+  const semesterOrders = [
+    ...new Set(feedbacks.map((f) => getSemesterOrder(f.submittedDate))),
+  ].sort((a, b) => a - b);
+
+  let semesterStreak = 0;
+  let currentStreak = 0;
+  let lastOrder = 0;
+
+  for (const order of semesterOrders) {
+    if (currentStreak === 0 || order === lastOrder + 1) {
+      currentStreak++;
+    } else {
+      currentStreak = 1;
+    }
+    semesterStreak = Math.max(semesterStreak, currentStreak);
+    lastOrder = order;
+  }
+
+  return semesterStreak;
 };
 
-// Calculate progress percentage
-export const getBadgeProgress = (
-  badge: (typeof BADGES)[0],
-  currentCount: number,
-) => {
-  if (!badge.maxProgress) return null;
-  return Math.min(100, (currentCount / badge.maxProgress) * 100);
+export const calculateYearStreak = (
+  feedbacks: CompletedFeedbackFromDB[],
+): number => {
+  const years = [
+    ...new Set(feedbacks.map((f) => new Date(f.submittedDate).getFullYear())),
+  ].sort((a, b) => a - b);
+
+  let maxStreak = 0;
+  let currentStreak = 0;
+  let lastYear = 0;
+
+  for (const year of years) {
+    if (currentStreak === 0 || year === lastYear + 1) {
+      currentStreak++;
+    } else {
+      currentStreak = 1;
+    }
+    maxStreak = Math.max(maxStreak, currentStreak);
+    lastYear = year;
+  }
+
+  return maxStreak;
 };

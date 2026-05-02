@@ -10,7 +10,6 @@ class AuthStore {
   rootStore: RootStore;
 
   isAuthenticated: boolean = false;
-  currentUser: User | null = null;
   isLoading: boolean = false;
 
   isBiometricAvailable: boolean = false;
@@ -105,7 +104,6 @@ class AuthStore {
     const { authToken, refreshToken, user } = response.data;
     await this.rootStore.apiClient.setAuthTokens(authToken, refreshToken);
     runInAction(() => {
-      this.currentUser = user;
       this.isAuthenticated = true;
     });
 
@@ -125,23 +123,20 @@ class AuthStore {
       disableDeviceFallback: false,
     });
 
-    if (!result.success) {
-      throw new Error("Biometric auth Failed: Biometrics not recognized");
+    if (result.success) {
+      const refreshToken = await SecureStore.getItemAsync("refreshToken");
+
+      if (!refreshToken) {
+        Alert.alert("Error", "Please login with password first");
+        throw new Error(
+          "Biometric auth Failed:Please login with password first",
+        );
+      }
+
+      const { userProfile } = await this.doRefreshToken(refreshToken);
+
+      this.handleAfterLoginLoads(userProfile);
     }
-
-    const refreshToken = await SecureStore.getItemAsync("refreshToken");
-
-    if (!refreshToken) {
-      Alert.alert("Error", "Please login with password first");
-      throw new Error("Biometric auth Failed:Please login with password first");
-    }
-
-    const { userProfile } = await this.doRefreshToken(refreshToken);
-
-    runInAction(() => {
-      this.currentUser = userProfile;
-    });
-    this.handleAfterLoginLoads(userProfile);
     this.toggleIsLoading();
   };
 
@@ -159,7 +154,6 @@ class AuthStore {
   handleUnauthorized = (): void => {
     runInAction(() => {
       this.isAuthenticated = false;
-      this.currentUser = null;
     });
     this.rootStore.profileStore.clearUser();
   };
@@ -170,6 +164,8 @@ class AuthStore {
     if (areNotifsEnabled)
       await this.rootStore.notificationsStore.loadNotifications();
     await this.rootStore.feedbackStore.loadLoggingData();
+    await this.rootStore.profileStore.fetchBadges();
+    await this.rootStore.profileStore.checkBadges();
     await this.checkAuthStatus();
   };
 }

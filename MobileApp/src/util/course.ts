@@ -81,3 +81,12 @@ export const transformCoursesToFlashListConfig = (
 
   return result;
 };
+
+
+export const isLowerLevel = (courseCode: string): boolean => {
+  return /^[A-Z]+1\d{2}$/.test(courseCode); // e.g., CS101, MATH120, CHSS134
+};
+
+export const isUpperLevel = (courseCode: string): boolean => {
+  return /^[A-Z]+[23]\d{2}$/.test(courseCode); // e.g., CS201, MATH310, CSE215
+};

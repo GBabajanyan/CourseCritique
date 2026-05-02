@@ -34,7 +34,9 @@ export type FeedbackRatings = {
   substantial_learning: Thumb;
   take_another_course: Thumb;
 
-  open_feedback: string | undefined;
+  open_feedback?: string;
+  strengths?: string;
+  improvements?: string;
 };
 
 export interface PendingFeedback extends Course {
@@ -46,11 +48,16 @@ export interface PendingFeedback extends Course {
 export interface CompletedFeedback extends Course {
   feedbackPhase: FeedbackPhase;
   submittedDate?: string;
+  startDate?: string;
+  deadline?: string;
   feedbackData?: FeedbackData;
   //id turns into feedback id
 }
 export interface CompletedFeedbackFromDB extends Course {
+  feedbackPhase: FeedbackPhase;
   submittedDate: string;
+  startDate: string;
+  deadline: string;
   feedbackData: FeedbackRatings;
   //id turns into feedback id
 }
