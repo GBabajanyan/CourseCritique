@@ -6,7 +6,13 @@ export interface Course {
   instructor: string;
   credits?: number;
   department: string;
-  stats?: any;
+  ratingStats?: any;
+  feedbacks_completed?: number;
+  open_feedbacks?: {
+    advice_future_gen: string[];
+    strengths: string[];
+    improvements: string[];
+  };
 }
 
 export interface SectionHeader {

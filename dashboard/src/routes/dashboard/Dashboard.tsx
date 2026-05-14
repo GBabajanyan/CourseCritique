@@ -115,22 +115,11 @@ const Dashboard: React.FC = () => {
             />
           </Card>
         </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
-            <Statistic
-              title="Average Rating"
-              value={stats.avgRating}
-              precision={1}
-              prefix={<StarOutlined />}
-              valueStyle={{ color: "#ef4444" }}
-            />
-          </Card>
-        </Col>
       </Row>
 
       {/* Tabs for different views */}
       <Tabs defaultActiveKey="courses" className="dashboard-tabs">
-        <TabPane tab="Coursejjs" key="courses" icon={<BookOutlined />}>
+        <TabPane tab="Courses" key="courses" icon={<BookOutlined />}>
           <Card
             title="Course Statistics"
             extra={

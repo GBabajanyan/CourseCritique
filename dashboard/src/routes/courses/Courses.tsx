@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
-import { Table, Input, Select, Card, Statistic, Row, Col, Space } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
-import api from "../../api/client";
+import { Card, Col, Input, Row, Select, Space, Statistic, Table } from "antd";
+import React, { useEffect, useState } from "react";
+import client from "../../api/client";
+import { coursesColumns } from "../../config/CoursesConfig";
 import { Course } from "../../types/coursesTypes";
 import "./Courses.css";
-import { coursesColumns } from "../../config/CoursesConfig";
 
 const { Search } = Input;
 const { Option } = Select;
@@ -21,7 +21,11 @@ const Courses: React.FC = () => {
 
   const fetchCourses = async () => {
     try {
-      const { data } = await api.get("http://localhost:8000/courses/all");
+      const { data } = await client.get(
+        "http://localhost:8000/dashboard/courses/all",
+      );
+      // console.log(data.map((d: Course) =>typeof d.feedback_completed)); 
+
       setCourses(data);
     } catch (error) {
       console.error("Error fetching courses:", error);
@@ -78,7 +82,7 @@ const Courses: React.FC = () => {
             <Statistic
               title="Total Feedbacks"
               value={courses.reduce(
-                (acc, c) => acc + (c.feedback_completed || 0),
+                (acc, c) => acc + (Number(c.feedback_completed) || 0),
                 0,
               )}
             />
@@ -117,7 +121,11 @@ const Courses: React.FC = () => {
           dataSource={filteredCourses}
           rowKey="id"
           loading={loading}
-          pagination={{ pageSize: 10, showSizeChanger: true }}
+          pagination={{
+            defaultPageSize: 10, // Items per page
+            showSizeChanger: true, // Allow user to change page size
+            pageSizeOptions: ["10", "20", "50", "100"], // Options for page size
+          }}
           scroll={{ x: 1000 }}
         />
       </Card>

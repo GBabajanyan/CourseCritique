@@ -8,6 +8,7 @@ const SettingItem = ({
   title,
   subtitle,
   type = "link",
+  disabled = false,
   value,
   onPress,
   onValueChange,
@@ -35,6 +36,7 @@ const SettingItem = ({
       {type === "toggle" && (
         <Switch
           value={value}
+          disabled={disabled}
           onValueChange={onValueChange}
           trackColor={{ false: TEXT, true: NAVY }}
           thumbColor="#fff"

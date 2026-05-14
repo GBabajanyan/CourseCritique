@@ -1,19 +1,37 @@
 import express from "express";
 import pool from "../../db-config.js";
 import verifyToken from "../middleware/verifyToken.js";
-import { sendPushNotifications } from "../../util/util.js";
+import { getFeedbackStats } from "../../util/feedbackStats.js";
 
 const router = express.Router();
 
 router.get("/all", async (req, res) => {
   try {
-    await pool.query(`SELECT * FROM course`, (err, result) => {
-      if (err) {
-        res.status(400).send({ err });
-      } else {
-        res.send(result.rows);
-      }
-    });
+    await pool.query(
+      `SELECT 
+  c.id,
+  c.course_code,
+  c.course_name,
+  c.instructor,
+  c.credits,
+  c.department,
+  c.description,
+  COUNT(DISTINCT e.profile_id) AS total_students,
+  COUNT(DISTINCT CASE WHEN f.status = 'completed' THEN f.id END) AS feedback_completed,
+  COUNT(DISTINCT CASE WHEN f.status = 'pending' THEN f.id END) AS pending_feedbacks
+FROM course c
+LEFT JOIN enrollment e ON c.id = e.course_id
+LEFT JOIN feedback f ON c.id = f.course_id
+GROUP BY c.id, c.course_code, c.course_name, c.instructor, c.credits, c.department, c.description
+ORDER BY c.course_code ASC;`,
+      (err, result) => {
+        if (err) {
+          res.status(400).send({ err });
+        } else {
+          res.send(result.rows);
+        }
+      },
+    );
   } catch (err) {
     res.sendStatus(500);
     console.log(err);
@@ -34,7 +52,7 @@ router.get("/:id", async (req, res) => {
         c.credits,
         c.description,
         COUNT(DISTINCT e.profile_id) as total_students,
-        COUNT(DISTINCT CASE WHEN f.status = 'submitted' THEN f.id END) as feedback_completed,
+        COUNT(DISTINCT CASE WHEN f.status = 'completed' THEN f.id END) as feedback_completed,
         COUNT(DISTINCT CASE WHEN f.status = 'pending' THEN f.id END) as pending_feedbacks
       FROM course c
       LEFT JOIN enrollment e ON c.id = e.course_id
@@ -48,7 +66,35 @@ router.get("/:id", async (req, res) => {
       return res.status(404).json({ error: "Course not found" });
     }
 
-    res.json(result.rows[0]);
+    const feedbackResult = await pool.query(
+      `SELECT response from feedback where course_id = $1 and status = 'completed'`,
+      [id],
+    );
+
+    const feedbacks = feedbackResult.rows.reduce(
+      (acc, f) => {
+        const { advice_future_gen, improvements, strengths, ...numeric } =
+          f.response;
+        acc.stats.push(numeric);
+        if (advice_future_gen)
+          acc.open_feedbacks.advice_future_gen.push(advice_future_gen);
+        if (strengths) acc.open_feedbacks.advice_future_gen.push(strengths);
+        if (improvements) acc.open_feedbacks.improvements.push(improvements);
+        return acc;
+      },
+      {
+        stats: [],
+        open_feedbacks: {
+          advice_future_gen: [],
+          improvements: [],
+          strengths: [],
+        },
+      },
+    );
+    const { stats, open_feedbacks } = feedbacks;
+    const feedbackStats = getFeedbackStats(stats);
+
+    res.json({ ...result.rows[0], ratingStats: feedbackStats, open_feedbacks });
   } catch (error) {
     console.error("Error fetching course:", error);
     res.status(500).json({ error: "Failed to fetch course" });
@@ -82,7 +128,7 @@ router.get("/:id/students", verifyToken, async (req, res) => {
   }
 });
 
-router.post("/:id/feedback-periods-create", verifyToken, async (req, res) => {
+router.post("/:id/feedback-periods-create", async (req, res) => {
   const { id } = req.params;
   const { phase, deadline, startDate } = req.body;
 
@@ -113,24 +159,6 @@ router.post("/:id/feedback-periods-create", verifyToken, async (req, res) => {
       WHERE course_id = $1`,
       [id],
     );
-
-    const tokens = await pool.query(
-      `SELECT p.expo_push_token, p.name
-    FROM profile_users p
-    WHERE p."studentId" = ANY($1)`,
-      [students.rows.map((s) => s.profile_id)],
-    );
-    const messages = tokens.rows
-      .filter((t) => t.expo_push_token)
-      .map((t) => ({
-        to: t.expo_push_token,
-        sound: "default",
-        title: "New Feedback Period",
-        body: `${phase} feedback for your course is now open`,
-        data: { courseId: id, phase },
-      }));
-
-    await sendPushNotifications(messages);
 
     res.json({
       message: `Feedback period "${phase}" created for ${students.rows.length} students`,

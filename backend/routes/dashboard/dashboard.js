@@ -6,27 +6,19 @@ const router = express.Router();
 // GET /dashboard/stats - Overall dashboard statistics
 router.get("/stats", verifyToken, async (req, res) => {
   try {
-    // Total courses
     const coursesResult = await pool.query("SELECT COUNT(*) FROM course");
-
-    // Total students (from profile_users)
     const studentsResult = await pool.query(
-      "SELECT COUNT(*) FROM profile_users",
+      "SELECT COUNT(*) FROM profile_users WHERE role = 'student'",
     );
-
-    // Total feedbacks submitted
     const feedbacksResult = await pool.query(
       `SELECT COUNT(*) FROM feedback WHERE status = 'submitted'`,
     );
-
-    // Average rating across all feedbacks
     const avgRatingResult = await pool.query(
       `SELECT AVG((response->'ratings'->>'course_pace')::float) as avg_rating 
        FROM feedback 
        WHERE status = 'submitted' AND response->'ratings'->>'course_pace' IS NOT NULL`,
     );
 
-    // Completion rate
     const totalSubmitted = feedbacksResult.rows[0].count;
     const totalExpectedResult = await pool.query(
       `SELECT COUNT(*) FROM feedback WHERE status = 'pending'`,
@@ -40,7 +32,7 @@ router.get("/stats", verifyToken, async (req, res) => {
     // Active users (logged in within last 30 days)
     const activeUsersResult = await pool.query(
       `SELECT COUNT(*) FROM auth_users 
-       WHERE last_login > NOW() - INTERVAL '30 days'`,
+       WHERE is_active=true AND last_login >= NOW() - INTERVAL '30 days'`,
     );
 
     res.json({
@@ -113,6 +105,7 @@ router.get("/students", verifyToken, async (req, res) => {
         pu.email,
         pu.name,
         pu.year,
+        pu."studentId" as studentId,
         pu.degree as department,
         COUNT(DISTINCT CASE WHEN f.status = 'submitted' THEN f.id END) as feedbacks_given,
         COUNT(DISTINCT ub.badge_id) as badges_earned,
@@ -120,6 +113,7 @@ router.get("/students", verifyToken, async (req, res) => {
       FROM profile_users pu
       LEFT JOIN feedback f ON pu.id = f.profile_id AND f.status = 'submitted'
       LEFT JOIN user_badge ub ON pu.id = ub.profile_id AND ub.is_completed = true
+      WHERE pu.role = 'student'
       GROUP BY pu."studentId", pu.email, pu.name, pu.year, pu.degree, pu.created_at
       ORDER BY pu.created_at DESC
     `);

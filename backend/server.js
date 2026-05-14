@@ -6,6 +6,7 @@ import profileRoutes from "./routes/mobileApp/profile.js";
 import feedbackRoutes from "./routes/mobileApp/feedback.js";
 import coursesRoutes from "./routes/mobileApp/courses.js";
 import courseRoutes from "./routes/dashboard/course.js";
+import studentsRoutes from "./routes/dashboard/students.js";
 import dashboardRoutes from "./routes/dashboard/dashboard.js";
 import cookieParser from "cookie-parser";
 import pool from "./db-config.js";
@@ -41,7 +42,7 @@ const corsOptions = {
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
   exposedHeaders: ["Content-Range", "X-Content-Range"],
-  maxAge: 600, 
+  maxAge: 600,
 };
 
 app.use(express.urlencoded({ extended: false }));
@@ -72,8 +73,24 @@ app.use(
   coursesRoutes,
 );
 
-app.use("/dashboard", requireRole(dashboardAccesRoles), dashboardRoutes);
-app.use("/dashboard/courses", requireRole(dashboardAccesRoles), courseRoutes);
+app.use(
+  "/dashboard",
+  verifyToken,
+  requireRole(dashboardAccesRoles),
+  dashboardRoutes,
+);
+app.use(
+  "/dashboard/courses",
+  verifyToken,
+  requireRole(dashboardAccesRoles),
+  courseRoutes,
+);
+app.use(
+  "/dashboard/students",
+  verifyToken,
+  requireRole(dashboardAccesRoles),
+  studentsRoutes,
+);
 
 app.get("/", (req, res) => {
   res.json({ message: "CC" }).status(200);

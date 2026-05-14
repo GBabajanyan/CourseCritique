@@ -10,8 +10,16 @@ router.post("/user_reg", async (req, res) => {
   try {
     await pool.query("BEGIN");
 
-    const { firstName, lastName, email, password, degree, year, studentid } =
-      req.body;
+    const {
+      firstName,
+      lastName,
+      role,
+      email,
+      password,
+      degree,
+      year,
+      studentid,
+    } = req.body;
 
     const userCheck = await pool.query(
       "Select username FROM auth_users WHERE email = $1",
@@ -42,7 +50,7 @@ router.post("/user_reg", async (req, res) => {
         degree,
         year,
         studentid,
-        "student",
+        role,
       ],
     );
     await pool.query("COMMIT");
@@ -51,17 +59,18 @@ router.post("/user_reg", async (req, res) => {
   } catch (error) {
     await pool.query("ROLLBACK");
     console.error(error.message);
-    res.status(500).send("Server Error:register");
+    res.status(500).send("Server Error: Register");
   }
 });
 
 router.post("/user_login", async (req, res) => {
   try {
     const { login, password } = req.body;
-    const checkUserQuery = "SELECT * FROM auth_users WHERE username = $1";
+    
+    const checkUserQuery = "SELECT * FROM auth_users WHERE username = $1 OR email = $1";
     const { rows } = await pool.query(checkUserQuery, [login]);
     const user = rows[0];
-
+    
     if (!user)
       return res.status(400).json({ message: "Invalid Username/Email" });
 
@@ -75,15 +84,14 @@ router.post("/user_login", async (req, res) => {
       [user.id],
     );
 
-    let userProfile;
-    if (profileRows.length) {
-      const profile = profileRows[0];
-      userProfile = {
-        ...profile,
-        created_at: undefined,
-        join_date: profile.created_at,
-      };
-    }
+    if (!profileRows.length) throw new Error("User profile not found");
+
+    const profile = profileRows[0];
+    const userProfile = {
+      ...profile,
+      created_at: undefined,
+      join_date: profile.created_at,
+    };
 
     const refreshToken = generateRefreshToken(user.id);
     await pool.query(

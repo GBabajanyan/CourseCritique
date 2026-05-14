@@ -4,6 +4,16 @@
   min-height: 100vh;
 }
 
+.loading-spin {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  font-size: 24px;
+}
+
 .details-header {
   margin-bottom: 24px;
 }
@@ -12,9 +22,9 @@
   font-size: 14px;
 }
 
-.course-info-card {
-  border-radius: 12px;
-  margin-bottom: 24px;
+.course-primary-info-container {
+  display: flex;
+  flex-direction: column;
 }
 
 .course-header {
@@ -51,12 +61,12 @@
 
 .stat-item {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  align-items: last baseline;
+  gap: 8px;
 }
 
 .stat-icon {
-  font-size: 24px;
+  font-size: 28px;
   color: #003a5d;
 }
 
@@ -70,7 +80,29 @@
   font-weight: 600;
   color: #1f2937;
 }
+.accumulated-feedback-card {
+  border-radius: 12px;
+  width: 400px;
+}
 
+.accumulated-feedback-card > .ant-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.feedback-stat-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.stat-tag {
+  font-size: 16px;
+  padding: 7px 14px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
 .course-description {
   margin-bottom: 24px;
 }

@@ -6,7 +6,7 @@ import Dashboard from "./routes/dashboard/Dashboard";
 import Courses from "./routes/courses/Courses";
 import CourseDetails from "./routes/courses/courseDetails/CourseDetails";
 import ProtectedRoute from "./routes/ProtectedRoute";
-import "antd/dist/reset.css";
+import StudentDetails from "./routes/students/StudentDetails";
 
 function App() {
   return (
@@ -24,6 +24,7 @@ function App() {
           <Route index element={<Dashboard />} />
           <Route path="courses" element={<Courses />} />
           <Route path="/courses/:id" element={<CourseDetails />} />
+          <Route path="/students/:studentId" element={<StudentDetails />} />
           <Route path="profile" element={<div>Profile Page</div>} />
           <Route path="settings" element={<div>Settings Page</div>} />
         </Route>

@@ -30,6 +30,9 @@ const Login: React.FC = () => {
 
       const { authToken, refreshToken, user } = response.data;
 
+      if (user.role === "student") {
+        throw new Error("Access denied. No students allowed.");
+      }
       // Store tokens
       localStorage.setItem("authToken", authToken);
       localStorage.setItem("refreshToken", refreshToken);
@@ -44,7 +47,11 @@ const Login: React.FC = () => {
       navigate("/");
     } catch (err: any) {
       console.error("Login error:", err);
-      setError(err.response?.data?.message || "Invalid username or password");
+      setError(
+        err.response?.data?.message ||
+          err.message ||
+          "Invalid username or password",
+      );
       message.error("Login failed. Please check your credentials.");
     } finally {
       setLoading(false);

@@ -14,16 +14,16 @@ export interface FeedbackData {
 }
 
 export type FeedbackRatings = {
-  course_pace: Rating5;
-  course_load: Rating5;
-  class_organization: Rating5;
+  course_pace: Rating3;
+  course_load: Rating3;
+  class_organization: Rating3;
 
-  course_materials: Rating5;
+  course_materials: Rating3;
   assignment_instructions: Rating5;
-  grading_rubrics: Rating5;
+  grading_rubrics: Rating3;
 
   class_management: Rating5;
-  student_participation: Rating5;
+  student_participation: Rating3;
   in_class_queries: Rating5;
   concern_learning: Rating5;
 
@@ -85,3 +85,15 @@ type CourseFeedbackCardBaseType = {
 export type CourseFeedbackCardType =
   | (CompletedCourseFeedbackCardType & CourseFeedbackCardBaseType)
   | (StatInfoCourseFeedbackCardType & CourseFeedbackCardBaseType);
+
+export type openFeedbackType =
+  | "advice_future_gen"
+  | "strengths"
+  | "improvements";
+
+export type OpenFeedbackTabProps = {
+  open_feedbacks?: Record<
+    openFeedbackType,
+    { submittedDate: string; feedback: string }[]
+  >;
+};

@@ -1,4 +1,4 @@
-import CourseStatsModal from "@/src/components/CourseDetailsModal/CourseStatsModal";
+import CourseStatsModal from "@/src/components/CourseStatsModal/CourseStatsModal";
 import PendingCourseFeedbackCard from "@/src/components/CourseFeedbackCard/Pending/PendingCourseFeedbackCard";
 import LoadingScreen from "@/src/components/LoadingScreen/LoadingScreen";
 import { useColors } from "@/src/hooks/useColors";
@@ -28,9 +28,6 @@ const PendingFeedbacks: React.FC = observer(() => {
 
   const openCourseStatsModal = async (courseCode: string) => {
     const res = await fetchCourseStats(courseCode);
-    if (!res) {
-      return Alert.alert("Something went wrong. Please come back later");
-    }
     setCourseFeedbackInSearchModal(res);
     setIsCourseStatsModalOpen(true);
   };

@@ -180,7 +180,7 @@ class FeedbackStore {
     this.setIsPageLoading(false);
   };
 
-  fetchCourseStats = async (courseCode: string) => {
+  fetchCourseStats = async (courseCode: string, limit?: number | "All") => {
     this.setIsModalLoading(true);
     try {
       const index = this.allCourses.findIndex(
@@ -190,13 +190,19 @@ class FeedbackStore {
       if (index === -1) return null;
 
       const { id } = this.allCourses[index];
-      const { data } = await this.rootStore.apiClient.instance.get(
-        `/feedback/${id}/stats`,
-      );
+      const endpoint =
+        limit && limit !== "All"
+          ? `/feedback/${id}/stats?limit=${limit}`
+          : `/feedback/${id}/stats`;
+
+      const { data } = await this.rootStore.apiClient.instance.get(endpoint);
+      const { feedbacks_completed, ratingStats, open_feedbacks } = data;
 
       this.allCourses[index] = {
         ...this.allCourses[index],
-        stats: data,
+        feedbacks_completed,
+        open_feedbacks,
+        ratingStats,
       };
 
       return this.allCourses[index];

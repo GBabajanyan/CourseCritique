@@ -2,7 +2,7 @@ import React from "react";
 import { Space, Tag, Button } from "antd";
 import { EyeOutlined } from "@ant-design/icons";
 import { ColumnType } from "antd/es/table";
-import { Course } from "../types/coursesTypes";
+import { Course, Student } from "../types/coursesTypes";
 
 export const coursesColumns: ColumnType<Course>[] = [
   {
@@ -54,9 +54,9 @@ export const coursesColumns: ColumnType<Course>[] = [
     render: (_: any, record: Course) => (
       <Space>
         <span className="feedback-count">{record.feedback_completed || 0}</span>
-        <span className="pending-count">
+        {/* <span className="pending-count">
           ({record.pending_feedbacks || 0} pending)
-        </span>
+        </span> */}
       </Space>
     ),
   },
@@ -74,4 +74,42 @@ export const coursesColumns: ColumnType<Course>[] = [
       </Button>
     ),
   },
+];
+
+export const studentColumns: ColumnType<Student>[] = [
+  {
+    title: "Student ID",
+    dataIndex: "studentId",
+    key: "studentId",
+    render: (text: string, record: Student) => (
+      <Button
+        type="link"
+        onClick={() => (window.location.href = `/students/${record.studentId}`)}
+      >
+        {text}
+      </Button>
+    ),
+  },
+  {
+    title: "Name",
+    dataIndex: "name",
+    key: "name",
+    render: (text: string, record: Student) => (
+      <Button
+        type="link"
+        style={{ color: "#000" }}
+        onClick={() => (window.location.href = `/students/${record.studentId}`)}
+      >
+        {text}
+      </Button>
+    ),
+  },
+  { title: "Email", dataIndex: "email", key: "email" },
+  {
+    title: "Year",
+    dataIndex: "year",
+    key: "year",
+    render: (year: string) => <Tag color="blue">{year}</Tag>,
+  },
+  { title: "Enrolled Date", dataIndex: "enrolled_at", key: "enrolled_at" },
 ];

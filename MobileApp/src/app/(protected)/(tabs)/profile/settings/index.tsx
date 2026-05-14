@@ -93,6 +93,7 @@ const SettingsScreen = observer(() => {
         <SettingItem
           icon="mail-outline"
           title="Email Reminders"
+          disabled
           subtitle="Feedback deadlines and updates"
           type="toggle"
           value={emailReminders}

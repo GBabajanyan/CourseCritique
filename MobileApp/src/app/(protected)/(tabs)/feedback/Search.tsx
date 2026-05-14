@@ -1,4 +1,4 @@
-import CourseStatsModal from "@/src/components/CourseDetailsModal/CourseStatsModal";
+import CourseStatsModal from "@/src/components/CourseStatsModal/CourseStatsModal";
 import CourseFeedbackCard from "@/src/components/CourseFeedbackCard/Completed/CourseFeedbackCard";
 import LoadingScreen from "@/src/components/LoadingScreen/LoadingScreen";
 import { departmentColors } from "@/src/constants/colors";
@@ -98,9 +98,7 @@ const SearchFeedbacks = observer(() => {
 
   const handleCoursePress = async (courseCode: string) => {
     const res = await fetchCourseStats(courseCode);
-    if (!res) {
-      return Alert.alert("Something went wrong. Please come back later");
-    }
+
     setCourseFeedbackInSearchModal(res);
     setIsCourseDetailsModalOpen(true);
   };
@@ -173,7 +171,7 @@ const SearchFeedbacks = observer(() => {
           style={styles.searchIcon}
         />
         <TextInput
-          style={styles.searchInput}
+          style={[styles.searchInput, { color: TEXT_SECONDARY }]}
           placeholder="Search by course code, name, or instructor..."
           value={searchQuery}
           onChangeText={setSearchQuery}
@@ -239,7 +237,6 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 16,
-    color: "#333",
   },
   //results row
   actionsRow: {

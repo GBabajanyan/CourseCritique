@@ -1,0 +1,65 @@
+.student-details {
+  padding: 24px;
+  background-color: #f0f2f5;
+  min-height: 100vh;
+}
+
+.details-header {
+  margin-bottom: 20px;
+}
+
+.back-btn {
+  font-size: 14px;
+}
+
+.profile-card {
+  border-radius: 12px;
+  margin-bottom: 24px;
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.profile-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: #1677ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.student-name {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: #1f2937;
+}
+
+.student-badges {
+  display: flex;
+  gap: 8px;
+}
+
+.descriptions-label {
+  display: flex;
+  gap: 4px;
+}
+.content-card {
+  border-radius: 12px;
+}
+
+.loading,
+.error {
+  text-align: center;
+  padding: 48px;
+  font-size: 16px;
+  color: #666;
+}

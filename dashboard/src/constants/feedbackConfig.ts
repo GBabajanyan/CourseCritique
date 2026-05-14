@@ -1,16 +1,4 @@
-type form_config_question = {
-  key: string;
-  label: string;
-  type: string;
-  short?: string;
-};
-type form_config_item = {
-  key: string;
-  title: string;
-  questions: form_config_question[];
-};
-
-export const FORM_CONFIG: form_config_item[] = [
+export const FEEDBACK_CONFIG = [
   {
     key: "course_design",
     title: "Course Design",
@@ -20,6 +8,7 @@ export const FORM_CONFIG: form_config_item[] = [
       {
         key: "class_organization",
         label: "Classes were structured & well-organized",
+        short: "Organization",
         type: "3",
       },
     ],
@@ -31,16 +20,19 @@ export const FORM_CONFIG: form_config_item[] = [
       {
         key: "course_materials",
         label: "Materials were relevant to course objectives",
+        short: "Relevance",
         type: "3",
       },
       {
         key: "assignment_instructions",
         label: "Assignment instructions were clearly explained",
+        short: "Assignment Clarity",
         type: "5",
       },
       {
         key: "grading_rubrics",
         label: "Grading assignments was fair",
+        short: "Grading Rubrics",
         type: "3",
       },
     ],
@@ -52,21 +44,25 @@ export const FORM_CONFIG: form_config_item[] = [
       {
         key: "class_management",
         label: "Manages class effectively",
+        short: "Class Management",
         type: "5",
       },
       {
         key: "student_participation",
         label: "Encourages student participation",
+        short: "Interaction",
         type: "3",
       },
       {
         key: "in_class_queries",
         label: "Responds to in-class queries adequately",
+        short: "Responses",
         type: "5",
       },
       {
         key: "concern_learning",
         label: "Demonstrates concern about student learning",
+        short: "Concern",
         type: "5",
       },
     ],
@@ -75,15 +71,22 @@ export const FORM_CONFIG: form_config_item[] = [
     key: "support",
     title: "Instructor Support",
     questions: [
-      { key: "availability", label: "Available outside class", type: "3" },
+      {
+        key: "availability",
+        label: "Available outside class",
+        short: "Availability",
+        type: "3",
+      },
       {
         key: "feedback_on_assignments",
         label: "Provides feedback on assignments",
+        short: "Feedbacks",
         type: "5",
       },
       {
         key: "inspires_motivation",
         label: "Inspires student interest",
+        short: "Inspiration",
         type: "5",
       },
     ],
@@ -108,7 +111,7 @@ export const FORM_CONFIG: form_config_item[] = [
         key: "advice_future_gen",
         label:
           "Please share any advice for Future Generations of Students who will take this course ",
-        short: "Advice for Future Generations",
+        short: "Future Generations",
         type: "text",
       },
       {
@@ -127,14 +130,14 @@ export const FORM_CONFIG: form_config_item[] = [
   },
 ];
 
-export const FEEDBACK_VALUES_BY_TYPE = {
+export const FEEDBACK_VALUES_BY_TYPE: Record<number, any> = {
   "5": {
-    1: "Strongly Disagree",
+    1: "Strongly\nDisagree",
     2: "Disagree",
     3: "Neutral",
     4: "Agree",
     5: "Strongly Agree",
   },
   "3": { 1: "Needs Improvement", 2: "Satisfactory", 3: "Excellent" },
-  thumb: { 0: "Disagree", 1: "Agree" },
+  "2": { 0: "Disagree", 1: "Agree" },
 };

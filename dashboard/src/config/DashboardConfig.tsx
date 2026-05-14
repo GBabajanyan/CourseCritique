@@ -1,11 +1,9 @@
-import { Progress, Tag } from "antd";
+import { Button, Progress, Tag } from "antd";
 import {
   AnonymousFeedback,
   CourseStats,
   StudentProfile,
 } from "../types/dashboardTypes";
-import { TrophyOutlined } from "@ant-design/icons";
-
 // Course table columns
 export const courseColumns = [
   {
@@ -18,6 +16,15 @@ export const courseColumns = [
     title: "Course Name",
     dataIndex: "course_name",
     key: "course_name",
+    render: (text: string, record: CourseStats) => (
+      <Button
+        type="link"
+        style={{ color: "#000" }}
+        onClick={() => (window.location.href = `/courses/${record.id}`)}
+      >
+        {text}
+      </Button>
+    ),
   },
   {
     title: "Instructor",
@@ -61,8 +68,14 @@ export const studentColumns = [
     title: "Name",
     dataIndex: "name",
     key: "name",
-    render: (text: string, record: StudentProfile) => (
-      <span>{text || record.username}</span>
+    render: (text: string, record: StudentProfile, args: any) => (
+      <Button
+        type="link"
+        style={{ color: "#000" }}
+        onClick={() => {(window.location.href = `/students/${record.studentId}`)}}
+      >
+        {text || record.username}
+      </Button>
     ),
   },
   {
@@ -95,20 +108,12 @@ export const studentColumns = [
       a.feedbacks_given - b.feedbacks_given,
   },
   {
-    title: "Badges",
-    dataIndex: "badges_earned",
-    key: "badges_earned",
-    render: (count: number) => (
-      <span>
-        <TrophyOutlined style={{ color: "#fbbf24", marginRight: 4 }} />
-        {count}
-      </span>
-    ),
-  },
-  {
     title: "Joined",
     dataIndex: "join_date",
     key: "join_date",
+    render: (date: number) => (
+      <span>{new Date(date).toLocaleDateString()}</span>
+    ),
   },
 ];
 

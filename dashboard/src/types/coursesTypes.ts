@@ -8,8 +8,49 @@ export interface Course {
   total_students?: number;
   feedback_completed?: number;
   pending_feedbacks?: number;
-  avg_rating?: number;
   description?: string;
+  ratingStats: {
+    sections: {
+      course_design: sectionStatistic & {
+        questions: Record<string, sectionStatistic>;
+      };
+      materials: sectionStatistic & {
+        questions: Record<string, sectionStatistic>;
+      };
+      engagement: sectionStatistic & {
+        questions: Record<string, sectionStatistic>;
+      };
+      support: sectionStatistic & {
+        questions: Record<string, sectionStatistic>;
+      };
+      outcomes: sectionStatistic & {
+        questions: Record<string, sectionStatistic>;
+      };
+    };
+    overall: { count: number; score: number };
+  };
+  open_feedbacks: {
+    advice_future_gen: string[];
+    strengths: string[];
+    improvements: string[];
+  };
+}
+
+export interface sectionStatistic {
+  count: number;
+  bayesian: number;
+  mean: number;
+  stdDev: number;
+  variance: number;
+}
+
+export interface CollapseRenderData {
+  type: string;
+  key: string;
+  label: string;
+  short?: string;
+  stats?: sectionStatistic;
+  data?: string[];
 }
 
 export interface ColumnConfig {

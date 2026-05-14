@@ -1,4 +1,3 @@
-
 export interface DashboardStats {
   totalCourses: number;
   totalStudents: number;
@@ -27,11 +26,11 @@ export interface StudentProfile {
   name: string;
   year: string;
   department: string;
+  studentId: string;
   feedbacks_given: number;
   badges_earned: number;
   join_date: string;
 }
-
 
 export interface AnonymousFeedback {
   id: string;
