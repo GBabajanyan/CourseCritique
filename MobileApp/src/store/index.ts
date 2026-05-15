@@ -17,7 +17,7 @@ export class RootStore {
   constructor() {
     makeAutoObservable(this, {}, { autoBind: true });
     this.apiClient = new ApiClient(
-      process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000",
+      process.env.API_URL || "http://localhost:8000",
     );
 
     this.notificationsStore = new NotificationsStore(this);
