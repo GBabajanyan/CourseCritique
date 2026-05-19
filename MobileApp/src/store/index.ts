@@ -16,6 +16,8 @@ export class RootStore {
 
   constructor() {
     makeAutoObservable(this, {}, { autoBind: true });
+    console.log(process.env.EXPO_PUBLIC_API_URL);
+
     this.apiClient = new ApiClient(
       process.env.API_URL || "http://192.168.1.9:8000",
     );
