@@ -92,7 +92,7 @@ class AuthStore {
     }
   };
 
-  login = async (login: string, password: string): Promise<void> => {
+  login = async (login: string, password: string): Promise<boolean> => {
     this.toggleIsLoading();
     const response = await this.rootStore.apiClient.instance.post(
       `/auth/user_login`,
@@ -109,6 +109,7 @@ class AuthStore {
 
     await this.handleAfterLoginLoads(user);
     this.toggleIsLoading();
+    return true
   };
 
   biometricLogin = async () => {

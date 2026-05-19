@@ -1,7 +1,11 @@
-import { phaseNames } from "@/src/constants";
-import { departmentColors, phaseColors } from "@/src/constants/colors";
+import { FORM_CONFIG } from "@/src/constants/feedbackForm";
 import { useColors } from "@/src/hooks/useColors";
-import { CourseFeedbackCardType, FeedbackPhase } from "@/src/types/Feedback";
+import { CourseFeedbackCardType } from "@/src/types/Feedback";
+import {
+  getDepartmentColor,
+  getPhaseColor,
+  getPhaseDisplayName,
+} from "@/src/util/general";
 import { Ionicons } from "@expo/vector-icons";
 import React, { JSX } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -13,25 +17,16 @@ const CourseFeedbackCard = ({
   style = {},
   onToggle,
 }: CourseFeedbackCardType): JSX.Element => {
-  const { NAVY, WHITE, CARD, TEXT, TEXT_SECONDARY, SUCCESS, SURFACE } =
-    useColors();
+  const { NAVY, CARD, TEXT, TEXT_SECONDARY, SUCCESS, SURFACE } = useColors();
   const isExpandable = isExpanded !== undefined;
   const isTypeCompleted = type === "completed";
-  const renderRating = (rating: number): string => {
-    return "⭐".repeat(rating) + "☆".repeat(5 - rating);
-  };
-
-  const getPhaseColor = (phase: FeedbackPhase): string => {
-    return phaseColors[phase];
-  };
-
-  const getDepartmentColor = (department = "default"): string => {
-    return departmentColors[department];
-  };
-
-  const getPhaseDisplayName = (phase: FeedbackPhase): string =>
-    phaseNames[phase];
-
+  const key_to_label_entries = FORM_CONFIG[
+    FORM_CONFIG.length - 1
+  ].questions.map((q) => [q.key, q.short ?? q.label]);
+  const QuestionsKeyToLabel = Object.fromEntries(key_to_label_entries);
+  const feedbackEntries = Object.entries(
+    isTypeCompleted ? item.feedbackData : {},
+  );
   return (
     <View
       key={item.id}
@@ -86,55 +81,32 @@ const CourseFeedbackCard = ({
             </View>
           )}
           {isExpandable && (
-            // <Text style={[styles.expandIcon, { color: NAVY }]}>
             <Ionicons
               name={isExpanded ? "caret-up-outline" : "caret-down-outline"}
               size={24}
               color="black"
             />
-            //</Text>
           )}
         </View>
       </TouchableOpacity>
 
-      {isExpanded && isTypeCompleted && (
+      {isExpanded && (
         <View style={[styles.feedbackDetails, { backgroundColor: SURFACE }]}>
-          <View style={styles.ratingContainer}>
-            <Text style={[styles.detailLabel, { color: TEXT_SECONDARY }]}>
-              Rating:
-            </Text>
-            <Text style={styles.ratingStars}>
-              {renderRating(item.feedbackData?.avgRating)}
-            </Text>
-          </View>
-          {item?.feedbackData?.comments && (
-            <View style={styles.detailRow}>
-              <Text style={[styles.detailLabel, { color: TEXT_SECONDARY }]}>
-                Comments:
-              </Text>
-              <Text style={[styles.detailText, { color: TEXT_SECONDARY }]}>
-                {item.feedbackData.comments}
-              </Text>
-            </View>
-          )}
-
-          <View style={styles.detailRow}>
-            <Text style={[styles.detailLabel, { color: TEXT_SECONDARY }]}>
-              Suggestions:
-            </Text>
-            <Text style={[styles.detailText, { color: TEXT_SECONDARY }]}>
-              {item.feedbackData.improvements}
-            </Text>
-          </View>
-
-          <View style={styles.detailRow}>
-            <Text style={[styles.detailLabel, { color: TEXT_SECONDARY }]}>
-              Would Recommend:
-            </Text>
-            <Text style={[styles.detailText, { color: TEXT_SECONDARY }]}>
-              {item.feedbackData.wouldRecommend ? "Yes ✅" : "No ❌"}
-            </Text>
-          </View>
+          {feedbackEntries.map(([name, answer]) => {
+            if (answer === undefined) return;
+            const displayResponse =
+              typeof answer === "string" ? answer : answer ? "Yes ✅" : "No ❌";
+            return (
+              <View style={styles.detailRow} key={name}>
+                <Text style={[styles.detailLabel, { color: TEXT_SECONDARY }]}>
+                  {QuestionsKeyToLabel[name]}
+                </Text>
+                <Text style={[styles.detailText, { color: TEXT_SECONDARY }]} numberOfLines={3} ellipsizeMode="tail">
+                  {displayResponse}
+                </Text>
+              </View>
+            );
+          })}
         </View>
       )}
     </View>

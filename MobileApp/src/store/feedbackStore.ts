@@ -211,7 +211,7 @@ class FeedbackStore {
     }
   };
 
-  submitFeedback = async (feedbackData: FeedbackRatings): Promise<void> => {
+  submitFeedback = async (feedbackData: FeedbackRatings): Promise<boolean> => {
     this.setIsPageLoading(true);
     if (this.currentFeedbackCourse === null)
       throw new Error("No FeedbackCourse data");
@@ -239,6 +239,7 @@ class FeedbackStore {
       await updateNotificationsBadge();
     }
     this.setIsPageLoading(false);
+    return true
   };
 }
 

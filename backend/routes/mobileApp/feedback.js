@@ -60,9 +60,7 @@ router.get("/completed", async (req, res) => {
     ORDER BY f.submitted_at DESC`,
       [profile_id],
     );
-    /*
-    SELECT COUNT(*) FROM feedback WHERE profile_id = 'f140d3ee-e9b2-4bb8-8ab7-c3e42e5135c4' AND status = 'completed';
-    */
+
     const { rows, rowCount } = result;
     res.send({ rows, rowCount });
   } catch (err) {
@@ -76,8 +74,6 @@ router.get("/:id/stats", async (req, res) => {
   try {
     const { id } = req.params;
     const { limit } = req.query; // Get limit from query params
-
-    console.log(limit);
 
     const feedback_count = await pool.query(
       ` SELECT 
@@ -149,7 +145,6 @@ router.get("/:id/stats", async (req, res) => {
 
     const { stats, open_feedbacks } = feedbacks;
     const feedbackStats = getFeedbackStats(stats, false);
-    console.log(open_feedbacks);
 
     res.json({
       feedbacks_completed: feedback_count.rows[0].feedbacks_completed,
@@ -165,7 +160,7 @@ router.get("/:id/stats", async (req, res) => {
 router.post("/submit", async (req, res) => {
   const { ratings, feedbackId } = req.body;
   try {
-    const userId = req.user.id;
+    const userId = req.userData.id;
     // Get feedback details
     const feedback = await pool.query(
       `

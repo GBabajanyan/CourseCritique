@@ -10,22 +10,14 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const CompletedFeedbacks = observer(() => {
   const { feedbackStore } = useStore();
-  const { NAVY, WHITE, CARD, TEXT, TEXT_SECONDARY, BACKGROUND } =
-    useColors();
-  const { isPageLoading, completedFeedbacks, loadCompletedFeedbacks } =
-    feedbackStore;
+  const { NAVY, WHITE, CARD, TEXT, TEXT_SECONDARY, BACKGROUND } = useColors();
+  const { isPageLoading, completedFeedbacks } = feedbackStore;
   const [expandedFeedbackId, setExpandedFeedbackId] = useState<string | null>(
     null,
   );
 
   const { bottom } = useSafeAreaInsets();
   const bottomPadding = bottom;
-
-  // useFocusEffect(
-  //   React.useCallback(() => {
-  //     loadCompletedFeedbacks();
-  //   }, []),
-  // );
 
   const toggleFeedback = (id: string): void => {
     setExpandedFeedbackId(expandedFeedbackId === id ? null : id);

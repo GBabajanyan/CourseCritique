@@ -6,7 +6,7 @@ import { TouchableOpacity, View } from "react-native";
 
 interface RatingScaleProps {
   type: "5" | "3" | "thumb";
-  value?: number;
+  value?: number | "error";
   iconSize?: number;
   onChange: (val: number) => void;
 }
@@ -17,7 +17,7 @@ const RatingScale: React.FC<RatingScaleProps> = ({
   iconSize,
   onChange,
 }) => {
-  const { SAFFRON, NAVY } = useColors();
+  const { SAFFRON, NAVY, ERROR } = useColors();
 
   if (type === "thumb") {
     const isLiked = !!value;
@@ -32,7 +32,9 @@ const RatingScale: React.FC<RatingScaleProps> = ({
           <MaterialIcons
             name={thumbUpIconName}
             size={iconSize}
-            color={isLiked && isSelected ? SAFFRON : NAVY}
+            color={
+              value === "error" ? ERROR : isLiked && isSelected ? SAFFRON : NAVY
+            }
           />
         </TouchableOpacity>
 
@@ -40,7 +42,13 @@ const RatingScale: React.FC<RatingScaleProps> = ({
           <MaterialIcons
             name={thumbDownIconName}
             size={iconSize}
-            color={!isLiked && isSelected ? SAFFRON : NAVY}
+            color={
+              value === "error"
+                ? ERROR
+                : !isLiked && isSelected
+                  ? SAFFRON
+                  : NAVY
+            }
           />
         </TouchableOpacity>
       </View>
@@ -51,11 +59,11 @@ const RatingScale: React.FC<RatingScaleProps> = ({
     <View style={{ flexDirection: "row" }}>
       <Rating
         variant="stars-outline"
-        rating={value}
+        rating={value === "error" ? 0 : value}
         onChange={onChange}
         maxRating={Number(type)}
         fillColor={SAFFRON}
-        baseColor={NAVY}
+        baseColor={value === "error" ? ERROR : NAVY}
         size={iconSize}
       />
     </View>

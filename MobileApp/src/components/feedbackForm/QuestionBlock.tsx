@@ -3,11 +3,13 @@ import { useColors } from "@/src/hooks/useColors";
 import React from "react";
 import { Text, TextInput, View } from "react-native";
 import RatingScale from "./RatingScale";
+import { RatingType } from "@/src/types/Feedback";
 
 interface QuestionBlockProps {
   label: string;
-  type: "5" | "3" | "thumb" | "text";
-  value?: number;
+  type: RatingType;
+  value?: number | string;
+  required: boolean;
   onChange: (val: number | string) => void;
 }
 
@@ -15,6 +17,7 @@ const QuestionBlock: React.FC<QuestionBlockProps> = ({
   label,
   type,
   value,
+  required,
   onChange,
 }) => {
   const { NAVY, TEXT_SECONDARY, TEXT, SURFACE, BORDER } = useColors();
@@ -34,14 +37,34 @@ const QuestionBlock: React.FC<QuestionBlockProps> = ({
         borderRadius: 16,
       }}
     >
-      <Text
+      <View
         style={{
-          fontSize: 24,
-          color: NAVY,
+          flexDirection: "row",
+          justifyContent: "space-between",
           marginBottom: 12,
-          textAlign: type === "thumb" ? "center" : "left",
         }}
-      >{`${label}:`}</Text>
+      >
+        <Text
+          style={{
+            fontSize: 20,
+            flexShrink: 1,
+            color: NAVY,
+            textAlign: type === "thumb" ? "center" : "left",
+          }}
+        >
+          {`${label}:`}
+        </Text>
+        <Text
+          style={{
+            fontSize: 20,
+            color: "red",
+            display: required ? "flex" : "none",
+          }}
+        >
+          {`*`}
+        </Text>
+      </View>
+
       {type === "text" ? (
         <TextInput
           placeholder="Enter your feedback here..."
@@ -65,6 +88,7 @@ const QuestionBlock: React.FC<QuestionBlockProps> = ({
           onChange={onChange}
         />
       )}
+
       <Text
         style={{
           fontSize: 14,

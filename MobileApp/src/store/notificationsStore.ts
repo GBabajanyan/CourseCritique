@@ -64,6 +64,7 @@ class NotificationsStore {
   clearAllNotifications = async () => {
     this.displayNotifications = [];
     await this.saveNotifications();
+    await this.updateNotificationsBadge();
   };
 
   removeNotification = async (id: string) => {
@@ -71,6 +72,7 @@ class NotificationsStore {
       (n) => n.displayId !== id,
     );
     await this.saveNotifications();
+    await this.updateNotificationsBadge();
   };
 
   //Manage notification scheduling
@@ -224,7 +226,6 @@ class NotificationsStore {
       early_bird: {} as Record<string, string>,
     };
     this.weeklyNotificationId = "";
-    await Notifications.setBadgeCountAsync(0);
   };
 
   updateNotificationsBadge = async () => {

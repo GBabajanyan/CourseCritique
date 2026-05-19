@@ -13,13 +13,17 @@ import { observer } from "mobx-react-lite";
 import { useStore } from "@/src/store/StoreProvider";
 import { useColors } from "@/src/hooks/useColors";
 import { Notification } from "@/src/types/User";
+import { useRouter } from "expo-router";
 
 const { width } = Dimensions.get("window");
 
 const NotificationDropdown = observer(() => {
-  const { notificationsStore } = useStore();
+  const router = useRouter();
+  const { notificationsStore, feedbackStore } = useStore();
   const { getNotifications, removeNotification, clearAllNotifications } =
     notificationsStore;
+  const { pendingFeedbacks, setCurrentFeedbackCourse } = feedbackStore;
+
   const { TEXT, TEXT_SECONDARY, CARD, BORDER } = useColors();
   const [visible, setVisible] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -35,8 +39,36 @@ const NotificationDropdown = observer(() => {
       prev.filter((n) => n.displayId !== notification.displayId),
     );
 
-    if (notification.data?.screen) {
-      // router.push(notification.data.screen);
+    if (notification.data) {
+      const { data } = notification;
+      switch (data.type) {
+        case "deadline":
+        case "last_chance":
+        case "early_bird":
+          if (data?.feedbackId) {
+            const pendingCourse = pendingFeedbacks.find(
+              (value) => value.id === data.feedbackId,
+            );
+            if (pendingCourse) {
+              setCurrentFeedbackCourse(pendingCourse);
+              router.push("/feedback/Pending/FeedbackForm");
+            } else {
+              router.replace("/feedback/Pending");
+            }
+          }
+          break;
+        case "weekly_reminder":
+          router.replace("/(protected)/(tabs)/feedback/Pending");
+          break;
+        case "thank_you":
+          router.replace("/(protected)/(tabs)/feedback/Completed");
+          break;
+        case "achievement":
+          router.push("/(protected)/(tabs)/profile/allBadges");
+          break;
+        default:
+          break;
+      }
     }
     setVisible(false);
   };

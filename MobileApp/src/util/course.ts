@@ -20,10 +20,10 @@ export const generateConfigArrayFromCompletedFeedbacks = (
       ...compFeedObjRaw,
       submittedDate: processToDate(compFeedObjRaw.submittedDate),
       feedbackData: {
-        avgRating: 4,
-        comments: compFeedObjRaw.feedbackData?.open_feedback,
-        improvements: "asdfd",
-        wouldRecommend: compFeedObjRaw.feedbackData?.take_another_course,
+        advice_future_gen: compFeedObjRaw.feedbackData?.advice_future_gen,
+        strengths: compFeedObjRaw.feedbackData?.strengths,
+        improvements: compFeedObjRaw.feedbackData?.improvements,
+        take_another_course: compFeedObjRaw.feedbackData?.take_another_course,
       },
     };
     acc[year][semester].push(compFeedObj);
@@ -81,7 +81,6 @@ export const transformCoursesToFlashListConfig = (
 
   return result;
 };
-
 
 export const isLowerLevel = (courseCode: string): boolean => {
   return /^[A-Z]+1\d{2}$/.test(courseCode); // e.g., CS101, MATH120, CHSS134

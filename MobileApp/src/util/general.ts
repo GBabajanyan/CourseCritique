@@ -1,5 +1,5 @@
-import {  localeDateOptions, phaseNames } from "../constants";
-import { phaseColors } from "../constants/colors";
+import { localeDateOptions, phaseNames } from "../constants";
+import { departmentColors, phaseColors } from "../constants/colors";
 import { FeedbackPhase } from "../types/Feedback";
 
 export const processToDate = (fullDate: any) =>
@@ -29,3 +29,8 @@ export const getPhaseDisplayName = (phase: FeedbackPhase): string =>
 export const getPhaseColor = (phase: FeedbackPhase): string => {
   return phaseColors[phase];
 };
+
+export const getDepartmentColor = (department = "default"): string => {
+  return departmentColors[department];
+};
+

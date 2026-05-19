@@ -22,7 +22,7 @@ const _layout = observer(() => {
   const { authStore, feedbackStore, settingsStore, notificationsStore } =
     useStore();
   const { isAuthenticated } = authStore;
-  const { pendingFeedbacks, setCurrentFeedbackCourse } = feedbackStore;
+  const { setCurrentFeedbackCourse } = feedbackStore;
   const { inAppNotifications } = settingsStore;
   const { addNotification, updateNotificationsBadge } = notificationsStore;
 
@@ -37,7 +37,6 @@ const _layout = observer(() => {
 
   useEffect(() => {
     // Android channel setup
-
     if (
       !channelCreated.current &&
       inAppNotifications &&
@@ -61,38 +60,42 @@ const _layout = observer(() => {
       });
 
     responseListener.current =
-      Notifications.addNotificationResponseReceivedListener((response) => {
-        const { data } = response.notification.request.content;
-        if (!data) return;
-        switch (data.type) {
-          case "deadline":
-          case "last_chance":
-          case "early_bird":
-            if (data?.feedbackId) {
-              const pendingCourse = pendingFeedbacksRef.current.find(
-                (value) => value.id === data.feedbackId,
-              );
-              if (pendingCourse) {
-                setCurrentFeedbackCourse(pendingCourse);
-                router.push("/feedback/Pending/FeedbackForm");
-              } else {
-                router.replace("/feedback/Pending");
+      Notifications.addNotificationResponseReceivedListener(
+        async (response) => {
+          const { data } = response.notification.request.content;
+
+          if (!data) return;
+          switch (data.type) {
+            case "deadline":
+            case "last_chance":
+            case "early_bird":
+              if (data?.feedbackId) {
+                const pendingCourse = pendingFeedbacksRef.current.find(
+                  (value) => value.id === data.feedbackId,
+                );
+                if (pendingCourse) {
+                  setCurrentFeedbackCourse(pendingCourse);
+                  router.push("/feedback/Pending/FeedbackForm");
+                } else {
+                  router.replace("/feedback/Pending");
+                }
               }
-            }
-            break;
-          case "weekly_reminder":
-            router.replace("/(protected)/(tabs)/feedback/Pending");
-            break;
-          case "thank_you":
-            router.replace("/(protected)/(tabs)/feedback/Completed");
-            break;
-          case "achievement":
-            router.push("/(protected)/(tabs)/profile/allBadges");
-            break;
-          default:
-            break;
-        }
-      });
+              break;
+            case "weekly_reminder":
+              router.replace("/(protected)/(tabs)/feedback/Pending");
+              break;
+            case "thank_you":
+              router.replace("/(protected)/(tabs)/feedback/Completed");
+              break;
+            case "achievement":
+              router.push("/(protected)/(tabs)/profile/allBadges");
+              break;
+            default:
+              break;
+          }
+          await updateNotificationsBadge();
+        },
+      );
 
     // Cleanup
     return () => {

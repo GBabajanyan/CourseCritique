@@ -62,7 +62,6 @@ const CourseStatsModal = observer(({ visible, closeModal }: Props) => {
   const renderScene = SceneMap({
     stats: () => (
       <View style={{ flex: 1 }}>
-        {/* Dropdown in Stats tab */}
         <View style={styles.dropdownContainer}>
           <TouchableOpacity
             style={[
@@ -99,7 +98,6 @@ const CourseStatsModal = observer(({ visible, closeModal }: Props) => {
           )}
         </View>
 
-        {/* RadarChart uses updated stats */}
         <RadarChart
           data={Object.values(ratingStats.sections).map((v) =>
             Number(v.CCScore.toFixed(1)),
@@ -157,7 +155,8 @@ const CourseStatsModal = observer(({ visible, closeModal }: Props) => {
             ratingStats && (
               <ScrollView
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ flex: 1 }}
+                style={{ flex: 1 }}
+                contentContainerStyle={{ flexGrow: 1 }}
               >
                 {/* Course Info */}
                 <View
@@ -212,7 +211,10 @@ const CourseStatsModal = observer(({ visible, closeModal }: Props) => {
                     backgroundColor: SURFACE,
                     borderTopWidth: 1,
                     paddingTop: 12,
+                    minHeight: 500,
                   }}
+                  swipeEnabled={true}
+                  animationEnabled={true}
                   renderTabBar={(props: any) => {
                     return (
                       <TabBar
@@ -236,8 +238,6 @@ const CourseStatsModal = observer(({ visible, closeModal }: Props) => {
                     );
                   }}
                   onIndexChange={setIndex}
-                  swipeEnabled={true}
-                  animationEnabled={true}
                 />
               </ScrollView>
             )

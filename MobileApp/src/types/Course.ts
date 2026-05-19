@@ -1,3 +1,5 @@
+import { openFeedbackType } from "./Feedback";
+
 export interface Course {
   id: string; //course id
   courseCode: string;
@@ -8,11 +10,10 @@ export interface Course {
   department: string;
   ratingStats?: any;
   feedbacks_completed?: number;
-  open_feedbacks?: {
-    advice_future_gen: string[];
-    strengths: string[];
-    improvements: string[];
-  };
+  open_feedbacks?: Record<
+      openFeedbackType,
+      { submittedDate: string; feedback: string }[]
+    >;
 }
 
 export interface SectionHeader {

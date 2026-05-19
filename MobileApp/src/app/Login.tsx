@@ -76,7 +76,8 @@ const LoginScreen = observer(() => {
     // }
 
     await login(username, password)
-      .then(async () => {
+      .then(async (res) => {
+        if (!res) throw new Error();
         if (!biometricsEnabled) {
           Alert.alert(
             "Login Successful",
@@ -113,7 +114,6 @@ const LoginScreen = observer(() => {
             break;
           default:
             errorMessage = "An Unknown error occurred. Please try again later";
-            // throw err;
             break;
         }
         Alert.alert("Error", errorMessage);

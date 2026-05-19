@@ -138,12 +138,12 @@ const SettingsScreen = observer(() => {
         <SettingItem
           icon="document-text-outline"
           title="Terms & Conditions"
-          onPress={() => Linking.openURL("https://example.com/terms")}
+          // onPress={() => Linking.openURL("https://example.com/terms")}
         />
         <SettingItem
           icon="shield-checkmark-outline"
           title="Privacy Policy"
-          onPress={() => Linking.openURL("https://example.com/privacy")}
+          // onPress={() => Linking.openURL("https://example.com/privacy")}
         />
         <SettingItem
           icon="information-circle-outline"

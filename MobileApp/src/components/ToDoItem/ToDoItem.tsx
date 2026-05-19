@@ -11,14 +11,17 @@ const ToDoItem = ({ item }: { item: PendingFeedback }) => {
   const { feedbackStore } = useStore();
   const { setCurrentFeedbackCourse } = feedbackStore;
 
+  const onItemPress = () => {
+    if (new Date(item.deadline) < new Date()) return;
+    setCurrentFeedbackCourse(item);
+    router.push("/feedback/Pending/FeedbackForm");
+  };
+  
   return (
     <Pressable
       key={item.id}
       style={[styles.toDoCard, { shadowColor: NAVY, backgroundColor: CARD }]}
-      onPress={() => {
-        setCurrentFeedbackCourse(item);
-        router.push("/feedback/Pending/FeedbackForm");
-      }}
+      onPress={onItemPress}
     >
       <View style={styles.toDoDetails}>
         <Text style={[styles.courseCode, { color: NAVY }]}>

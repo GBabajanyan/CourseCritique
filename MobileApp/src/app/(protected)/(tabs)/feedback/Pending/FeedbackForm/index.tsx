@@ -32,6 +32,10 @@ const FeedbackForm: React.FC = () => {
     {} as FeedbackRatings,
   );
 
+  const requiredFieldKeys = FORM_CONFIG.flatMap((item) =>
+    item.questions.filter((q) => q.required).map((question) => question.key),
+  );
+
   const totalSteps = FORM_CONFIG.length;
 
   const currentStepConfig = FORM_CONFIG[currentStep - 1];
@@ -58,21 +62,25 @@ const FeedbackForm: React.FC = () => {
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
-
     // Validate all required fields are filled
-    // for (const key of Object.keys(formData)) {
-    //   if (
-    //     formData[key as keyof FeedbackRatings] === undefined &&
-    //     key !== "open_feedback"
-    //   ) {
-    //     Alert.alert("Incomplete Form", "Please fill all the ratings.");
-    //     setIsSubmitting(false);
-    //     return;
-    //   }
-    // }
+    const filledForms = Object.keys(formData);
+    const requiredUndefineds = requiredFieldKeys.filter(
+      (k) => !filledForms.includes(k) || formData[k] === "error",
+    );
+
+    if (requiredUndefineds.length > 0) {
+      Alert.alert(`Incomplete Form`, `Please fill out required fields.`);
+      requiredUndefineds.forEach(
+        (f) => (formData[f as keyof FeedbackRatings] = "error"),
+      );
+      setIsSubmitting(false);
+      return;
+    }
+    console.log(formData);
 
     await submitFeedback(formData)
-      .then(() => {
+      .then((res) => {
+        if (!res) throw new Error();
         Alert.alert(
           "Feedback Submitted!",
           `Thank you for your feedback on ${course?.courseCode}.`,
@@ -126,7 +134,11 @@ const FeedbackForm: React.FC = () => {
       </ScrollView>
       <View style={styles.footer}>
         <TouchableOpacity
-          style={[styles.btn, { backgroundColor: CARD, opacity: 0.9 }]}
+          style={[
+            styles.btn,
+            isSubmitting ? styles.primaryButtonDisabled : {},
+            { backgroundColor: CARD, opacity: 0.9 },
+          ]}
           onPress={handleBack}
         >
           <Text style={[styles.backButtonText, { color: TEXT_SECONDARY }]}>
