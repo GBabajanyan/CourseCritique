@@ -1,8 +1,8 @@
 import express from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import pool from "../../db-config.js";
-import { generateAuthToken, generateRefreshToken } from "../../util/util.js";
+import pool from "../db-config.js";
+import { generateAuthToken, generateRefreshToken } from "../util/util.js";
 
 const router = express.Router();
 
