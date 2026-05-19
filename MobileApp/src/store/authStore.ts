@@ -47,14 +47,14 @@ class AuthStore {
 
   doRefreshToken = async (
     refreshToken: string,
-  ): Promise<{ userProfile: User }> => {
+  ): Promise<{ userProfile: User } | undefined> => {
     const response = await this.rootStore.apiClient.instance.post(
       `/auth/refresh`,
       {
         refreshToken,
       },
     );
-
+    if (response.status !== 200) return;
     const {
       authToken,
       refreshToken: newRefreshToken,
@@ -133,9 +133,8 @@ class AuthStore {
         );
       }
 
-      const { userProfile } = await this.doRefreshToken(refreshToken);
-
-      this.handleAfterLoginLoads(userProfile);
+      const result = await this.doRefreshToken(refreshToken);
+      if (result) this.handleAfterLoginLoads(result.userProfile);
     }
     this.toggleIsLoading();
   };

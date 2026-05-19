@@ -150,6 +150,7 @@ const LoginScreen = observer(() => {
           <View style={styles.inputContainer}>
             <TextInput
               style={styles.input}
+              editable={!isLoading}
               placeholder="Email Address"
               placeholderTextColor="#999"
               value={username}
@@ -162,6 +163,7 @@ const LoginScreen = observer(() => {
           <View style={styles.inputContainer}>
             <TextInput
               style={[styles.input, styles.passwordInput]}
+              editable={!isLoading}
               placeholder="Password"
               placeholderTextColor="#999"
               value={password}

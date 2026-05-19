@@ -1,6 +1,7 @@
 import { Alert, Platform } from "react-native";
 import * as MailComposer from "expo-mail-composer";
 import { RootStore } from "../store";
+import { AxiosError } from "axios";
 
 type CatchOptions = {
   showReport?: boolean;
@@ -78,8 +79,11 @@ export function withErrorHandling<T extends (...args: any[]) => any>(
     }
 
     function handleError(error: unknown) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
+      const errorMessage = !(error instanceof Error)
+        ? String(error)
+        : error instanceof AxiosError
+          ? error.response?.data?.message
+          : error.message;
 
       if (__DEV__) {
         console.error(`${methodName} error:`, error);
