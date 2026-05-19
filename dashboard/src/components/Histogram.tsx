@@ -8,21 +8,12 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { HistogramProps } from "../types/charts";
 import { FEEDBACK_VALUES_BY_TYPE } from "../constants/feedbackConfig";
+import { HistogramProps } from "../types/charts";
 
-const HIST_COLORS = ["#ff4d4f", "#ffa940", "#a493f0", "#73d13d", "#389e0d"];
-
-const Histogram: React.FC<HistogramProps> = ({ distribution }) => {
+const Histogram: React.FC<HistogramProps> = ({ distribution, colors }) => {
   const distrEntries = Object.entries(distribution);
-  const scaleLength = distrEntries.length;
   const feedbackValues = FEEDBACK_VALUES_BY_TYPE[distrEntries.length];
-  const colors =
-    scaleLength === 5
-      ? HIST_COLORS
-      : scaleLength === 3
-        ? [HIST_COLORS[1], HIST_COLORS[2], HIST_COLORS[3]]
-        : [HIST_COLORS[0], HIST_COLORS[4]];
   const histogramData = distrEntries.map(([label, count], i) => ({
     value: feedbackValues[label],
     count,
@@ -30,11 +21,7 @@ const Histogram: React.FC<HistogramProps> = ({ distribution }) => {
   }));
 
   return (
-    <ResponsiveContainer
-      width="100%"
-      height={220}
-      
-    >
+    <ResponsiveContainer width="100%" height={220}>
       <BarChart
         data={histogramData}
         margin={{
@@ -44,7 +31,7 @@ const Histogram: React.FC<HistogramProps> = ({ distribution }) => {
           bottom: 0,
         }}
       >
-        <XAxis dataKey="value" fontSize={12}  />
+        <XAxis dataKey="value" fontSize={12} />
         <YAxis allowDecimals={false} />
         <Tooltip labelStyle={{ justifyContent: "center" }} />
 

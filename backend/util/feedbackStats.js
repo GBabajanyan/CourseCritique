@@ -74,6 +74,7 @@ export const getFeedbackStats = (feedbackResponses, questionStats = true) => {
           )
         : undefined,
     };
+    console.log(questionBuckets);
   }
 
   if (!result.sections.course_design) {
@@ -81,20 +82,11 @@ export const getFeedbackStats = (feedbackResponses, questionStats = true) => {
   }
 
   const overall =
-    (0.25 *
-      result.sections.course_design.bayesian *
-      result.sections.course_design.count +
-      0.25 *
-        result.sections.materials.bayesian *
-        result.sections.materials.count +
-      0.25 *
-        result.sections.engagement.bayesian *
-        result.sections.engagement.count +
-      0.15 * result.sections.support.bayesian * result.sections.support.count +
-      0.1 *
-        result.sections.outcomes.bayesian *
-        result.sections.outcomes.count) /
-    count; //total
+    0.25 * result.sections.course_design.bayesian +
+    0.25 * result.sections.materials.bayesian +
+    0.25 * result.sections.engagement.bayesian +
+    0.15 * result.sections.support.bayesian +
+    0.1 * result.sections.outcomes.bayesian;
 
   result.overall = { score: overall, count };
   return result;
@@ -119,22 +111,30 @@ const average = (arr) => {
 
 const computeStats = (values, { priorMean = 0.5, priorWeight = 8 } = {}) => {
   const n = values.length;
-  if (n === 0) return null;
-
   const sum = values.reduce((a, b) => a + b, 0);
+  const bayesian = (sum + priorMean * priorWeight) / (n + priorWeight);
+
+  const CCScore = 1 + bayesian * 9;
+
+  if (n === 0) {
+    return {
+      mean: 0,
+      variance: 0,
+      bayesian,
+      CCScore,
+      count: n,
+    };
+  }
+
   const mean = sum / n;
 
   const variance = values.reduce((acc, v) => acc + (v - mean) ** 2, 0) / n;
 
-  const stdDev = Math.sqrt(variance);
-
-  const bayesian = (sum + priorMean * priorWeight) / (n + priorWeight);
-
   return {
     mean,
     bayesian,
+    CCScore,
     variance,
-    stdDev,
     count: n,
   };
 };

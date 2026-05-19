@@ -1,3 +1,5 @@
+import { Distribution } from "./charts";
+
 export interface Course {
   id: string;
   course_code: string;
@@ -5,8 +7,8 @@ export interface Course {
   instructor: string;
   credits: number;
   department: string;
-  total_students?: number;
-  feedback_completed?: number;
+  total_students: number;
+  feedback_completed: number;
   pending_feedbacks?: number;
   description?: string;
   ratingStats: {
@@ -38,19 +40,39 @@ export interface Course {
 
 export interface sectionStatistic {
   count: number;
-  bayesian: number;
+  CCScore: number;
   mean: number;
-  stdDev: number;
   variance: number;
 }
 
+interface TabsData {
+  key: string;
+  label: string;
+  short?: string;
+  tabData: any;
+}
+export interface StatTabData extends TabsData {
+  type: string;
+  tabData: {
+    stats: sectionStatistic;
+    distribution?: Distribution;
+  };
+}
+export interface TextsTabData extends TabsData {
+  type: string;
+  tabData: {
+    data: string[];
+  };
+}
 export interface CollapseRenderData {
   type: string;
   key: string;
   label: string;
   short?: string;
-  stats?: sectionStatistic;
-  data?: string[];
+  tabData: {
+    stats: sectionStatistic;
+    data: string[];
+  };
 }
 
 export interface ColumnConfig {

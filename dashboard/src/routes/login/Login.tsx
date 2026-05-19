@@ -136,7 +136,6 @@ const Login: React.FC = () => {
         </Form>
 
         <div className="login-footer">
-          <Text type="secondary">Demo credentials: admin / admin123</Text>
         </div>
       </Card>
     </div>

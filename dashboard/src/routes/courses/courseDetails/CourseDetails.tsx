@@ -2,6 +2,7 @@ import {
   ApartmentOutlined,
   BookOutlined,
   CreditCardOutlined,
+  InfoCircleOutlined,
   PlusOutlined,
   RadarChartOutlined,
   UserOutlined,
@@ -22,22 +23,32 @@ import {
   Spin,
   Table,
   Tabs,
+  Tooltip,
 } from "antd";
 import React, { useEffect, useState } from "react";
 import CountUp from "react-countup";
 import { useParams } from "react-router-dom";
 
 import client from "../../../api/client";
+import FeedbackDistributionCard from "../../../components/FeedbackDistributionCard";
 import { studentColumns } from "../../../config/CoursesConfig";
+import { COLORS, GRAPH_COLORS } from "../../../constants/colors";
 import { FEEDBACK_CONFIG } from "../../../constants/feedbackConfig";
+import { Distribution } from "../../../types/charts";
 import {
-  CollapseRenderData,
   Course,
   FeedbackPhase,
+  sectionStatistic,
+  StatTabData,
   Student,
+  TextsTabData,
 } from "../../../types/coursesTypes";
+import {
+  describeDistribution,
+  describeVariance,
+  getAverageAnswer,
+} from "../../../util/util";
 import "./CourseDetails.css";
-import FeedbackDistributionCard from "../../../components/FeedbackDistributionCard";
 
 const CourseDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -80,19 +91,24 @@ const CourseDetails: React.FC = () => {
           .map((q) => {
             return {
               ...q,
-              stats: sectionInfo.questions[q.key],
+              tabData: sectionInfo.questions[q.key],
             };
           });
 
         const tabsData = [
-          // { key, label: title, type: "section", stats: sectionData },
+          {
+            key,
+            label: "Section Score",
+            type: "section",
+            tabData: { stats: sectionData },
+          },
           ...questionsWithStats,
         ];
 
         return {
           key,
           label: title,
-          children: renderCollapseBody("stat", tabsData),
+          children: renderSectionCollapseBody(tabsData),
         };
       });
       const openQuestionConfig = FEEDBACK_CONFIG.find((c) =>
@@ -104,16 +120,19 @@ const CourseDetails: React.FC = () => {
         (q) => q.type === "text",
       );
 
-      const openQuestionsTabs = openQuestions?.map((q) => ({
-        ...q,
-        data: courseData.open_feedbacks[q.key],
-      }));
+      const openQuestionsTabs =
+        openQuestions?.map((q) => ({
+          ...q,
+          tabData: { data: courseData.open_feedbacks[q.key] },
+        })) ?? [];
 
       const collapseOpenFeedbackConfig = {
         key: "open",
         label: "Open Feedbacks",
-        children: renderCollapseBody("open", openQuestionsTabs || []),
+        children: renderTextsCollapseBody(openQuestionsTabs),
+        styles: { title: { color: COLORS.SAFFRON } },
       };
+
       setFeedbackCollapse([...collapseStatsConfig, collapseOpenFeedbackConfig]);
       setStudents(studentsRes.data);
     } catch (error) {
@@ -124,27 +143,38 @@ const CourseDetails: React.FC = () => {
     }
   };
 
-  const renderCollapseBody = (
-    bodyType: "stat" | "open",
-    data: CollapseRenderData[],
-  ) => {
-    const tabconfig = data?.map(({ key, label, short, stats, data }) => {
+  const renderSectionCollapseBody = (data: StatTabData[]) => {
+    const tabconfig = data.map(({ key, label, short, tabData, type }) => {
       const TabPaneLabel = short ?? label;
       return {
         key,
         label: TabPaneLabel,
-        children:
-          bodyType === "stat"
-            ? renderStatSectionTab(label, stats)
-            : renderOpenFeedbackTab(label, key, data || []),
+        children: renderStatSectionTab(label, tabData, type), //renderOpenFeedbackTab(label, key, tabData.data || []),
       };
     });
     return (
       <div className="feedback-section">
-        <Tabs items={tabconfig} />
+        <Tabs items={tabconfig} destroyOnHidden />
       </div>
     );
   };
+
+  const renderTextsCollapseBody = (data: TextsTabData[]) => {
+    const tabconfig = data.map(({ key, label, short, tabData }) => {
+      const TabPaneLabel = short ?? label;
+      return {
+        key,
+        label: TabPaneLabel,
+        children: renderOpenFeedbackTab(label, key, tabData.data || []),
+      };
+    });
+    return (
+      <div className="feedback-section">
+        <Tabs items={tabconfig} destroyOnHidden />
+      </div>
+    );
+  };
+
   const renderOpenFeedbackTab = (
     label: string,
     key: string,
@@ -160,6 +190,7 @@ const CourseDetails: React.FC = () => {
           return "info";
       }
     })();
+
     return (
       <div>
         <span style={{ display: "flex", justifyContent: "space-between" }}>
@@ -182,24 +213,120 @@ const CourseDetails: React.FC = () => {
       </div>
     );
   };
-  const renderStatSectionTab = (label: string, data: any) => {
+
+  const renderStatSectionTab = (
+    label: string,
+    tabData: { stats: sectionStatistic; distribution?: Distribution },
+    type: string,
+  ) => {
+    const { distribution = {}, stats } = tabData;
+    const isSectionTab = type === "section";
+
     const cardStats = {
-      distribution: data.distribution,
-      mean: data.stats.mean,
-      count: data.stats.count,
+      distribution: distribution,
+      mean: stats.mean,
+      count: stats.count,
+      variance: stats.variance,
     };
+
+    const scaleLength = Object.keys(distribution).length;
+    const colors =
+      scaleLength === 5
+        ? GRAPH_COLORS
+        : scaleLength === 3
+          ? [GRAPH_COLORS[1], GRAPH_COLORS[2], GRAPH_COLORS[3]]
+          : [GRAPH_COLORS[0], GRAPH_COLORS[4]];
 
     return (
       <div>
-        <span style={{ display: "flex", justifyContent: "space-between" }}>
-          <h3>Score: {data.stats.bayesian.toFixed(2)}</h3>
-          <h3>{label}</h3>
+        <span style={{ display: "flex", justifyContent: "space-between",overflow:'overlay' }}>
+          <h3>
+            Score: {stats.CCScore.toFixed(2)}{" "}/10{" "}
+            <Tooltip
+              title={
+                <Alert
+                  showIcon
+                  title={`Score is calculated considering BOTH Mean value and Number of
+                  responses.\u200B It is NOT the same as Average value for the
+                  question/section`}
+                />
+              }
+              color="transparent"
+              placement="top"
+              style={{ width: "50vw", padding: 0 }}
+              styles={{ container: { padding: 0, width: "40vw" } }}
+              arrow={false}
+            >
+              <InfoCircleOutlined />
+            </Tooltip>
+          </h3>
+          {!isSectionTab && <h3 style={{ color: COLORS.NAVY }}>Q: {label}</h3>}
         </span>
         <span style={{ display: "flex", justifyContent: "space-between" }}>
-          <FeedbackDistributionCard
-            stats={cardStats}
-            style={{ width: "50%" }}
-          />
+          {!isSectionTab && (
+            <FeedbackDistributionCard
+              stats={cardStats}
+              style={{ width: "50%" }}
+            />
+          )}
+          <div
+            style={{
+              display: "flex",
+              width: "45%",
+              flexDirection: "column",
+              alignItems: "space-evenly",
+              fontSize: 16,
+              gap: 8,
+            }}
+          >
+            <span>
+              <strong color={COLORS.NAVY}>Confidence:</strong> Based on{" "}
+              {cardStats.count} responses
+            </span>
+            {!isSectionTab && (
+              <span>
+                <strong color={COLORS.NAVY}>Average Response</strong>{" "}
+                {cardStats.mean.toFixed(2)} from {scaleLength}(
+                <span style={{ color: colors[Math.floor(cardStats.mean)] }}>
+                  {getAverageAnswer(cardStats.mean, scaleLength)}
+                </span>
+                )
+              </span>
+            )}
+            {!isSectionTab && (
+              <span>
+                <strong color={COLORS.NAVY}>User agreement level:</strong>{" "}
+                {describeVariance({
+                  mean: stats.mean,
+                  variance: stats.variance,
+                  scaleLength,
+                })}
+                <Tooltip
+                  title={
+                    <>
+                      User Agreement level is calculated based on how closely
+                      the answers are distributed. Possible Values:
+                      <br />
+                      High Agreement
+                      <br />
+                      Mixed Opinions
+                      <br />
+                      Polarized
+                    </>
+                  }
+                  placement="topLeft"
+                >
+                  <InfoCircleOutlined />
+                </Tooltip>
+              </span>
+            )}
+            {!isSectionTab && (
+              <span>
+                <strong>Distribution:</strong>{" "}
+                {describeDistribution(distribution)}
+              </span>
+            )}
+          </div>
         </span>
       </div>
     );

@@ -1,37 +1,18 @@
 import React from "react";
-import { FEEDBACK_VALUES_BY_TYPE } from "../constants/feedbackConfig";
-import { LikertBarProps } from "../types/charts";
-import { Divider, Tooltip } from "antd";
+import { FEEDBACK_VALUES_BY_TYPE } from "../../constants/feedbackConfig";
+import { LikertBarProps } from "../../types/charts";
+import DataSpreadIndicator from "./DataSpreadIndicator/DataSpreadIndicator";
 
-const COLORS = ["#ff4d4f", "#ffa940", "#a493f0", "#73d13d", "#389e0d"];
-
-const LikertBar: React.FC<LikertBarProps> = ({ distribution, mean, total }) => {
+const LikertBar: React.FC<LikertBarProps> = ({
+  distribution,
+  mean,
+  variance,
+  colors,
+}) => {
   const scaleLength = Object.keys(distribution).length;
-
-  const colors =
-    scaleLength === 5
-      ? COLORS
-      : scaleLength === 3
-        ? [COLORS[1], COLORS[2], COLORS[3]]
-        : [COLORS[0], COLORS[4]];
-
   const feedbackValues = FEEDBACK_VALUES_BY_TYPE[scaleLength];
 
-  // Highest count used for opacity normalization
   const maxCount = Math.max(...Object.values(distribution));
-  // Equal-width semantic segments
-  const data = Object.entries(feedbackValues).map(([value, label], index) => {
-    const count = distribution[Number(value)] ?? 0;
-    return {
-      x: index,
-      width: 1,
-      label,
-      value: Number(value),
-      count,
-      // opacity: maxCount === 0 ? 0.15 : Math.max(count / maxCount, 0.15),
-    };
-  });
-  const meanPosition = mean / scaleLength;
 
   return (
     <div
@@ -45,7 +26,6 @@ const LikertBar: React.FC<LikertBarProps> = ({ distribution, mean, total }) => {
       }}
     >
       <div
-        className="Likert"
         style={{
           width: "100%",
           height: "50%",
@@ -55,7 +35,7 @@ const LikertBar: React.FC<LikertBarProps> = ({ distribution, mean, total }) => {
           overflow: "hidden",
         }}
       >
-        {Object.entries(feedbackValues).map(([key, value],i) => {
+        {Object.entries(feedbackValues).map(([key, value], i) => {
           return (
             <div
               key={key}
@@ -67,26 +47,17 @@ const LikertBar: React.FC<LikertBarProps> = ({ distribution, mean, total }) => {
                 flex: 1,
                 opacity: (distribution[Number(key)] ?? 0) / maxCount || 0.15,
               }}
-            ></div>
+            />
           );
         })}
-        <Tooltip title="Average response" placement="topLeft" arrow={false}>
-          <Divider
-            vertical
-            style={{
-              height: "70%",
-              backgroundColor: "#000",
-              margin: 0,
-              transform: "scaleX(2)",
-              position: "absolute",
-              left: `${100 * meanPosition}%`,
-              top: "-10%",
-            }}
-          />
-        </Tooltip>
+
+        <DataSpreadIndicator
+          mean={mean}
+          variance={variance}
+          scaleLength={scaleLength}
+        />
       </div>
       <div
-        className="Likert"
         style={{
           width: "100%",
           height: "50%",
@@ -99,14 +70,13 @@ const LikertBar: React.FC<LikertBarProps> = ({ distribution, mean, total }) => {
             style={{
               fontSize: "14px",
               color: "#4b5563",
-              lineHeight: 1.5,
               display: "flex",
               flex: 1,
               justifyContent: "center",
               textAlign: "center",
             }}
           >
-            {`${value}(${distribution[Number(key)]})`}
+            {`${value}\u200B(${distribution[Number(key)]})`}
           </span>
         ))}
       </div>

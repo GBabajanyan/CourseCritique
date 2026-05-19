@@ -43,7 +43,7 @@ const CourseStatsModal = observer(({ visible, closeModal }: Props) => {
       const label = (
         FORM_CONFIG.find((c) => c.key === key)?.title ?? key
       ).replace(" ", "\n");
-      const score = (val.bayesian * 100).toFixed(1);
+      const score = val.CCScore.toFixed(1);
       return `${label}\n(${score})`;
     },
   );
@@ -102,7 +102,7 @@ const CourseStatsModal = observer(({ visible, closeModal }: Props) => {
         {/* RadarChart uses updated stats */}
         <RadarChart
           data={Object.values(ratingStats.sections).map((v) =>
-            Number((v.bayesian * 100).toFixed(1)),
+            Number(v.CCScore.toFixed(1)),
           )}
           labels={radar_labels}
           labelConfig={{
@@ -115,7 +115,7 @@ const CourseStatsModal = observer(({ visible, closeModal }: Props) => {
             isAnimated: true,
             fill: NAVY,
           }}
-          maxValue={100}
+          maxValue={10}
           startAngle={90}
           chartSize={420}
         />
@@ -194,7 +194,7 @@ const CourseStatsModal = observer(({ visible, closeModal }: Props) => {
                   <View style={styles.summaryDivider} />
                   <View style={styles.summaryItem}>
                     <Text style={styles.summaryValue}>
-                      {(ratingStats.overall?.score || 0).toFixed(2) * 100}/100
+                      {(ratingStats.overall?.score || 37).toFixed(2) * 100}/100
                     </Text>
                     <Text
                       style={[styles.summaryLabel, { color: TEXT_SECONDARY }]}

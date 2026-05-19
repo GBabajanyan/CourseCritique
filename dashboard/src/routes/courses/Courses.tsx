@@ -24,7 +24,6 @@ const Courses: React.FC = () => {
       const { data } = await client.get(
         "http://localhost:8000/dashboard/courses/all",
       );
-      // console.log(data.map((d: Course) =>typeof d.feedback_completed)); 
 
       setCourses(data);
     } catch (error) {
