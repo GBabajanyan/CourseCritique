@@ -1,4 +1,5 @@
 import { Button, Progress, Tag } from "antd";
+import { DEPARTMENTS, PROGRAMS } from "../constants/feedbackConfig";
 import {
   AnonymousFeedback,
   CourseStats,
@@ -35,7 +36,10 @@ export const courseColumns = [
     title: "Department",
     dataIndex: "department",
     key: "department",
-    // filters: [...new Set(courseStats.map(c => c.department))].map(d => ({ text: d, value: d })),
+    filters: DEPARTMENTS.map((d) => ({
+      text: d,
+      value: d,
+    })),
     onFilter: (value: any, record: CourseStats) => record.department === value,
   },
   {
@@ -72,7 +76,9 @@ export const studentColumns = [
       <Button
         type="link"
         style={{ color: "#000" }}
-        onClick={() => {(window.location.href = `/students/${record.studentId}`)}}
+        onClick={() => {
+          window.location.href = `/students/${record.studentId}`;
+        }}
       >
         {text || record.username}
       </Button>
@@ -87,18 +93,20 @@ export const studentColumns = [
     title: "Year",
     dataIndex: "year",
     key: "year",
-    filters: [
-      { text: "Freshman", value: "Freshman" },
-      { text: "Sophomore", value: "Sophomore" },
-      { text: "Junior", value: "Junior" },
-      { text: "Senior", value: "Senior" },
-    ],
-    onFilter: (value: any, record: StudentProfile) => record.year === value,
+    sorter: (a: StudentProfile, b: StudentProfile) =>
+      Number(a.year) - Number(b.year),
   },
   {
     title: "Department",
     dataIndex: "department",
     key: "department",
+
+    filters: Object.keys(PROGRAMS).map((d) => ({
+      text: d,
+      value: d,
+    })),
+    onFilter: (value: any, record: StudentProfile) =>
+      record.department === value,
   },
   {
     title: "Feedbacks",
@@ -114,6 +122,8 @@ export const studentColumns = [
     render: (date: number) => (
       <span>{new Date(date).toLocaleDateString()}</span>
     ),
+    sorter: (a: StudentProfile, b: StudentProfile) =>
+      new Date(a.join_date).getTime() - new Date(b.join_date).getTime(),
   },
 ];
 

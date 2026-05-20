@@ -1,9 +1,7 @@
-import Expo from "expo-server-sdk";
 import jwt from "jsonwebtoken";
-const expo = new Expo();
 
 export const generateAuthToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET_KEY, { expiresIn: "15h" });
+  return jwt.sign({ id }, process.env.JWT_SECRET_KEY, { expiresIn: "15m" });
 };
 
 export const generateRefreshToken = (userId) => {
@@ -15,5 +13,3 @@ export const generateRefreshToken = (userId) => {
     },
   );
 };
-
-

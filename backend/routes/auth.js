@@ -55,7 +55,7 @@ router.post("/user_reg", async (req, res) => {
     );
     await pool.query("COMMIT");
 
-    res.status(201);
+    res.status(201).json({ error: "Student not found" });
   } catch (error) {
     await pool.query("ROLLBACK");
     console.error(error.message);
@@ -66,11 +66,12 @@ router.post("/user_reg", async (req, res) => {
 router.post("/user_login", async (req, res) => {
   try {
     const { login, password } = req.body;
-    
-    const checkUserQuery = "SELECT * FROM auth_users WHERE username = $1 OR email = $1";
+
+    const checkUserQuery =
+      "SELECT * FROM auth_users WHERE username = $1 OR email = $1";
     const { rows } = await pool.query(checkUserQuery, [login]);
     const user = rows[0];
-    
+
     if (!user)
       return res.status(400).json({ message: "Invalid Username/Email" });
 

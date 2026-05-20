@@ -1,36 +1,39 @@
-import React, { useEffect, useState } from "react";
-import {
-  Card,
-  Row,
-  Col,
-  Table,
-  Tabs,
-  Statistic,
-  Select,
-  DatePicker,
-} from "antd";
 import {
   BookOutlined,
-  UserOutlined,
+  FileTextOutlined,
   MessageOutlined,
-  StarOutlined,
   RiseOutlined,
   TeamOutlined,
-  FileTextOutlined,
+  UserOutlined,
 } from "@ant-design/icons";
+import {
+  Button,
+  Card,
+  Col,
+  DatePicker,
+  Row,
+  Select,
+  Space,
+  Statistic,
+  Table,
+  Tabs,
+} from "antd";
+import React, { useEffect, useState } from "react";
 import api from "../../api/client";
-import "./Dashboard.css";
+import AddStudentModal from "../../components/AddStudentModal";
+import {
+  courseColumns,
+  feedbackColumns,
+  studentColumns,
+} from "../../config/DashboardConfig";
+import { COLORS } from "../../constants/colors";
 import {
   AnonymousFeedback,
   CourseStats,
   DashboardStats,
   StudentProfile,
 } from "../../types/dashboardTypes";
-import {
-  courseColumns,
-  feedbackColumns,
-  studentColumns,
-} from "../../config/DashboardConfig";
+import "./Dashboard.css";
 
 const { Option } = Select;
 const { RangePicker } = DatePicker;
@@ -51,6 +54,7 @@ const Dashboard: React.FC = () => {
   const [feedbacks, setFeedbacks] = useState<AnonymousFeedback[]>([]);
   const [selectedDepartment, setSelectedDepartment] = useState("all");
   const [dateRange, setDateRange] = useState<[any, any] | null>(null);
+  const [addStudentModalOpen, setAddStudentModalOpen] = useState(false);
 
   useEffect(() => {
     fetchDashboardData();
@@ -58,6 +62,7 @@ const Dashboard: React.FC = () => {
 
   const fetchDashboardData = async () => {
     setLoading(true);
+
     try {
       // Fetch all data in parallel
       const [statsRes, coursesRes, studentsRes, feedbacksRes] =
@@ -79,6 +84,24 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  const reloadStudents = async () => {
+    setLoading(true);
+
+    try {
+      const studentsRes = await api.get("/dashboard/students");
+      setStudents(studentsRes.data);
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  const filteredCourses = courseStats.filter((course) => {
+    const matchesDepartment =
+      selectedDepartment === "all" || course.department === selectedDepartment;
+    return matchesDepartment;
+  });
+  const departments = Array.from(new Set(courseStats.map((c) => c.department)));
   return (
     <div className="admin-dashboard">
       <h1 className="dashboard-title">Admin Dashboard</h1>
@@ -129,16 +152,14 @@ const Dashboard: React.FC = () => {
                 onChange={setSelectedDepartment}
                 options={[
                   { value: "all", label: "All Departments" },
-                  { value: "CS", label: "Computer Science" },
-                  { value: "MATH", label: "Mathematics" },
-                  { value: "PHY", label: "Physics" },
+                  ...departments.map((dept) => ({ key: dept, label: dept })),
                 ]}
               />
             }
           >
             <Table
               columns={courseColumns}
-              dataSource={courseStats}
+              dataSource={filteredCourses}
               rowKey="id"
               loading={loading}
               pagination={{ pageSize: 10 }}
@@ -148,7 +169,28 @@ const Dashboard: React.FC = () => {
         </TabPane>
 
         <TabPane tab="Students" key="students" icon={<UserOutlined />}>
-          <Card title="Student Profiles">
+          <AddStudentModal
+            open={addStudentModalOpen}
+            closeModal={() => setAddStudentModalOpen(false)}
+            postSubmission={reloadStudents}
+          />
+          <Card
+            title="Student Profiles"
+            extra={
+              <Space>
+                <Button
+                  onClick={() => setAddStudentModalOpen(true)}
+                  type="primary"
+                  style={{ backgroundColor: COLORS.NAVY }}
+                >
+                  Add Student
+                </Button>
+                <Button type="primary" style={{ backgroundColor: COLORS.NAVY }}>
+                  Bulk Add Students
+                </Button>
+              </Space>
+            }
+          >
             <Table
               columns={studentColumns}
               dataSource={students}

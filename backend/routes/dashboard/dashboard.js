@@ -11,12 +11,12 @@ router.get("/stats", verifyToken, async (req, res) => {
       "SELECT COUNT(*) FROM profile_users WHERE role = 'student'",
     );
     const feedbacksResult = await pool.query(
-      `SELECT COUNT(*) FROM feedback WHERE status = 'submitted'`,
+      `SELECT COUNT(*) FROM feedback WHERE status = 'completed'`,
     );
     const avgRatingResult = await pool.query(
       `SELECT AVG((response->'ratings'->>'course_pace')::float) as avg_rating 
        FROM feedback 
-       WHERE status = 'submitted' AND response->'ratings'->>'course_pace' IS NOT NULL`,
+       WHERE status = 'completed' AND response->'ratings'->>'course_pace' IS NOT NULL`,
     );
 
     const totalSubmitted = feedbacksResult.rows[0].count;
@@ -60,15 +60,15 @@ router.get("/courses/stats", verifyToken, async (req, res) => {
         c.instructor,
         c.department,
         COUNT(DISTINCT e.profile_id) as total_students,
-        COUNT(DISTINCT CASE WHEN f.status = 'submitted' THEN f.id END) as feedback_count,
+        COUNT(DISTINCT CASE WHEN f.status = 'completed' THEN f.id END) as feedback_count,
         CASE 
           WHEN AVG(CASE 
-            WHEN f.status = 'submitted' THEN (f.response->'ratings'->>'course_pace')::numeric
+            WHEN f.status = 'completed' THEN (f.response->'ratings'->>'course_pace')::numeric
             ELSE NULL 
           END) IS NULL THEN NULL
           ELSE ROUND(
             AVG(CASE 
-              WHEN f.status = 'submitted' THEN (f.response->'ratings'->>'course_pace')::numeric
+              WHEN f.status = 'completed' THEN (f.response->'ratings'->>'course_pace')::numeric
               ELSE NULL 
             END)::numeric, 
             1
@@ -77,7 +77,7 @@ router.get("/courses/stats", verifyToken, async (req, res) => {
         CASE 
           WHEN COUNT(DISTINCT e.profile_id) = 0 THEN 0
           ELSE ROUND(
-            (COUNT(DISTINCT CASE WHEN f.status = 'submitted' THEN f.id END)::numeric / 
+            (COUNT(DISTINCT CASE WHEN f.status = 'completed' THEN f.id END)::numeric / 
             COUNT(DISTINCT e.profile_id)::numeric) * 100, 
             1
           )
@@ -107,18 +107,16 @@ router.get("/students", verifyToken, async (req, res) => {
         pu.year,
         pu."studentId" as studentId,
         pu.degree as department,
-        COUNT(DISTINCT CASE WHEN f.status = 'submitted' THEN f.id END) as feedbacks_given,
-        COUNT(DISTINCT ub.badge_id) as badges_earned,
+        COUNT(DISTINCT CASE WHEN f.status = 'completed' THEN f.id END) as feedbacks_given,
         pu.created_at as join_date
       FROM profile_users pu
-      LEFT JOIN feedback f ON pu.id = f.profile_id AND f.status = 'submitted'
-      LEFT JOIN user_badge ub ON pu.id = ub.profile_id AND ub.is_completed = true
+      LEFT JOIN feedback f ON pu.id = f.profile_id AND f.status = 'completed'
       WHERE pu.role = 'student'
       GROUP BY pu."studentId", pu.email, pu.name, pu.year, pu.degree, pu.created_at
       ORDER BY pu.created_at DESC
     `);
 
-    res.json(result.rows);
+    res.json(result.rows.map((r) => ({ ...r, badges_earned: 3 })));
   } catch (error) {
     console.error("Error fetching students:", error);
     res.status(500).json({ error: "Failed to fetch student data" });
@@ -141,7 +139,7 @@ router.get("/feedbacks/anonymous", verifyToken, async (req, res) => {
         f.submitted_at
       FROM feedback f
       JOIN course c ON f.course_id = c.id
-      WHERE f.status = 'submitted'
+      WHERE f.status = 'completed'
         AND f.response->'ratings'->>'course_pace' IS NOT NULL
     `;
 
@@ -192,7 +190,7 @@ router.get("/feedbacks/by-course/:courseId", verifyToken, async (req, res) => {
         f.submitted_at
       FROM feedback f
       WHERE f.course_id = $1 
-        AND f.status = 'submitted'
+        AND f.status = 'completed'
       ORDER BY f.submitted_at DESC
     `,
       [courseId],
@@ -251,7 +249,7 @@ router.get("/feedback-trends", verifyToken, async (req, res) => {
         COUNT(*) as count,
         ROUND(AVG((response->'ratings'->>'course_pace')::numeric), 1) as avg_rating
       FROM feedback
-      WHERE status = 'submitted'
+      WHERE status = 'completed'
       GROUP BY DATE_TRUNC($1, submitted_at)
       ORDER BY date ASC
     `,

@@ -80,44 +80,62 @@ class ProfileStore {
     );
 
     const detailed_feedbacks = completedFeedbacks.filter(
-      (f) => f.feedbackData?.open_feedback?.length > 574,
+      (f) => (f.feedbackData?.advice_future_gen?.length || 0) > 574,
     ).length;
 
     const strengthsCount = completedFeedbacks.filter(
-      (f) => f.feedbackData?.strengths?.length > 50,
+      (f) => (f.feedbackData?.strengths?.length || 0) > 50,
     ).length;
 
     const balancedCount = completedFeedbacks.filter(
       (f) =>
-        f.feedbackData?.strengths?.length > 50 &&
-        f.feedbackData?.improvements?.length > 50,
+        (f.feedbackData?.strengths?.length || 0) > 50 &&
+        (f.feedbackData?.improvements?.length || 0) > 50,
     ).length;
 
     const lowRatingCount = completedFeedbacks.filter((f) => {
-      const { open_feedback, strengths, improvements, ...enumerableRatings } =
-        f.feedbackData || {};
-      const ratings = Object.values(enumerableRatings || {}).filter((v) => !!v);
+      const {
+        advice_future_gen,
+        strengths,
+        improvements,
+        ...enumerableRatings
+      } = f.feedbackData || {};
+      const ratings = Object.values(enumerableRatings || {}).filter(
+        (v) => !!v && v !== "error",
+      );
       return Math.max(...ratings) === 2;
     }).length;
 
     const highRatingCount = completedFeedbacks.filter((f) => {
-      const { open_feedback, strengths, improvements, ...enumerableRatings } =
-        f.feedbackData || {};
-      const ratings = Object.values(enumerableRatings || {}).filter((v) => !!v);
+      const {
+        advice_future_gen,
+        strengths,
+        improvements,
+        ...enumerableRatings
+      } = f.feedbackData || {};
+      const ratings = Object.values(enumerableRatings || {}).filter(
+        (v) => !!v && v !== "error",
+      );
       return Math.min(...ratings) === 5;
     }).length;
 
     const comprehensiveCount = completedFeedbacks.filter(
       (f) =>
-        f.feedbackData?.open_feedback &&
+        f.feedbackData?.advice_future_gen &&
         f.feedbackData?.strengths &&
         f.feedbackData?.improvements,
     ).length;
 
     const usedFullScale = completedFeedbacks.some((f) => {
-      const { open_feedback, strengths, improvements, ...enumerableRatings } =
-        f.feedbackData || {};
-      const ratings = Object.values(enumerableRatings || {}).filter((v) => !!v);
+      const {
+        advice_future_gen,
+        strengths,
+        improvements,
+        ...enumerableRatings
+      } = f.feedbackData || {};
+      const ratings = Object.values(enumerableRatings || {}).filter(
+        (v) => !!v && v !== "error",
+      );
       return Math.max(...ratings) === 5 && Math.min(...ratings) === 1;
     });
 

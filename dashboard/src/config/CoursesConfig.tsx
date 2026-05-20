@@ -3,6 +3,7 @@ import { Space, Tag, Button } from "antd";
 import { EyeOutlined } from "@ant-design/icons";
 import { ColumnType } from "antd/es/table";
 import { Course, Student } from "../types/coursesTypes";
+import { DEPARTMENTS } from "../constants/feedbackConfig";
 
 export const coursesColumns: ColumnType<Course>[] = [
   {
@@ -32,6 +33,11 @@ export const coursesColumns: ColumnType<Course>[] = [
     title: "Department",
     dataIndex: "department",
     key: "department",
+    filters: DEPARTMENTS.map((d) => ({
+      text: d,
+      value: d,
+    })),
+    onFilter: (value: any, record: Course) => record.department === value,
     render: (text: string) => <Tag color="blue">{text}</Tag>,
   },
   {
@@ -39,6 +45,7 @@ export const coursesColumns: ColumnType<Course>[] = [
     dataIndex: "credits",
     key: "credits",
     align: "center",
+    sorter: (a: Course, b: Course) => a.credits - b.credits,
   },
   {
     title: "Students",
@@ -46,6 +53,7 @@ export const coursesColumns: ColumnType<Course>[] = [
     key: "total_students",
     align: "center",
     render: (val: number) => val || 0,
+    sorter: (a: Course, b: Course) => a.total_students - b.total_students,
   },
   {
     title: "Feedbacks",
@@ -54,11 +62,10 @@ export const coursesColumns: ColumnType<Course>[] = [
     render: (_: any, record: Course) => (
       <Space>
         <span className="feedback-count">{record.feedback_completed || 0}</span>
-        {/* <span className="pending-count">
-          ({record.pending_feedbacks || 0} pending)
-        </span> */}
       </Space>
     ),
+    sorter: (a: Course, b: Course) =>
+      a.feedback_completed - b.feedback_completed,
   },
   {
     title: "Actions",

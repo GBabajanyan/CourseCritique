@@ -28,7 +28,6 @@ import {
 import React, { useEffect, useState } from "react";
 import CountUp from "react-countup";
 import { useParams } from "react-router-dom";
-
 import client from "../../../api/client";
 import FeedbackDistributionCard from "../../../components/FeedbackDistributionCard";
 import { studentColumns } from "../../../config/CoursesConfig";

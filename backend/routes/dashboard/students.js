@@ -3,6 +3,47 @@ import pool from "../../db-config.js";
 
 const router = express.Router();
 
+router.post("/create", async (req, res) => {
+  try {
+    await pool.query("BEGIN");
+
+    const {
+      firstName,
+      lastName,
+      role,
+      email,
+      password,
+      degree,
+      year,
+      studentid,
+    } = req.body;
+
+    const userCheck = await pool.query(
+      `Select * FROM profile_users WHERE "studentId" = $1`,
+      [studentid],
+    );
+
+    if (userCheck.rows.length) {
+      return res
+        .status(400)
+        .json({ message: "Student with specified Student ID already exists" });
+    }
+
+    await pool.query(
+      `INSERT INTO profile_users ("firstName","lastName", email, degree, year, "studentId", role) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+      [firstName, lastName, email, degree, year, studentid, role],
+    );
+
+    await pool.query("COMMIT");
+
+    res.status(201).send({ success: true });
+  } catch (error) {
+    await pool.query("ROLLBACK");
+    console.error(error.message);
+    res.status(500).send("Server Error: Add Student");
+  }
+});
+
 // GET /dashboard/students/:studentId - Get student details
 router.get("/:studentId", async (req, res) => {
   try {
@@ -59,7 +100,7 @@ router.get("/:studentId/courses", async (req, res) => {
         c.id,
         c.course_code,
         c.course_name,
-        e.section,
+        c.section,
         e.semester,
         e.year,
         f.status as feedback_status,
@@ -73,7 +114,7 @@ router.get("/:studentId/courses", async (req, res) => {
       LEFT JOIN feedback f ON e.course_id = f.course_id 
       AND e.profile_id = f.profile_id
       WHERE e.profile_id = $1
-      GROUP BY c.id, c.course_code, c.course_name, e.section, e.semester, e.year, f.status, f.feedback_phase
+      GROUP BY c.id, c.course_code, c.course_name, e.semester, e.year, f.status, f.feedback_phase
       ORDER BY e.year DESC, 
         CASE e.semester
           WHEN 'Fall' THEN 3

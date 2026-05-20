@@ -141,3 +141,40 @@ export const FEEDBACK_VALUES_BY_TYPE: Record<number, any> = {
   "3": { 1: "Needs Improvement", 2: "Satisfactory", 3: "Excellent" },
   "2": { 0: "Disagree", 1: "Agree" },
 };
+
+export const DEPARTMENTS = [
+  "BAB",
+  "CBE",
+  "CHSS",
+  "CS",
+  "CSE",
+  "EC",
+  "ECON",
+  "ENV",
+  "ESS",
+];
+
+export const PROGRAMS: Record<string, string> = {
+  BAB: "Bachelor of Arts in Business",
+  BAEC: "Bachelor of Arts in English and Communications",
+  BAPG: "Bachelor of Arts in Politics and Governance",
+  BSCS: "Bachelor of Science in Computer Science",
+  BSDS: "Bachelor of Science in Data Science",
+  BSES: "Bachelor of Science in Engineering Sciences",
+  BSN: "Bachelor of Science in Nursing",
+  BSESS: "Bachelor of Science in Environmental and Sustainability Sciences",
+  BSE: "Bachelor of Science in Economics",
+  "LL.M.": "Master of Laws",
+  MAIRD: "Master of Arts in International Relations and Diplomacy",
+  MPA: "Master of Public Affairs",
+  MAHRSJ: "Master of Arts in Human Rights and Social Justice",
+  MATEFL: "Master of Arts in Teaching English as a Foreign Language",
+  MSE: "Master of Science in Economics",
+  MBA: "Master of Business Administration",
+  MSMA: "Master of Science in Management and Analytics",
+  MEIESM:
+    "Master of Engineering in Industrial Engineering and Systems Management",
+  MSCIS: "Master of Science in Computer and Information Science",
+  MPH: "Master of Public Health",
+  MAMJ: "Master of Arts in Multiplatform Journalism",
+};

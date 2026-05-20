@@ -39,11 +39,20 @@
           "faceIDPermission": "We will use Face ID for authentication.",
           "fingerprintPermission": "We will use Fingerprint for authentication."
         }
-      ]
+      ],
+      "expo-image",
+      "expo-router",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "4c5ae4df-4235-42f7-8a0f-ee4caa55545f"
+      }
     }
   }
 }

@@ -38,12 +38,13 @@ const CourseStatsModal = observer(({ visible, closeModal }: Props) => {
 
   if (!visible || selectedCourse === null) return undefined;
   const { ratingStats, feedbacks_completed } = selectedCourse;
+
   const radar_labels = Object.entries(ratingStats.sections).map(
     ([key, val]) => {
       const label = (
         FORM_CONFIG.find((c) => c.key === key)?.title ?? key
       ).replace(" ", "\n");
-      const score = val.CCScore.toFixed(1);
+      const score = val?.CCScore?.toFixed(1) || "0";
       return `${label}\n(${score})`;
     },
   );

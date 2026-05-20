@@ -80,13 +80,6 @@ const CompletedFeedbacks = observer(() => {
         { paddingBottom: bottomPadding },
       ]}
     >
-      <View style={[styles.emptyState, { backgroundColor: WHITE }]}>
-        <Text style={styles.emptyStateEmoji}>📝</Text>
-        <Text style={styles.emptyStateText}>No feedbacks submitted yet</Text>
-        <Text style={styles.emptyStateSubtext}>
-          Your completed feedbacks will appear here.
-        </Text>
-      </View>
       <View style={[styles.emptyState, { backgroundColor: CARD }]}>
         <Text style={styles.emptyStateEmoji}>🎉</Text>
         <Text style={[styles.emptyStateText, { color: TEXT }]}>
