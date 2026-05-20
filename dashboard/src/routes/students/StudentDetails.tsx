@@ -31,6 +31,8 @@ const StudentDetails: React.FC = () => {
         api.get(`/dashboard/students/${studentId}/courses`),
       ]);
 
+    console.log(coursesRes.data);
+    
       setStudent(studentRes.data);
       setEnrolledCourses(coursesRes.data);
     } catch (error) {
@@ -66,7 +68,16 @@ const StudentDetails: React.FC = () => {
       title: "Section",
       dataIndex: "section",
       key: "section",
-      width: 80,
+    },
+    {
+      title: "Instructor",
+      dataIndex: "instructor",
+      key: "instructor",
+    },
+    {
+      title: "Department",
+      dataIndex: "department",
+      key: "department",
     },
     {
       title: "Semester",

@@ -52,7 +52,7 @@ export const getFeedbackStats = (feedbackResponses, questionStats = true) => {
     });
     if (!questionStats) continue;
     Object.keys(questionBuckets).forEach((key) => {
-      questionBuckets[key].push(resp[key]);
+      questionBuckets[key].push(v[key]);
     });
   }
 
@@ -74,7 +74,6 @@ export const getFeedbackStats = (feedbackResponses, questionStats = true) => {
           )
         : undefined,
     };
-    console.log(questionBuckets);
   }
 
   if (!result.sections.course_design) {
@@ -111,6 +110,8 @@ const average = (arr) => {
 
 const computeStats = (values, { priorMean = 0.5, priorWeight = 8 } = {}) => {
   const n = values.length;
+  console.log(values);
+
   const sum = values.reduce((a, b) => a + b, 0);
   const bayesian = (sum + priorMean * priorWeight) / (n + priorWeight);
 

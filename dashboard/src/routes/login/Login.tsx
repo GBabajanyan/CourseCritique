@@ -70,7 +70,7 @@ const Login: React.FC = () => {
 
         {error && (
           <Alert
-            message="Login Failed"
+            title="Login Failed"
             description={error}
             type="error"
             showIcon

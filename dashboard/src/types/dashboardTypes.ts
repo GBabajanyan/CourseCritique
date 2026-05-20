@@ -15,7 +15,6 @@ export interface CourseStats {
   department: string;
   total_students: number;
   feedback_count: number;
-  avg_rating: number;
   completion_rate: number;
 }
 

@@ -148,7 +148,7 @@ const CourseDetails: React.FC = () => {
       return {
         key,
         label: TabPaneLabel,
-        children: renderStatSectionTab(label, tabData, type), //renderOpenFeedbackTab(label, key, tabData.data || []),
+        children: renderStatSectionTab(label, tabData, type),
       };
     });
     return (
@@ -199,7 +199,19 @@ const CourseDetails: React.FC = () => {
           {data.length ? (
             <Masonry
               columns={4}
-              gutter={4}
+              gutter={8}
+              styles={{
+                root: {
+                  maxHeight: "520px",
+                  overflowY: "scroll",
+                  scrollbarWidth: "none",
+                },
+                item: {
+                  maxHeight: "300px",
+                  overflowY: "scroll",
+                  scrollbarWidth: "none",
+                },
+              }}
               items={data.map((d, i) => ({ key: i, data: d }))}
               itemRender={({ data, index }) => (
                 <Alert title={data} type={alertsType} key={index} />
@@ -238,9 +250,15 @@ const CourseDetails: React.FC = () => {
 
     return (
       <div>
-        <span style={{ display: "flex", justifyContent: "space-between",overflow:'overlay' }}>
+        <span
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            overflow: "overlay",
+          }}
+        >
           <h3>
-            Score: {stats.CCScore.toFixed(2)}{" "}/10{" "}
+            Score: {stats.CCScore.toFixed(2)} /10{" "}
             <Tooltip
               title={
                 <Alert
@@ -344,7 +362,7 @@ const CourseDetails: React.FC = () => {
       };
 
       const response = await client.post(
-        `/courses/${id}/feedback-periods-create`,
+        `/dashboard/courses/${id}/feedback-periods-create`,
         feedbackPhaseDetails,
       );
 

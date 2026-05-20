@@ -101,20 +101,14 @@ router.get("/:studentId/courses", async (req, res) => {
         c.course_code,
         c.course_name,
         c.section,
+        c.instructor,
+        c.department,
         e.semester,
-        e.year,
-        f.status as feedback_status,
-        f.feedback_phase,
-        ROUND(AVG(CASE 
-          WHEN f.status = 'completed' THEN (f.response->'ratings'->>'course_pace')::numeric
-          ELSE NULL 
-        END), 1) as avg_rating
+        e.year
       FROM enrollment e
       JOIN course c ON e.course_id = c.id
-      LEFT JOIN feedback f ON e.course_id = f.course_id 
-      AND e.profile_id = f.profile_id
       WHERE e.profile_id = $1
-      GROUP BY c.id, c.course_code, c.course_name, e.semester, e.year, f.status, f.feedback_phase
+      GROUP BY c.id, c.course_code, c.course_name, c.section, e.semester, e.year
       ORDER BY e.year DESC, 
         CASE e.semester
           WHEN 'Fall' THEN 3

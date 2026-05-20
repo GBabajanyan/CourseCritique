@@ -76,7 +76,6 @@ const FeedbackForm: React.FC = () => {
       setIsSubmitting(false);
       return;
     }
-    console.log(formData);
 
     await submitFeedback(formData)
       .then((res) => {

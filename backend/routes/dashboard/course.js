@@ -147,7 +147,7 @@ router.post("/:id/feedback-periods-create", async (req, res) => {
 
     await pool.query(
       `INSERT INTO feedback (profile_id, course_id, status, feedback_phase,start_date, deadline, created_at)
-    SELECT unnest($1::varchar[]), $2, 'pending', $3, $4, $5, NOW()`,
+    SELECT unnest($1::uuid[]), $2, 'pending', $3, $4, $5, NOW()`,
       [profileIds, id, phase, startDate, deadline],
     );
 

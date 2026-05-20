@@ -19,5 +19,4 @@ export interface EnrolledCourse {
   year: number;
   feedback_status: "pending" | "completed";
   feedback_phase: string;
-  avg_rating?: number;
 }
