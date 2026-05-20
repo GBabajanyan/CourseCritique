@@ -92,24 +92,23 @@ class AuthStore {
     }
   };
 
-  login = async (login: string, password: string): Promise<boolean> => {
+  _login = async (login: string, password: string): Promise<void> => {
     this.toggleIsLoading();
-    const response = await this.rootStore.apiClient.instance.post(
-      `/auth/user_login`,
-      {
+    await this.rootStore.apiClient.instance
+      .post(`/auth/user_login`, {
         login,
         password,
-      },
-    );
-    const { authToken, refreshToken, user } = response.data;
-    await this.rootStore.apiClient.setAuthTokens(authToken, refreshToken);
-    runInAction(() => {
-      this.isAuthenticated = true;
-    });
+      })
+      .then(async ({ data }) => {
+        const { authToken, refreshToken, user } = data;
+        await this.rootStore.apiClient.setAuthTokens(authToken, refreshToken);
+        runInAction(() => {
+          this.isAuthenticated = true;
+        });
 
-    await this.handleAfterLoginLoads(user);
-    this.toggleIsLoading();
-    return true
+        await this.handleAfterLoginLoads(user);
+      })
+      .finally(() => this.toggleIsLoading());
   };
 
   biometricLogin = async () => {
@@ -118,26 +117,27 @@ class AuthStore {
       throw new Error("Biometrics not available");
     }
 
-    const result = await LocalAuthentication.authenticateAsync({
+    await LocalAuthentication.authenticateAsync({
       promptMessage: `Authenticate with ${this.biometricType || "biometrics"}`,
       cancelLabel: "Cancel",
       disableDeviceFallback: false,
-    });
+    })
+      .then(async ({ success }) => {
+        if (success) {
+          const refreshToken = await SecureStore.getItemAsync("refreshToken");
 
-    if (result.success) {
-      const refreshToken = await SecureStore.getItemAsync("refreshToken");
+          if (!refreshToken) {
+            Alert.alert("Error", "Please login with password first");
+            throw new Error(
+              "Biometric auth Failed:Please login with password first",
+            );
+          }
 
-      if (!refreshToken) {
-        Alert.alert("Error", "Please login with password first");
-        throw new Error(
-          "Biometric auth Failed:Please login with password first",
-        );
-      }
-
-      const result = await this.doRefreshToken(refreshToken);
-      if (result) this.handleAfterLoginLoads(result.userProfile);
-    }
-    this.toggleIsLoading();
+          const result = await this.doRefreshToken(refreshToken);
+          if (result) this.handleAfterLoginLoads(result.userProfile);
+        }
+      })
+      .finally(() => this.toggleIsLoading());
   };
 
   logout = async () => {

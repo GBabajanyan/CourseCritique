@@ -33,7 +33,7 @@ const LoginScreen = observer(() => {
     isLoading,
     isBiometricAvailable,
     biometricType,
-    login,
+    _login,
     biometricLogin,
   } = authStore;
   const biometricLoginIcon =
@@ -75,9 +75,8 @@ const LoginScreen = observer(() => {
     //   return;
     // }
 
-    await login(username, password)
-      .then(async (res) => {
-        if (!res) throw new Error();
+    await _login(username, password)
+      .then(async () => {
         if (!biometricsEnabled) {
           Alert.alert(
             "Login Successful",
@@ -107,7 +106,7 @@ const LoginScreen = observer(() => {
         let errorMessage;
         switch (err?.status) {
           case 400:
-            errorMessage = "Invalid username or password. Please try again";
+            errorMessage = "Invalid username or password. Please double check your credentials and try again";
             break;
           case 500:
             errorMessage = "Server error. Please try again later";
@@ -116,7 +115,7 @@ const LoginScreen = observer(() => {
             errorMessage = "An Unknown error occurred. Please try again later";
             break;
         }
-        Alert.alert("Error", errorMessage);
+        Alert.alert("Oops...", errorMessage);
       });
   };
 
