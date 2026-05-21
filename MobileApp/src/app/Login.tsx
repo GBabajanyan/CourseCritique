@@ -150,7 +150,7 @@ const LoginScreen = observer(() => {
             <TextInput
               style={styles.input}
               editable={!isLoading}
-              placeholder="Email Address"
+              placeholder="Username or Email Address"
               placeholderTextColor="#999"
               value={username}
               onChangeText={setUsername}
