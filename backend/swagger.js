@@ -10,7 +10,7 @@ const options = {
       description: "REST API for CourseCritique - Student Feedback Platform",
       contact: {
         name: "George Babajanyan",
-        email: "your.email@aua.am",
+        email: "george.babajanyan@gmail.com",
       },
     },
     servers: [
