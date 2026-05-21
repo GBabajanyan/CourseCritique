@@ -1,10 +1,50 @@
 import express from "express";
 import pool from "../../db-config.js";
-import verifyToken from "../middleware/verifyToken.js";
 import { getFeedbackStats } from "../../util/feedbackStats.js";
+import verifyToken from "../middleware/verifyToken.js";
 
 const router = express.Router();
-
+/**
+ * @openapi
+ * /courses:
+ *   get:
+ *     summary: Get all courses
+ *     description: Retrieves a list of all courses with basic statistics
+ *     tags:
+ *       - Courses
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of courses
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                   course_code:
+ *                     type: string
+ *                   course_name:
+ *                     type: string
+ *                   instructor:
+ *                     type: string
+ *                   department:
+ *                     type: string
+ *                   credits:
+ *                     type: integer
+ *                   total_students:
+ *                     type: integer
+ *                   total_feedbacks:
+ *                     type: integer
+ *                   avg_rating:
+ *                     type: number
+ *       401:
+ *         description: Unauthorized - Valid token required
+ */
 router.get("/all", async (req, res) => {
   try {
     await pool.query(
@@ -38,6 +78,52 @@ ORDER BY c.course_code ASC;`,
   }
 });
 
+/**
+ * @openapi
+ * /courses/{id}:
+ *   get:
+ *     summary: Get course by ID
+ *     description: Retrieves detailed information about a specific course
+ *     tags:
+ *       - Courses
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Course UUID
+ *     responses:
+ *       200:
+ *         description: Course details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                 course_code:
+ *                   type: string
+ *                 course_name:
+ *                   type: string
+ *                 instructor:
+ *                   type: string
+ *                 department:
+ *                   type: string
+ *                 credits:
+ *                   type: integer
+ *                 total_students:
+ *                   type: integer
+ *                 feedback_completed:
+ *                   type: integer
+ *                 pending_feedbacks:
+ *                   type: integer
+ *       404:
+ *         description: Course not found
+ */
 router.get("/:id", async (req, res) => {
   try {
     const { id } = req.params;

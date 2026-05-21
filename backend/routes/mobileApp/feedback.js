@@ -4,6 +4,45 @@ import verifyToken from "../middleware/verifyToken.js";
 import { getFeedbackStats } from "../../util/feedbackStats.js";
 const router = express.Router();
 
+/**
+ * @openapi
+ * /feedback/pending:
+ *   get:
+ *     summary: Get pending feedbacks
+ *     description: Returns list of feedbacks awaiting submission for the authenticated user
+ *     tags:
+ *       - Feedback
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of pending feedbacks
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                   course_code:
+ *                     type: string
+ *                   course_name:
+ *                     type: string
+ *                   section:
+ *                     type: string
+ *                   instructor:
+ *                     type: string
+ *                   deadline:
+ *                     type: string
+ *                     format: date
+ *                   feedback_phase:
+ *                     type: string
+ *                     enum: [addDrop, midterm, finals]
+ *       401:
+ *         description: Unauthorized
+ */
 router.get("/pending", async (req, res) => {
   try {
     const { profile_id } = req.userData;
@@ -157,6 +196,41 @@ router.get("/:id/stats", async (req, res) => {
   }
 });
 
+/**
+ * @openapi
+ * /feedback/submit:
+ *   post:
+ *     summary: Submit course feedback
+ *     description: Submits completed feedback for a course
+ *     tags:
+ *       - Feedback
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - feedbackId
+ *               - ratings
+ *             properties:
+ *               feedbackId:
+ *                 type: string
+ *                 description: ID of the pending feedback
+ *               ratings:
+ *                 type: object
+ *                 description: Rating values for all questions
+ *                 additionalProperties: true
+ *     responses:
+ *       200:
+ *         description: Feedback submitted successfully
+ *       400:
+ *         description: Invalid request
+ *       401:
+ *         description: Unauthorized
+ */
 router.post("/submit", async (req, res) => {
   const { ratings, feedbackId } = req.body;
   try {

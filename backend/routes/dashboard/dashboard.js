@@ -4,6 +4,39 @@ import verifyToken from "../middleware/verifyToken.js";
 const router = express.Router();
 
 // GET /dashboard/stats - Overall dashboard statistics
+/**
+ * @openapi
+ * /dashboard/stats:
+ *   get:
+ *     summary: Get dashboard statistics
+ *     description: Returns overview statistics for admin dashboard
+ *     tags:
+ *       - Dashboard
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Dashboard statistics
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 totalCourses:
+ *                   type: integer
+ *                 totalStudents:
+ *                   type: integer
+ *                 totalFeedbacks:
+ *                   type: integer
+ *                 avgRating:
+ *                   type: number
+ *                 completionRate:
+ *                   type: integer
+ *                 activeUsers:
+ *                   type: integer
+ *       401:
+ *         description: Unauthorized
+ */
 router.get("/stats", verifyToken, async (req, res) => {
   try {
     const coursesResult = await pool.query("SELECT COUNT(*) FROM course");

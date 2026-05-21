@@ -1,17 +1,18 @@
-import express from "express";
+import cookieParser from "cookie-parser";
 import cors from "cors";
 import dotenv from "dotenv";
+import express from "express";
+import swaggerUi from "swagger-ui-express";
 import authRoutes from "./routes/auth.js";
-import profileRoutes from "./routes/mobileApp/profile.js";
-import feedbackRoutes from "./routes/mobileApp/feedback.js";
-import coursesRoutes from "./routes/mobileApp/courses.js";
 import courseRoutes from "./routes/dashboard/course.js";
-import studentsRoutes from "./routes/dashboard/students.js";
 import dashboardRoutes from "./routes/dashboard/dashboard.js";
-import cookieParser from "cookie-parser";
-import pool from "./db-config.js";
-import verifyToken from "./routes/middleware/verifyToken.js";
+import studentsRoutes from "./routes/dashboard/students.js";
 import requireRole from "./routes/middleware/roleCheck.js";
+import verifyToken from "./routes/middleware/verifyToken.js";
+import coursesRoutes from "./routes/mobileApp/courses.js";
+import feedbackRoutes from "./routes/mobileApp/feedback.js";
+import profileRoutes from "./routes/mobileApp/profile.js";
+import swaggerSpec from "./swagger.js";
 
 dotenv.config();
 
@@ -22,8 +23,8 @@ const allowedOrigins = [
   "http://localhost:3000", // Web dev
   "http://localhost:8081", // Expo web
   "exp://localhost:8081", // Expo dev
-  "https://yourdomain.com", // Production web
-  "exp://exp.host/@yourusername/your-app", // Expo production
+  process.env.FRONTEND_URL, // Production web
+  process.env.MOBILE_URL, // Expo production
 ];
 
 const corsOptions = {
@@ -49,7 +50,14 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors(corsOptions));
-
+app.use(
+  "/api-docs",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpec, {
+    explorer: true,
+    customCss: ".swagger-ui .topbar { display: none }", // Optional: hide topbar
+  }),
+);
 const dashboardAccesRoles = ["admin", "instructor"];
 const MobileAppAccessRoles = ["student"];
 

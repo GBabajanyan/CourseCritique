@@ -63,6 +63,58 @@ router.post("/user_reg", async (req, res) => {
   }
 });
 
+/**
+ * @openapi
+ * /auth/user_login:
+ *   post:
+ *     summary: Authenticate user
+ *     description: Logs in a user with email/username and password
+ *     tags:
+ *       - Authentication
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - login
+ *               - password
+ *             properties:
+ *               login:
+ *                 type: string
+ *                 description: User's email or username
+ *                 example: john.smith
+ *               password:
+ *                 type: string
+ *                 description: User's password
+ *                 example: password123
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 authToken:
+ *                   type: string
+ *                   description: JWT access token
+ *                 refreshToken:
+ *                   type: string
+ *                   description: Refresh token for obtaining new auth tokens
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     email:
+ *                       type: string
+ *                     username:
+ *                       type: string
+ *       401:
+ *         description: Invalid credentials
+ */
 router.post("/user_login", async (req, res) => {
   try {
     const { login, password } = req.body;
