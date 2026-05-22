@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const client = axios.create({
-  baseURL: process.env.CC_API_URL || "http://localhost:8000",
+  baseURL: process.env.REACT_APP_CC_API_URL || "http://localhost:8000",
   headers: {
     "Content-Type": "application/json",
   },
@@ -31,7 +31,7 @@ client.interceptors.response.use(
       try {
         const refreshToken = localStorage.getItem("refreshToken");
         const response = await axios.post(
-          `${process.env.CC_API_URL || "http://localhost:8000"}/auth/refresh`,
+          `${process.env.REACT_APP_CC_API_URL || "http://localhost:8000"}/auth/refresh`,
           {
             refreshToken,
           },
