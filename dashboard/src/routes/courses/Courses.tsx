@@ -22,7 +22,7 @@ const Courses: React.FC = () => {
   const fetchCourses = async () => {
     try {
       const { data } = await client.get(
-        "http://localhost:8000/dashboard/courses/all",
+        "/dashboard/courses/all",
       );
 
       setCourses(data);
