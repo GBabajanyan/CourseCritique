@@ -97,7 +97,8 @@ const Dashboard: React.FC = () => {
   const [students, setStudents] = useState<StudentProfile[]>([]);
   const [feedbacks, setFeedbacks] = useState<AnonymousFeedback[]>([]);
   const [selectedDepartment, setSelectedDepartment] = useState("all");
-  // const [dateRange, setDateRange] = useState<[any, any] | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [dateRange, setDateRange] = useState<[any, any] | null>(null);
   const [addStudentModalOpen, setAddStudentModalOpen] = useState(false);
 
   useEffect(() => {
