@@ -37,10 +37,11 @@ export const getFeedbackStats = (feedbackResponses, questionStats = true) => {
 
   let count = 0;
   for (const resp of feedbackResponses) {
-    if (!resp) continue;
+    if (!resp || !Object.keys(resp).length) continue;
 
     count++;
     const v = normalizeValues(resp);
+
     Object.keys(result.sections).forEach((section) => {
       sectionBuckets[section].push(
         average(FORM_CONFIG[section].map((q) => v[q])),
@@ -52,7 +53,7 @@ export const getFeedbackStats = (feedbackResponses, questionStats = true) => {
     });
     if (!questionStats) continue;
     Object.keys(questionBuckets).forEach((key) => {
-      questionBuckets[key].push(v[key]);
+      questionBuckets[key].push(resp[key]);
     });
   }
 
@@ -66,7 +67,9 @@ export const getFeedbackStats = (feedbackResponses, questionStats = true) => {
               ([question, distribution]) => [
                 question,
                 {
-                  stats: computeStats(questionBuckets[question]),
+                  stats: computeStats(questionBuckets[question], {
+                    maxValue: ratingMaxValues[question],
+                  }),
                   distribution,
                 },
               ],
@@ -108,14 +111,20 @@ const average = (arr) => {
   return valid.length ? valid.reduce((a, b) => a + b, 0) / valid.length : 0;
 };
 
-const computeStats = (values, { priorMean = 0.5, priorWeight = 8 } = {}) => {
+const computeStats = (values, { priorWeight = 8, maxValue = 1 } = {}) => {
   const n = values.length;
-  console.log(values);
+
+  const minValue = maxValue === 1 ? 0 : 1;
+
+  // prior centered in normalized middle
+  const priorMean = minValue + 0.5 * (maxValue - minValue);
 
   const sum = values.reduce((a, b) => a + b, 0);
   const bayesian = (sum + priorMean * priorWeight) / (n + priorWeight);
 
-  const CCScore = 1 + bayesian * 9;
+  const normalizedBayesian = (bayesian - minValue) / (maxValue - minValue);
+
+  const CCScore = 1 + normalizedBayesian * 9;
 
   if (n === 0) {
     return {

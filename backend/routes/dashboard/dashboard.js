@@ -46,21 +46,17 @@ router.get("/stats", verifyToken, async (req, res) => {
     const feedbacksResult = await pool.query(
       `SELECT COUNT(*) FROM feedback WHERE status = 'completed'`,
     );
-    const avgRatingResult = await pool.query(
-      `SELECT AVG((response->'ratings'->>'course_pace')::float) as avg_rating 
-       FROM feedback 
-       WHERE status = 'completed' AND response->'ratings'->>'course_pace' IS NOT NULL`,
-    );
 
     const totalSubmitted = feedbacksResult.rows[0].count;
     const totalExpectedResult = await pool.query(
       `SELECT COUNT(*) FROM feedback WHERE status = 'pending'`,
     );
     const totalPending = totalExpectedResult.rows[0].count;
+    const totalStudents = studentsResult.rows[0].count;
     const completionRate =
-      totalSubmitted + totalPending > 0
-        ? Math.round((totalSubmitted / (totalSubmitted + totalPending)) * 100)
-        : 0;
+      totalStudents === 0
+        ? 0
+        : Math.round((totalPending / totalStudents) * 100);
 
     // Active users (logged in within last 30 days)
     const activeUsersResult = await pool.query(
@@ -70,9 +66,8 @@ router.get("/stats", verifyToken, async (req, res) => {
 
     res.json({
       totalCourses: parseInt(coursesResult.rows[0].count),
-      totalStudents: parseInt(studentsResult.rows[0].count),
+      totalStudents: parseInt(totalStudents),
       totalFeedbacks: parseInt(totalSubmitted),
-      avgRating: parseFloat(avgRatingResult.rows[0].avg_rating) || 0,
       completionRate: completionRate,
       activeUsers: parseInt(activeUsersResult.rows[0].count),
     });
@@ -143,23 +138,11 @@ router.get("/courses/stats", verifyToken, async (req, res) => {
         c.department,
         COUNT(DISTINCT e.profile_id) as total_students,
         COUNT(DISTINCT CASE WHEN f.status = 'completed' THEN f.id END) as feedback_count,
-        CASE 
-          WHEN AVG(CASE 
-            WHEN f.status = 'completed' THEN (f.response->'ratings'->>'course_pace')::numeric
-            ELSE NULL 
-          END) IS NULL THEN NULL
-          ELSE ROUND(
-            AVG(CASE 
-              WHEN f.status = 'completed' THEN (f.response->'ratings'->>'course_pace')::numeric
-              ELSE NULL 
-            END)::numeric, 
-            1
-          )
-        END as avg_rating,
-        CASE 
+        COUNT(DISTINCT CASE WHEN f.status = 'pending' THEN f.id END) as pending_count,
+       CASE 
           WHEN COUNT(DISTINCT e.profile_id) = 0 THEN 0
           ELSE ROUND(
-            (COUNT(DISTINCT CASE WHEN f.status = 'completed' THEN f.id END)::numeric / 
+            (COUNT(DISTINCT CASE WHEN f.status = 'pending' THEN f.id END)::numeric / 
             COUNT(DISTINCT e.profile_id)::numeric) * 100, 
             1
           )
@@ -170,7 +153,6 @@ router.get("/courses/stats", verifyToken, async (req, res) => {
       GROUP BY c.id, c.course_code, c.course_name, c.instructor, c.department
       ORDER BY c.course_code ASC
     `);
-
     res.json(result.rows);
   } catch (error) {
     console.error("Error fetching course stats:", error);
@@ -537,7 +519,6 @@ router.get("/feedback-trends", verifyToken, async (req, res) => {
       SELECT 
         DATE_TRUNC($1, submitted_at) as date,
         COUNT(*) as count,
-        ROUND(AVG((response->'ratings'->>'course_pace')::numeric), 1) as avg_rating
       FROM feedback
       WHERE status = 'completed'
       GROUP BY DATE_TRUNC($1, submitted_at)

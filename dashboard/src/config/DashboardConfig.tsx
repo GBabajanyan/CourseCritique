@@ -50,11 +50,44 @@ export const courseColumns = [
       a.total_students - b.total_students,
   },
   {
-    title: "Feedbacks",
+    title: (
+      <span
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+      >
+        Feedbacks
+        <br />
+        <span style={{ fontSize: '70%', textAlign: "center" }}>(Completed)</span>
+      </span>
+    ),
+
     dataIndex: "feedback_count",
     key: "feedback_count",
     sorter: (a: CourseStats, b: CourseStats) =>
       a.feedback_count - b.feedback_count,
+  },
+  {
+    title: (
+      <span
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+      >
+        Feedbacks
+        <br />
+        <span style={{ fontSize: '70%', textAlign: "center" }}>(Pending)</span>
+      </span>
+    ),
+
+    dataIndex: "pending_count",
+    key: "pending_count",
+    sorter: (a: CourseStats, b: CourseStats) =>
+      a.pending_count - b.pending_count,
   },
   {
     title: "Completion",
@@ -63,6 +96,8 @@ export const courseColumns = [
     render: (rate: number) => (
       <Progress percent={rate} size="small" strokeColor="#3b82f6" />
     ),
+    sorter: (a: CourseStats, b: CourseStats) =>
+      a.completion_rate - b.completion_rate,
   },
 ];
 

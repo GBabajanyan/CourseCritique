@@ -22,19 +22,24 @@ const router = express.Router();
  *             schema:
  *               type: array
  *               items:
- *                 allOf:
- *                   - $ref: '#/components/schemas/Course'
- *                   - type: object
- *                     properties:
- *                       total_students:
- *                         type: integer
- *                         description: Number of enrolled students
- *                       feedback_completed:
- *                         type: integer
- *                         description: Number of submitted feedbacks
- *                       pending_feedbacks:
- *                         type: integer
- *                         description: Number of pending (unsubmitted) feedbacks
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                   course_code:
+ *                     type: string
+ *                   course_name:
+ *                     type: string
+ *                   instructor:
+ *                     type: string
+ *                   department:
+ *                     type: string
+ *                   credits:
+ *                     type: integer
+ *                   total_students:
+ *                     type: integer
+ *                   total_feedbacks:
+ *                     type: integer
  *       401:
  *         description: Unauthorized — valid token required
  *       403:
