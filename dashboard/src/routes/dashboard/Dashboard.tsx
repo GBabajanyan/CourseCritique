@@ -50,7 +50,6 @@ import {
 } from "../../types/dashboardTypes";
 import "./Dashboard.css";
 
-const { Option } = Select;
 const { RangePicker } = DatePicker;
 const { TabPane } = Tabs;
 
@@ -98,7 +97,7 @@ const Dashboard: React.FC = () => {
   const [students, setStudents] = useState<StudentProfile[]>([]);
   const [feedbacks, setFeedbacks] = useState<AnonymousFeedback[]>([]);
   const [selectedDepartment, setSelectedDepartment] = useState("all");
-  const [dateRange, setDateRange] = useState<[any, any] | null>(null);
+  // const [dateRange, setDateRange] = useState<[any, any] | null>(null);
   const [addStudentModalOpen, setAddStudentModalOpen] = useState(false);
 
   useEffect(() => {

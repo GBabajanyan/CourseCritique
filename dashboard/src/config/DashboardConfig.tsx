@@ -5,7 +5,6 @@ import {
   CourseStats,
   StudentProfile,
 } from "../types/dashboardTypes";
-import { ColumnFilterItem } from "antd/es/table/interface";
 // Course table columns
 export const courseColumns = [
   {

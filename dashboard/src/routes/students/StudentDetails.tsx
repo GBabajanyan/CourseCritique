@@ -22,6 +22,7 @@ const StudentDetails: React.FC = () => {
 
   useEffect(() => {
     fetchStudentData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [studentId]);
 
   const fetchStudentData = async () => {

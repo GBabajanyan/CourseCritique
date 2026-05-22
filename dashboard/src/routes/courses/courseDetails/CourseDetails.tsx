@@ -64,6 +64,7 @@ const CourseDetails: React.FC = () => {
 
   useEffect(() => {
     fetchCourseData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const fetchCourseData = async () => {
