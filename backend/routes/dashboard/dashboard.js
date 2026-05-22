@@ -304,16 +304,15 @@ router.get("/feedbacks/anonymous", verifyToken, async (req, res) => {
     let query = `
       SELECT 
         f.id,
-        c.course_code,
-        c.course_name,
+        COALESCE(f.course_snapshot->>'course_code', c.course_code) as "course_code",
+      COALESCE(f.course_snapshot->>'course_name', c.course_name) as "course_name",
         f.feedback_phase,
-        (f.response->'ratings'->>'course_pace')::int as rating,
-        f.response->>'comments' as comments,
+        (f.response->'take_another_course')::int as take_another_course,
+        f.response->>'advice_future_gen' as comments,
         f.submitted_at
       FROM feedback f
-      JOIN course c ON f.course_id = c.id
+      LEFT JOIN course c ON f.course_id = c.id
       WHERE f.status = 'completed'
-        AND f.response->'ratings'->>'course_pace' IS NOT NULL
     `;
 
     const params = [];
@@ -332,12 +331,12 @@ router.get("/feedbacks/anonymous", verifyToken, async (req, res) => {
     }
 
     query += ` ORDER BY f.submitted_at DESC LIMIT 100`;
-
+    
     const result = await pool.query(query, params);
 
     const feedbacks = result.rows.map((f) => ({
       ...f,
-      rating: f.rating || 0,
+      take_another_course: f.take_another_course || 0,
       comments: f.comments || "",
     }));
 

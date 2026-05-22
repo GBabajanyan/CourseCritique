@@ -5,6 +5,7 @@ import {
   CourseStats,
   StudentProfile,
 } from "../types/dashboardTypes";
+import { ColumnFilterItem } from "antd/es/table/interface";
 // Course table columns
 export const courseColumns = [
   {
@@ -60,7 +61,9 @@ export const courseColumns = [
       >
         Feedbacks
         <br />
-        <span style={{ fontSize: '70%', textAlign: "center" }}>(Completed)</span>
+        <span style={{ fontSize: "70%", textAlign: "center" }}>
+          (Completed)
+        </span>
       </span>
     ),
 
@@ -80,7 +83,7 @@ export const courseColumns = [
       >
         Feedbacks
         <br />
-        <span style={{ fontSize: '70%', textAlign: "center" }}>(Pending)</span>
+        <span style={{ fontSize: "70%", textAlign: "center" }}>(Pending)</span>
       </span>
     ),
 
@@ -168,6 +171,9 @@ export const feedbackColumns = [
     title: "Course",
     dataIndex: "course_code",
     key: "course_code",
+    filters: [],
+    onFilter: (value: any, record: AnonymousFeedback) =>
+      record.course_code === value,
     render: (code: string, record: AnonymousFeedback) => (
       <div>
         <Tag color="blue">{code}</Tag>
@@ -176,25 +182,12 @@ export const feedbackColumns = [
     ),
   },
   {
-    title: "Phase",
-    dataIndex: "feedback_phase",
-    key: "feedback_phase",
-    render: (phase: string) => {
-      const colors: Record<string, string> = {
-        week1: "orange",
-        week3: "gold",
-        midterm: "blue",
-        week12: "green",
-        finals: "red",
-      };
-      return <Tag color={colors[phase] || "default"}>{phase}</Tag>;
-    },
-  },
-  {
-    title: "Rating",
-    dataIndex: "rating",
-    key: "rating",
-    render: (rating: number) => <span>{rating}/5 ⭐</span>,
+    title: "Take another Course With Same instructor",
+    dataIndex: "take_another_course",
+    key: "take_another_course",
+    render: (take_another_course: number) => (
+      <span>{take_another_course ? "Yes" : "No"}</span>
+    ),
   },
   {
     title: "Comments",
@@ -202,6 +195,25 @@ export const feedbackColumns = [
     key: "comments",
     ellipsis: true,
     render: (text: string) => text || "—",
+  },
+  {
+    title: "Phase",
+    dataIndex: "feedback_phase",
+    key: "feedback_phase",
+    filters: ["finals", "addDrop", "midterm"].map((d) => ({
+      text: d,
+      value: d,
+    })),
+    onFilter: (value: any, record: AnonymousFeedback) =>
+      record.feedback_phase === value,
+    render: (phase: string) => {
+      const colors: Record<string, string> = {
+        addDrop: "orange",
+        midterm: "blue",
+        finals: "red",
+      };
+      return <Tag color={colors[phase] || "default"}>{phase}</Tag>;
+    },
   },
   {
     title: "Submitted",

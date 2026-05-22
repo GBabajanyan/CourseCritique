@@ -19,6 +19,21 @@ import {
   Tabs,
 } from "antd";
 import React, { useEffect, useState } from "react";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import api from "../../api/client";
 import AddStudentModal from "../../components/AddStudentModal";
 import {
@@ -38,6 +53,36 @@ import "./Dashboard.css";
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 const { TabPane } = Tabs;
+
+// Mock data for Feedback Trends
+const trendData = [
+  { month: "Sep", feedbacks: 12, avgRating: 4.2 },
+  { month: "Oct", feedbacks: 18, avgRating: 4.4 },
+  { month: "Nov", feedbacks: 25, avgRating: 4.5 },
+  { month: "Dec", feedbacks: 22, avgRating: 4.3 },
+  { month: "Jan", feedbacks: 30, avgRating: 4.6 },
+  { month: "Feb", feedbacks: 28, avgRating: 4.4 },
+  { month: "Mar", feedbacks: 35, avgRating: 4.7 },
+];
+
+// Mock data for Course Completion Rates
+const completionData = [
+  { name: "CS101", completion: 92 },
+  { name: "CS201", completion: 78 },
+  { name: "MATH201", completion: 85 },
+  { name: "PHY150", completion: 68 },
+  { name: "ENG101", completion: 88 },
+  { name: "HIST202", completion: 72 },
+];
+
+// Mock data for Rating Distribution
+const ratingData = [
+  { rating: "1 star", count: 8, color: "#ef4444" },
+  { rating: "2 stars", count: 12, color: "#f97316" },
+  { rating: "3 stars", count: 25, color: "#eab308" },
+  { rating: "4 stars", count: 45, color: "#22c55e" },
+  { rating: "5 stars", count: 62, color: "#10b981" },
+];
 
 const Dashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
@@ -228,46 +273,101 @@ const Dashboard: React.FC = () => {
 
         <TabPane tab="Analytics" key="analytics" icon={<RiseOutlined />}>
           <Row gutter={[16, 16]}>
+            {/* Feedback Trends - Line Chart */}
             <Col span={24}>
-              <Card title="Feedback Trends">
-                <div
-                  style={{
-                    height: 300,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <p>Chart placeholder - Feedback trends over time</p>
-                </div>
+              <Card
+                title="Feedback Trends (Last 7 Months)"
+                extra={
+                  <Select
+                  defaultActiveFirstOption
+                    options={courseStats.map((c) => ({
+                      label: c.course_name,
+                      value: c.course_code,
+                    }))}
+                  />
+                }
+              >
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={trendData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis yAxisId="left" />
+                    <YAxis
+                      yAxisId="right"
+                      orientation="right"
+                      domain={[0, 5]}
+                    />
+                    <Tooltip />
+                    <Legend />
+                    <Line
+                      yAxisId="left"
+                      type="monotone"
+                      dataKey="feedbacks"
+                      stroke="#003A5D"
+                      name="Feedbacks Submitted"
+                      strokeWidth={2}
+                    />
+                    <Line
+                      yAxisId="right"
+                      type="monotone"
+                      dataKey="avgRating"
+                      stroke="#EEBC03"
+                      name="Average Rating"
+                      strokeWidth={2}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
               </Card>
             </Col>
+
+            {/* Course Completion Rates - Bar Chart */}
             <Col span={12}>
-              <Card title="Course Completion Rates">
-                <div
-                  style={{
-                    height: 250,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <p>Chart placeholder - Top courses by completion</p>
-                </div>
+              <Card title="Top Courses by Completion Rate">
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart
+                    data={completionData}
+                    layout="vertical"
+                    margin={{ left: 60 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis type="number" domain={[0, 100]} unit="%" />
+                    <YAxis type="category" dataKey="name" />
+                    <Tooltip formatter={(value) => `${value}%`} />
+                    <Bar
+                      dataKey="completion"
+                      fill="#003A5D"
+                      radius={[0, 4, 4, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
               </Card>
             </Col>
+
+            {/* Rating Distribution - Pie Chart */}
             <Col span={12}>
-              <Card title="Rating Distribution">
-                <div
-                  style={{
-                    height: 250,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <p>Chart placeholder - Rating distribution</p>
-                </div>
+              <Card title="Overall Rating Distribution">
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={ratingData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={100}
+                      paddingAngle={2}
+                      dataKey="count"
+                      label={({ name, percent }) =>
+                        `${name}: ${((percent || 0) * 100).toFixed(0)}%`
+                      }
+                    >
+                      {ratingData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                    {/* <Legend /> */}
+                  </PieChart>
+                </ResponsiveContainer>
               </Card>
             </Col>
           </Row>
