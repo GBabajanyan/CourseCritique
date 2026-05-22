@@ -47,12 +47,12 @@ const Login: React.FC = () => {
       navigate("/");
     } catch (err: any) {
       console.error("Login error:", err);
-      setError(
+      const errorMsg =
         err.response?.data?.message ||
-          err.message ||
-          "Invalid username or password",
-      );
-      message.error("Login failed. Please check your credentials.");
+        err.message ||
+        "Invalid username or password";
+      setError(errorMsg);
+      message.error(`Login failed. ${errorMsg}`);
     } finally {
       setLoading(false);
     }
@@ -135,8 +135,7 @@ const Login: React.FC = () => {
           </Form.Item>
         </Form>
 
-        <div className="login-footer">
-        </div>
+        <div className="login-footer"></div>
       </Card>
     </div>
   );
