@@ -75,7 +75,7 @@ class ProfileStore {
     );
 
     // Quality
-    const early_bird = completedFeedbacks.every(
+    const early_bird = completedFeedbacks.length && completedFeedbacks.every(
       (f) => f.submittedDate === f.startDate,
     );
 

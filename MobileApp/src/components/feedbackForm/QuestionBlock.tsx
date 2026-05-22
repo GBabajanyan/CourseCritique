@@ -25,7 +25,7 @@ const QuestionBlock: React.FC<QuestionBlockProps> = ({
   const showRatingValue =
     type !== "text" &&
     value !== undefined &&
-    FEEDBACK_VALUES_BY_TYPE[type][value];
+    !!FEEDBACK_VALUES_BY_TYPE[type][value];
 
   return (
     <View
@@ -54,15 +54,16 @@ const QuestionBlock: React.FC<QuestionBlockProps> = ({
         >
           {`${label}:`}
         </Text>
-        <Text
-          style={{
-            fontSize: 20,
-            color: "red",
-            display: required ? "flex" : "none",
-          }}
-        >
-          {`*`}
-        </Text>
+        {required && (
+          <Text
+            style={{
+              fontSize: 20,
+              color: "red",
+            }}
+          >
+            *
+          </Text>
+        )}
       </View>
 
       {type === "text" ? (

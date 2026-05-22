@@ -144,4 +144,5 @@ export const FEEDBACK_VALUES_BY_TYPE = {
   },
   "3": { 1: "Needs Improvement", 2: "Satisfactory", 3: "Excellent" },
   thumb: { 0: "Disagree", 1: "Agree" },
+  text:''
 };
