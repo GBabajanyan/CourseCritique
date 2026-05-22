@@ -3,6 +3,75 @@ import pool from "../../db-config.js";
 
 const router = express.Router();
 
+/**
+ * @openapi
+ * /dashboard/students/create:
+ *   post:
+ *     summary: Create a student profile
+ *     description: Adds a new student profile (without creating an auth account). Useful for pre-populating students before they self-register. Fails if the studentId already exists. Requires admin or instructor role.
+ *     tags:
+ *       - Dashboard - Students
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - firstName
+ *               - lastName
+ *               - email
+ *               - studentid
+ *               - role
+ *             properties:
+ *               firstName:
+ *                 type: string
+ *                 example: Jane
+ *               lastName:
+ *                 type: string
+ *                 example: Doe
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               role:
+ *                 type: string
+ *                 enum: [student, instructor, admin]
+ *                 default: student
+ *               degree:
+ *                 type: string
+ *                 example: Computer Science
+ *               year:
+ *                 type: string
+ *                 example: "1"
+ *               studentid:
+ *                 type: string
+ *                 example: S99999
+ *     responses:
+ *       201:
+ *         description: Student profile created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *       400:
+ *         description: A student with that studentId already exists
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Message'
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden — admin or instructor role required
+ *       500:
+ *         description: Server error
+ */
 router.post("/create", async (req, res) => {
   try {
     await pool.query("BEGIN");
@@ -44,7 +113,64 @@ router.post("/create", async (req, res) => {
   }
 });
 
-// GET /dashboard/students/:studentId - Get student details
+/**
+ * @openapi
+ * /dashboard/students/{studentId}:
+ *   get:
+ *     summary: Get student details
+ *     description: Returns profile information and total completed feedback count for a single student, looked up by university student ID. Requires admin or instructor role.
+ *     tags:
+ *       - Dashboard - Students
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: studentId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: University-assigned student ID (e.g. S12345)
+ *     responses:
+ *       200:
+ *         description: Student profile with feedback count
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                   format: uuid
+ *                   description: Internal profile UUID
+ *                 studentId:
+ *                   type: string
+ *                 name:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *                   format: email
+ *                 year:
+ *                   type: string
+ *                 degree:
+ *                   type: string
+ *                 join_date:
+ *                   type: string
+ *                   format: date-time
+ *                 total_feedbacks:
+ *                   type: integer
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden — admin or instructor role required
+ *       404:
+ *         description: Student not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Server error
+ */
 router.get("/:studentId", async (req, res) => {
   try {
     const { studentId } = req.params;
@@ -81,7 +207,65 @@ router.get("/:studentId", async (req, res) => {
   }
 });
 
-// GET /dashboard/students/:studentId/courses - Get student's enrolled courses
+/**
+ * @openapi
+ * /dashboard/students/{studentId}/courses:
+ *   get:
+ *     summary: Get courses enrolled by a student
+ *     description: Returns the list of courses a student is enrolled in, ordered by most recent semester first. Requires admin or instructor role.
+ *     tags:
+ *       - Dashboard - Students
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: studentId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: University-assigned student ID (e.g. S12345)
+ *     responses:
+ *       200:
+ *         description: List of enrolled courses
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                     format: uuid
+ *                   course_code:
+ *                     type: string
+ *                   course_name:
+ *                     type: string
+ *                   section:
+ *                     type: string
+ *                   instructor:
+ *                     type: string
+ *                   department:
+ *                     type: string
+ *                   semester:
+ *                     type: string
+ *                     enum: [Fall, Spring, Summer]
+ *                   year:
+ *                     type: integer
+ *                     example: 2025
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden — admin or instructor role required
+ *       404:
+ *         description: Student not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Server error
+ */
 router.get("/:studentId/courses", async (req, res) => {
   try {
     const { studentId } = req.params;

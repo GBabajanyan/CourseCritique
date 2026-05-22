@@ -11,12 +11,12 @@ const router = express.Router();
  *     summary: Get pending feedbacks
  *     description: Returns list of feedbacks awaiting submission for the authenticated user
  *     tags:
- *       - Feedback
+ *       - Mobile - Feedback
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: List of pending feedbacks
+ *         description: List of pending feedbacks within their active window (startDate ≤ now < deadline)
  *         content:
  *           application/json:
  *             schema:
@@ -26,22 +26,31 @@ const router = express.Router();
  *                 properties:
  *                   id:
  *                     type: string
- *                   course_code:
+ *                     format: uuid
+ *                     description: Feedback record UUID — pass this as feedbackId when submitting
+ *                   courseCode:
  *                     type: string
- *                   course_name:
+ *                   courseName:
  *                     type: string
  *                   section:
  *                     type: string
  *                   instructor:
  *                     type: string
+ *                   department:
+ *                     type: string
  *                   deadline:
  *                     type: string
  *                     format: date
- *                   feedback_phase:
+ *                   startDate:
+ *                     type: string
+ *                     format: date
+ *                   feedbackPhase:
  *                     type: string
  *                     enum: [addDrop, midterm, finals]
  *       401:
  *         description: Unauthorized
+ *       403:
+ *         description: Forbidden — student role required
  */
 router.get("/pending", async (req, res) => {
   try {
@@ -74,6 +83,65 @@ router.get("/pending", async (req, res) => {
   }
 });
 
+/**
+ * @openapi
+ * /feedback/completed:
+ *   get:
+ *     summary: Get completed feedbacks
+ *     description: Returns all feedbacks that the authenticated student has already submitted, ordered by submission date (newest first). Course details fall back to a snapshot if the course record was since modified. Requires student role.
+ *     tags:
+ *       - Mobile - Feedback
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Completed feedback history
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 rows:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                         format: uuid
+ *                       courseCode:
+ *                         type: string
+ *                       courseName:
+ *                         type: string
+ *                       instructor:
+ *                         type: string
+ *                       section:
+ *                         type: string
+ *                       department:
+ *                         type: string
+ *                       feedbackPhase:
+ *                         type: string
+ *                         enum: [addDrop, midterm, finals]
+ *                       submittedDate:
+ *                         type: string
+ *                         format: date-time
+ *                       startDate:
+ *                         type: string
+ *                         format: date
+ *                       deadline:
+ *                         type: string
+ *                         format: date
+ *                       feedbackData:
+ *                         $ref: '#/components/schemas/FeedbackRatings'
+ *                 rowCount:
+ *                   type: integer
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden — student role required
+ *       500:
+ *         description: Server error
+ */
 router.get("/completed", async (req, res) => {
   try {
     const { profile_id } = req.userData;
@@ -108,7 +176,85 @@ router.get("/completed", async (req, res) => {
   }
 });
 
-// GET /api/courses/:id/stats
+/**
+ * @openapi
+ * /feedback/{courseId}/stats:
+ *   get:
+ *     summary: Get aggregated feedback stats for a course
+ *     description: Returns averaged numeric ratings and collected open-ended responses for all completed feedbacks of a course. Used by the mobile app to display course insights. Requires student role.
+ *     tags:
+ *       - Mobile - Feedback
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: courseId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Course UUID
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           enum: [20, 50, 100]
+ *         description: Cap the number of feedback records used in the aggregation (omit for all)
+ *     responses:
+ *       200:
+ *         description: Aggregated feedback statistics
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 feedbacks_completed:
+ *                   type: integer
+ *                   description: Total number of completed feedbacks for this course
+ *                 ratingStats:
+ *                   type: object
+ *                   description: Averaged numeric ratings per question
+ *                   additionalProperties:
+ *                     type: number
+ *                 open_feedbacks:
+ *                   type: object
+ *                   properties:
+ *                     advice_future_gen:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           feedback:
+ *                             type: string
+ *                           submittedDate:
+ *                             type: string
+ *                     strengths:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           feedback:
+ *                             type: string
+ *                           submittedDate:
+ *                             type: string
+ *                     improvements:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           feedback:
+ *                             type: string
+ *                           submittedDate:
+ *                             type: string
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden — student role required
+ *       404:
+ *         description: Course not found
+ *       500:
+ *         description: Server error
+ */
 router.get("/:id/stats", async (req, res) => {
   try {
     const { id } = req.params;
@@ -203,7 +349,7 @@ router.get("/:id/stats", async (req, res) => {
  *     summary: Submit course feedback
  *     description: Submits completed feedback for a course
  *     tags:
- *       - Feedback
+ *       - Mobile - Feedback
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -218,18 +364,19 @@ router.get("/:id/stats", async (req, res) => {
  *             properties:
  *               feedbackId:
  *                 type: string
- *                 description: ID of the pending feedback
+ *                 format: uuid
+ *                 description: The `id` of the pending feedback record obtained from GET /feedback/pending
  *               ratings:
- *                 type: object
- *                 description: Rating values for all questions
- *                 additionalProperties: true
+ *                 $ref: '#/components/schemas/FeedbackRatings'
  *     responses:
  *       200:
- *         description: Feedback submitted successfully
- *       400:
- *         description: Invalid request
+ *         description: Feedback submitted successfully. If this is the first submission for this course/phase/deadline, the student's pioneer badge is also set.
  *       401:
  *         description: Unauthorized
+ *       403:
+ *         description: Forbidden — student role required
+ *       500:
+ *         description: Server error
  */
 router.post("/submit", async (req, res) => {
   const { ratings, feedbackId } = req.body;

@@ -6,44 +6,39 @@ import verifyToken from "../middleware/verifyToken.js";
 const router = express.Router();
 /**
  * @openapi
- * /courses:
+ * /dashboard/courses/all:
  *   get:
  *     summary: Get all courses
- *     description: Retrieves a list of all courses with basic statistics
+ *     description: Returns every course with enrollment and feedback counters. Requires admin or instructor role.
  *     tags:
- *       - Courses
+ *       - Dashboard - Courses
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: List of courses
+ *         description: List of courses with statistics
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: string
- *                   course_code:
- *                     type: string
- *                   course_name:
- *                     type: string
- *                   instructor:
- *                     type: string
- *                   department:
- *                     type: string
- *                   credits:
- *                     type: integer
- *                   total_students:
- *                     type: integer
- *                   total_feedbacks:
- *                     type: integer
- *                   avg_rating:
- *                     type: number
+ *                 allOf:
+ *                   - $ref: '#/components/schemas/Course'
+ *                   - type: object
+ *                     properties:
+ *                       total_students:
+ *                         type: integer
+ *                         description: Number of enrolled students
+ *                       feedback_completed:
+ *                         type: integer
+ *                         description: Number of submitted feedbacks
+ *                       pending_feedbacks:
+ *                         type: integer
+ *                         description: Number of pending (unsubmitted) feedbacks
  *       401:
- *         description: Unauthorized - Valid token required
+ *         description: Unauthorized — valid token required
+ *       403:
+ *         description: Forbidden — admin or instructor role required
  */
 router.get("/all", async (req, res) => {
   try {
@@ -80,12 +75,12 @@ ORDER BY c.course_code ASC;`,
 
 /**
  * @openapi
- * /courses/{id}:
+ * /dashboard/courses/{id}:
  *   get:
- *     summary: Get course by ID
- *     description: Retrieves detailed information about a specific course
+ *     summary: Get course details
+ *     description: Returns full course data including enrollment counts, aggregated rating statistics, and open-ended feedback responses. Requires admin or instructor role.
  *     tags:
- *       - Courses
+ *       - Dashboard - Courses
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -94,35 +89,45 @@ ORDER BY c.course_code ASC;`,
  *         required: true
  *         schema:
  *           type: string
+ *           format: uuid
  *         description: Course UUID
  *     responses:
  *       200:
- *         description: Course details
+ *         description: Course details with aggregated feedback statistics
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 id:
- *                   type: string
- *                 course_code:
- *                   type: string
- *                 course_name:
- *                   type: string
- *                 instructor:
- *                   type: string
- *                 department:
- *                   type: string
- *                 credits:
- *                   type: integer
- *                 total_students:
- *                   type: integer
- *                 feedback_completed:
- *                   type: integer
- *                 pending_feedbacks:
- *                   type: integer
+ *               allOf:
+ *                 - $ref: '#/components/schemas/CourseWithStats'
+ *                 - type: object
+ *                   properties:
+ *                     ratingStats:
+ *                       type: object
+ *                       description: Averaged numeric ratings across all completed feedbacks
+ *                       additionalProperties:
+ *                         type: number
+ *                     open_feedbacks:
+ *                       type: object
+ *                       properties:
+ *                         advice_future_gen:
+ *                           type: array
+ *                           items: { type: string }
+ *                         improvements:
+ *                           type: array
+ *                           items: { type: string }
+ *                         strengths:
+ *                           type: array
+ *                           items: { type: string }
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden — admin or instructor role required
  *       404:
  *         description: Course not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.get("/:id", async (req, res) => {
   try {
@@ -187,6 +192,54 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+/**
+ * @openapi
+ * /dashboard/courses/{id}/students:
+ *   get:
+ *     summary: Get enrolled students for a course
+ *     description: Returns the list of students enrolled in the specified course. Requires admin or instructor role.
+ *     tags:
+ *       - Dashboard - Courses
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Course UUID
+ *     responses:
+ *       200:
+ *         description: List of enrolled students
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   studentId:
+ *                     type: string
+ *                     description: University-assigned student ID
+ *                   name:
+ *                     type: string
+ *                   email:
+ *                     type: string
+ *                     format: email
+ *                   year:
+ *                     type: string
+ *                   enrolled_at:
+ *                     type: string
+ *                     format: date-time
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden — admin or instructor role required
+ *       500:
+ *         description: Server error
+ */
 router.get("/:id/students", verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
@@ -214,6 +267,76 @@ router.get("/:id/students", verifyToken, async (req, res) => {
   }
 });
 
+/**
+ * @openapi
+ * /dashboard/courses/{id}/feedback-periods-create:
+ *   post:
+ *     summary: Create a feedback period for a course
+ *     description: Opens a new feedback period for all enrolled students. Creates one `pending` feedback record per enrolled student. Requires admin or instructor role.
+ *     tags:
+ *       - Dashboard - Courses
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Course UUID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - phase
+ *               - startDate
+ *               - deadline
+ *             properties:
+ *               phase:
+ *                 type: string
+ *                 enum: [addDrop, midterm, finals]
+ *                 description: Feedback phase within the academic term
+ *               startDate:
+ *                 type: string
+ *                 format: date
+ *                 example: "2025-09-01"
+ *               deadline:
+ *                 type: string
+ *                 format: date
+ *                 example: "2025-09-15"
+ *                 description: Must be after startDate
+ *     responses:
+ *       200:
+ *         description: Feedback period created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: 'Feedback period "midterm" created for 30 students'
+ *                 feedback_completed:
+ *                   type: integer
+ *                 pending_feedbacks:
+ *                   type: integer
+ *       400:
+ *         description: startDate must be before deadline
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden — admin or instructor role required
+ *       500:
+ *         description: Server error
+ */
 router.post("/:id/feedback-periods-create", async (req, res) => {
   const { id } = req.params;
   const { phase, deadline, startDate } = req.body;

@@ -82,7 +82,56 @@ router.get("/stats", verifyToken, async (req, res) => {
   }
 });
 
-// GET /dashboard/courses/stats
+/**
+ * @openapi
+ * /dashboard/courses/stats:
+ *   get:
+ *     summary: Get per-course statistics
+ *     description: Returns each course with student count, completed feedback count, average rating, and feedback completion rate. Requires admin or instructor role.
+ *     tags:
+ *       - Dashboard - Analytics
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of courses with statistics
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                     format: uuid
+ *                   course_code:
+ *                     type: string
+ *                   course_name:
+ *                     type: string
+ *                   instructor:
+ *                     type: string
+ *                   department:
+ *                     type: string
+ *                   total_students:
+ *                     type: integer
+ *                   feedback_count:
+ *                     type: integer
+ *                     description: Number of completed feedbacks
+ *                   avg_rating:
+ *                     type: number
+ *                     nullable: true
+ *                     description: Average course_pace rating (1–5), null if no feedbacks
+ *                   completion_rate:
+ *                     type: number
+ *                     description: Percentage of students who submitted feedback (0–100)
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden — admin or instructor role required
+ *       500:
+ *         description: Server error
+ */
 router.get("/courses/stats", verifyToken, async (req, res) => {
   try {
     const result = await pool.query(`
@@ -129,7 +178,53 @@ router.get("/courses/stats", verifyToken, async (req, res) => {
   }
 });
 
-// GET /dashboard/students
+/**
+ * @openapi
+ * /dashboard/students:
+ *   get:
+ *     summary: List all students
+ *     description: Returns all student profiles sorted by join date (newest first), including feedback submission count. Requires admin or instructor role.
+ *     tags:
+ *       - Dashboard - Students
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of student profiles
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   studentId:
+ *                     type: string
+ *                   email:
+ *                     type: string
+ *                     format: email
+ *                   name:
+ *                     type: string
+ *                   year:
+ *                     type: string
+ *                   department:
+ *                     type: string
+ *                     description: Student's declared degree/program
+ *                   feedbacks_given:
+ *                     type: integer
+ *                     description: Total completed feedbacks submitted by this student
+ *                   join_date:
+ *                     type: string
+ *                     format: date-time
+ *                   badges_earned:
+ *                     type: integer
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden — admin or instructor role required
+ *       500:
+ *         description: Server error
+ */
 router.get("/students", verifyToken, async (req, res) => {
   try {
     const result = await pool.query(`
@@ -156,7 +251,70 @@ router.get("/students", verifyToken, async (req, res) => {
   }
 });
 
-// GET /dashboard/feedbacks/anonymous
+/**
+ * @openapi
+ * /dashboard/feedbacks/anonymous:
+ *   get:
+ *     summary: List anonymous feedbacks
+ *     description: Returns completed feedbacks with ratings and comments, stripped of student identity. Supports optional date-range and course filtering. Returns up to 100 records. Requires admin or instructor role.
+ *     tags:
+ *       - Dashboard - Analytics
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Filter feedbacks submitted on or after this date (use together with endDate)
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Filter feedbacks submitted on or before this date (use together with startDate)
+ *       - in: query
+ *         name: courseId
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Filter by course UUID
+ *     responses:
+ *       200:
+ *         description: List of anonymous feedback entries
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                     format: uuid
+ *                   course_code:
+ *                     type: string
+ *                   course_name:
+ *                     type: string
+ *                   feedback_phase:
+ *                     type: string
+ *                     enum: [addDrop, midterm, finals]
+ *                   rating:
+ *                     type: integer
+ *                     description: course_pace rating (1–5)
+ *                   comments:
+ *                     type: string
+ *                   submitted_at:
+ *                     type: string
+ *                     format: date-time
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden — admin or instructor role required
+ *       500:
+ *         description: Server error
+ */
 router.get("/feedbacks/anonymous", verifyToken, async (req, res) => {
   try {
     const { startDate, endDate, courseId } = req.query;
@@ -208,7 +366,61 @@ router.get("/feedbacks/anonymous", verifyToken, async (req, res) => {
   }
 });
 
-// GET /dashboard/feedbacks/by-course/:courseId
+/**
+ * @openapi
+ * /dashboard/feedbacks/by-course/{courseId}:
+ *   get:
+ *     summary: Get feedbacks for a specific course
+ *     description: Returns all completed feedbacks for a course along with total count and average rating across all numeric rating fields. Requires admin or instructor role.
+ *     tags:
+ *       - Dashboard - Analytics
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: courseId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Course UUID
+ *     responses:
+ *       200:
+ *         description: Course feedbacks with aggregate statistics
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 total_feedbacks:
+ *                   type: integer
+ *                 average_rating:
+ *                   type: string
+ *                   description: Average of all numeric rating fields, formatted to one decimal place
+ *                   example: "3.8"
+ *                 feedbacks:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                         format: uuid
+ *                       feedback_phase:
+ *                         type: string
+ *                         enum: [addDrop, midterm, finals]
+ *                       comments:
+ *                         type: string
+ *                       submitted_at:
+ *                         type: string
+ *                         format: date-time
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden — admin or instructor role required
+ *       500:
+ *         description: Server error
+ */
 router.get("/feedbacks/by-course/:courseId", verifyToken, async (req, res) => {
   try {
     const { courseId } = req.params;
@@ -255,7 +467,52 @@ router.get("/feedbacks/by-course/:courseId", verifyToken, async (req, res) => {
   }
 });
 
-// GET /dashboard/feedback-trends
+/**
+ * @openapi
+ * /dashboard/feedback-trends:
+ *   get:
+ *     summary: Get feedback submission trends over time
+ *     description: Returns time-bucketed feedback counts and average ratings. The bucket size depends on the `period` parameter — `week` buckets by day, `month` by week, `year` by month. Requires admin or instructor role.
+ *     tags:
+ *       - Dashboard - Analytics
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: period
+ *         schema:
+ *           type: string
+ *           enum: [week, month, year]
+ *           default: month
+ *         description: Time window to aggregate over
+ *     responses:
+ *       200:
+ *         description: Array of time-bucketed trend data points
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   date:
+ *                     type: string
+ *                     format: date-time
+ *                     description: Start of the time bucket
+ *                   count:
+ *                     type: integer
+ *                     description: Number of feedbacks submitted in this bucket
+ *                   avg_rating:
+ *                     type: number
+ *                     nullable: true
+ *                     description: Average course_pace rating for this bucket
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden — admin or instructor role required
+ *       500:
+ *         description: Server error
+ */
 router.get("/feedback-trends", verifyToken, async (req, res) => {
   try {
     const { period = "month" } = req.query;
@@ -296,7 +553,33 @@ router.get("/feedback-trends", verifyToken, async (req, res) => {
   }
 });
 
-// GET /dashboard/departments
+/**
+ * @openapi
+ * /dashboard/departments:
+ *   get:
+ *     summary: List all departments
+ *     description: Returns a distinct, sorted list of department names from the course table. Useful for populating filter dropdowns. Requires admin or instructor role.
+ *     tags:
+ *       - Dashboard - Analytics
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Array of department name strings
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: string
+ *               example: ["Computer Science", "Mathematics", "Physics"]
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden — admin or instructor role required
+ *       500:
+ *         description: Server error
+ */
 router.get("/departments", verifyToken, async (req, res) => {
   try {
     const result = await pool.query(`

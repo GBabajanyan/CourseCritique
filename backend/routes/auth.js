@@ -6,6 +6,67 @@ import { generateAuthToken, generateRefreshToken } from "../util/util.js";
 
 const router = express.Router();
 
+/**
+ * @openapi
+ * /auth/user_reg:
+ *   post:
+ *     summary: Register a new user
+ *     description: Creates an auth account and a student profile in a single transaction. The username is derived from the email prefix (e.g. `john.smith@uni.edu` → `john.smith`).
+ *     tags:
+ *       - Authentication
+ *     security: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - firstName
+ *               - lastName
+ *               - email
+ *               - password
+ *               - role
+ *             properties:
+ *               firstName:
+ *                 type: string
+ *                 example: John
+ *               lastName:
+ *                 type: string
+ *                 example: Smith
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: john.smith@university.edu
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 example: securepassword123
+ *               role:
+ *                 type: string
+ *                 enum: [student, instructor, admin]
+ *                 example: student
+ *               degree:
+ *                 type: string
+ *                 example: Computer Science
+ *               year:
+ *                 type: string
+ *                 example: "2"
+ *               studentid:
+ *                 type: string
+ *                 example: S12345
+ *     responses:
+ *       201:
+ *         description: Registration successful
+ *       400:
+ *         description: A user with that email already exists
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Message'
+ *       500:
+ *         description: Server error
+ */
 router.post("/user_reg", async (req, res) => {
   try {
     await pool.query("BEGIN");
@@ -68,9 +129,10 @@ router.post("/user_reg", async (req, res) => {
  * /auth/user_login:
  *   post:
  *     summary: Authenticate user
- *     description: Logs in a user with email/username and password
+ *     description: Accepts a username or email plus password. Returns a short-lived `authToken` (JWT) and a 30-day `refreshToken` together with the full user profile.
  *     tags:
  *       - Authentication
+ *     security: []
  *     requestBody:
  *       required: true
  *       content:
@@ -87,7 +149,7 @@ router.post("/user_reg", async (req, res) => {
  *                 example: john.smith
  *               password:
  *                 type: string
- *                 description: User's password
+ *                 format: password
  *                 example: password123
  *     responses:
  *       200:
@@ -95,25 +157,20 @@ router.post("/user_reg", async (req, res) => {
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 authToken:
- *                   type: string
- *                   description: JWT access token
- *                 refreshToken:
- *                   type: string
- *                   description: Refresh token for obtaining new auth tokens
- *                 user:
- *                   type: object
+ *               allOf:
+ *                 - $ref: '#/components/schemas/AuthTokens'
+ *                 - type: object
  *                   properties:
- *                     id:
- *                       type: string
- *                     email:
- *                       type: string
- *                     username:
- *                       type: string
- *       401:
- *         description: Invalid credentials
+ *                     user:
+ *                       $ref: '#/components/schemas/UserProfile'
+ *       400:
+ *         description: Invalid username/email or incorrect password
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Message'
+ *       500:
+ *         description: Server error
  */
 router.post("/user_login", async (req, res) => {
   try {
@@ -168,6 +225,48 @@ router.post("/user_login", async (req, res) => {
   }
 });
 
+/**
+ * @openapi
+ * /auth/refresh:
+ *   post:
+ *     summary: Refresh access token
+ *     description: Exchanges a valid refresh token for a new auth token and a rotated refresh token. The old refresh token is invalidated on success.
+ *     tags:
+ *       - Authentication
+ *     security: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - refreshToken
+ *             properties:
+ *               refreshToken:
+ *                 type: string
+ *                 description: Refresh token received at login
+ *     responses:
+ *       200:
+ *         description: New token pair issued
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/AuthTokens'
+ *                 - type: object
+ *                   properties:
+ *                     userProfile:
+ *                       $ref: '#/components/schemas/UserProfile'
+ *       401:
+ *         description: Refresh token missing, invalid, or expired
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Message'
+ *       500:
+ *         description: Server error
+ */
 router.post("/refresh", async (req, res) => {
   try {
     const { refreshToken } = req.body;
@@ -229,6 +328,56 @@ router.post("/refresh", async (req, res) => {
   }
 });
 
+/**
+ * @openapi
+ * /auth/user_logout:
+ *   post:
+ *     summary: Logout user
+ *     description: Invalidates the provided refresh token by removing it from the database, effectively ending the session.
+ *     tags:
+ *       - Authentication
+ *     security: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - refreshToken
+ *             properties:
+ *               refreshToken:
+ *                 type: string
+ *                 description: The refresh token to invalidate
+ *     responses:
+ *       200:
+ *         description: Logged out successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Logged out successfully
+ *       400:
+ *         description: Refresh token missing or not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Message'
+ *       401:
+ *         description: Invalid or expired refresh token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Message'
+ *       500:
+ *         description: Server error
+ */
 router.post("/user_logout", async (req, res) => {
   try {
     const { refreshToken } = req.body;
