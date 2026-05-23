@@ -1,50 +1,25 @@
-# Welcome to your Expo app 👋
+### 2.1 Mobile Application (Student Interface)
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+  
+The React Native mobile app provides students with the following capabilities:
+  
+1. **Authentication**: Email/password **OR** Username/password login with optional biometric authentication for subsequent sessions
 
-## Get started
+2.  **Pending Reminders**: Visual calendar showing open feedback periods with color-coded deadlines
 
-1. Install dependencies
+3. **Feedback Submission**: Multi-step forms with four types of rating scales:
+   - 5-point Likert scale (Strongly Disagree to Strongly Agree)
+   - 3-point scale for specific 
+   - Binary thumbs up/down for overall satisfaction
+   - Guided Open text feedback for free comments(Advice For Future Generations, Strengths,Improvements)
 
-   ```bash
-   npm install
-   ```
+4. **Feedback History**: Chronological display of submitted feedbacks grouped by academic year and semester
 
-2. Start the app
+5. **Course Search**: Browse courses and view aggregated anonymous feedback statistics/comments
 
-   ```bash
-   npx expo start
-   ```
+6.  **Achievement Badges**: Progress tracking and notification of earned badges(40+) across four categories (milestones, quality, diversity, bonus)
 
-In the output, you'll find options to open the app in a
+7. **Profile Management**: View/Request to Edit personal information, academic details, app theme, and notification preferences
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+#### Main user flow: https://youtu.be/2OcImh34ecE
