@@ -15,3 +15,5 @@ The React web dashboard provides administrative functionality including:
 5. **Student Management**: View/ Add student profiles with their enrolled courses and feedback history
 
 6. **Anonymous Feedback Review**: Browse submitted feedbacks statistics without student identification
+
+Demo: https://www.youtube.com/watch?v=m6nSLNljj8c
